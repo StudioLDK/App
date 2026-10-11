@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ausschreibungsfinder</title>
+<meta name="description" content="Neue öffentliche Ausschreibungen aus der EU-Datenbank TED, gefiltert nach Branche, Region und Frist.">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ausschreibungen">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --panel:#F4F5F7; --line:#E2E4E8; --line2:#CED2D8;
+  --ink:#1C1F23; --muted:#5C626B; --faint:#8A9099;
+  --red:#CC0605; --red-bg:#FCEBEA; --amber:#8A5A00; --amber-bg:#FFF3D6;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:'Archivo',system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.hidden{display:none!important}
+.wide{font-stretch:115%}
+
+/* ---------- Start: Einrichtung & Login ---------- */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--panel)}
+.gate-card{width:100%;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:36px 32px;display:flex;flex-direction:column;gap:18px}
+.gate-card h1{margin:0;font-size:30px;line-height:1.1;font-weight:800;font-stretch:115%;letter-spacing:-.02em}
+.gate-card p{margin:0;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;font-size:14px}
+.field input{height:46px;border:1px solid var(--line2);border-radius:8px;padding:0 14px;background:#fff}
+.field input:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(28,31,35,.12)}
+.btn{height:46px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:600;padding:0 22px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.msg{font-size:14px;color:var(--red);min-height:1em}
+.mark{display:flex;align-items:center;gap:10px;font-weight:700;font-stretch:112%}
+
+/* ---------- App-Gerüst ---------- */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line)}
+.top{padding-top:env(safe-area-inset-top)}
+.top-in{max-width:1440px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:20px}
+.search{flex:1;max-width:620px;position:relative}
+.search input{width:100%;height:42px;border:1px solid var(--line2);border-radius:999px;padding:0 44px 0 42px;background:var(--panel)}
+.search input:focus{background:#fff;border-color:var(--ink);outline:none}
+.search svg{position:absolute;left:14px;top:12px;color:var(--faint)}
+.search kbd{position:absolute;right:12px;top:10px}
+kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;font:600 12px/18px 'Archivo',sans-serif;color:var(--muted);text-align:center;background:#fff}
+.user{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:14px;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:6px 0;font-weight:600;color:var(--ink)}
+.linkbtn:hover{text-decoration:underline;text-underline-offset:3px}
+
+.layout{max-width:1440px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px}
+.rail{position:sticky;top:63px;align-self:start;max-height:calc(100vh - 63px);overflow:auto;padding:28px 4px 40px 0;display:flex;flex-direction:column;gap:28px}
+.rail h2{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--muted)}
+.seg{display:flex;flex-direction:column;gap:2px}
+.seg button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:8px 10px;color:var(--ink)}
+.seg button:hover{background:var(--panel)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg button[aria-pressed="true"] .n{color:rgba(255,255,255,.7)}
+.n{font-size:13px;color:var(--faint)}
+.checks{display:flex;flex-direction:column;gap:1px}
+.checks label{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;cursor:pointer}
+.checks label:hover{background:var(--panel)}
+.checks input{accent-color:var(--red);width:16px;height:16px;margin:0}
+.checks .n{margin-left:auto}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:13px;color:var(--muted)}
+
+.main{padding:32px 0 80px;min-width:0}
+
+/* ---------- Lagebild ---------- */
+.lage{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px 40px;margin-bottom:28px}
+.big{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.big .num{font-size:clamp(64px,8vw,104px);line-height:.9;font-weight:800;font-stretch:120%;letter-spacing:-.04em}
+.big .txt{max-width:17em;font-size:20px;line-height:1.25;color:var(--muted)}
+.big .txt b{color:var(--ink);font-weight:600}
+.facts{display:flex;gap:28px;flex-wrap:wrap}
+.fact{display:flex;flex-direction:column}
+.fact .v{font-size:30px;font-weight:750;font-stretch:112%;line-height:1}
+.fact .l{font-size:13px;color:var(--muted);margin-top:6px}
+.fact.urgent .v{color:var(--red)}
+
+/* ---------- Fristenband ---------- */
+.band{border:1px solid var(--line);border-radius:14px;padding:18px 18px 12px;margin-bottom:32px;background:#fff}
+.band-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.band-head h2{margin:0;font-size:17px;font-weight:700}
+.band-head span{font-size:13px;color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(42,minmax(0,1fr));gap:3px;height:120px;align-items:end;position:relative}
+.day{height:100%;border:0;background:transparent;padding:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;border-radius:4px;position:relative}
+.day:hover{background:var(--panel)}
+.bar{display:block;background:var(--ink);border-radius:2px 2px 0 0;min-height:0;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 14ms)}
+.day.soon .bar{background:var(--red)}
+.day.we .bar{opacity:.55}
+.day[aria-pressed="true"]{background:var(--red-bg)}
+.day[aria-pressed="true"] .bar{background:var(--red)}
+.day .c{position:absolute;left:0;right:0;text-align:center;font-size:11px;font-weight:600;color:var(--muted);transform:translateY(-16px)}
+.ticks{display:grid;grid-template-columns:repeat(42,minmax(0,1fr));gap:3px;margin-top:6px;border-top:1px solid var(--line2);padding-top:6px}
+.ticks span{font-size:11px;color:var(--faint);white-space:nowrap;overflow:visible}
+.ticks span.mo{color:var(--ink);font-weight:600}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+/* ---------- Liste ---------- */
+.list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.list-head h2{margin:0;font-size:22px;font-weight:750;font-stretch:110%}
+.list-head h2 .n{font-size:22px;color:var(--faint);font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:999px;padding:4px 10px;font-size:13px;background:#fff}
+.chip button{border:0;background:none;padding:0;line-height:1;color:var(--muted);font-size:15px}
+select{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;background:#fff}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:118px minmax(0,1fr) auto;gap:18px;align-items:center;padding:16px 12px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:0;position:relative}
+.row:hover{background:#FAFAFB}
+.row.sel{background:var(--panel);box-shadow:inset 3px 0 0 var(--ink)}
+.row.starred .t::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:8px;vertical-align:middle}
+.due{display:flex;flex-direction:column;gap:2px}
+.due .d{font-weight:700;font-size:15px}
+.due .w{font-size:12px;color:var(--muted)}
+.due.r .d{color:var(--red)}
+.due.a .d{color:var(--amber)}
+.due.x .d{color:var(--faint)}
+.t{font-weight:600;font-size:16px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{margin-top:4px;font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.acts{display:flex;gap:4px}
+.ic{width:38px;height:38px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;color:var(--muted)}
+.ic:hover{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line2)}
+.ic[aria-pressed="true"]{color:var(--red)}
+.empty{padding:56px 12px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:14px}
+.empty b{color:var(--ink);font-size:18px}
+.loading{padding:80px 0;text-align:center;color:var(--muted)}
+.err{border:1px solid var(--red);background:var(--red-bg);border-radius:12px;padding:18px 20px;margin:24px 0}
+.err b{display:block;margin-bottom:4px}
+.more{margin:20px auto 0;display:block}
+
+/* ---------- Detail ---------- */
+.scrim{position:fixed;inset:0;background:rgba(10,12,15,.28);z-index:40;opacity:0;transition:opacity .2s}
+.scrim.on{opacity:1}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:#fff;z-index:41;box-shadow:-20px 0 60px rgba(0,0,0,.12);transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.dr-top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.dr-body{padding:26px 28px 40px;overflow:auto;display:flex;flex-direction:column;gap:20px}
+.dr-body h2{margin:0;font-size:26px;line-height:1.18;font-weight:750;font-stretch:108%;letter-spacing:-.01em}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:10px 16px;font-size:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600}
+.desc{white-space:pre-line;color:#343840;font-size:15px;line-height:1.6}
+.dr-acts{display:flex;gap:10px;flex-wrap:wrap}
+.btn-red{background:var(--red)}
+
+details.bl summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;font-size:13px;font-weight:700;color:var(--muted)}
+details.bl summary::-webkit-details-marker{display:none}
+details.bl summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-right:6px}
+details.bl[open] summary::after{transform:rotate(-135deg)}
+@media (max-width:900px){
+  .top-in{flex-wrap:wrap;gap:8px 16px;padding:10px 16px}
+  .search{order:3;flex-basis:100%;max-width:none}
+  .search kbd{display:none}
+  .user .em{display:none}
+  .layout{grid-template-columns:1fr;gap:0;padding:0 16px}
+  .rail{position:static;max-height:none;overflow:visible;padding:16px 0 0;gap:14px}
+  .rail h2{margin-bottom:6px}
+  .seg{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .seg button{width:auto;gap:8px;border:1px solid var(--line2);border-radius:999px;padding:6px 14px}
+  .keys-sec{display:none}
+  .main{padding-top:24px}
+  .row{grid-template-columns:1fr;gap:6px;padding:14px 4px}
+  .acts{justify-content:flex-start;margin-left:-8px}
+  .ticks span:not(.mo){visibility:hidden}
+  .band{padding:14px 12px 10px}
+  .days{height:90px;gap:2px}
+  .ticks{gap:2px}
+}
+@media (prefers-reduced-motion:reduce){
+  .bar{animation:none}
+  .drawer,.scrim{transition:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Einrichtung: nur beim allerersten Start, solange kein Key im Code steht -->
+<div id="setup" class="gate hidden">
+  <form class="gate-card" id="setupForm">
+    <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg>Studio LDK</div>
+    <h1>Einrichtung</h1>
+    <p>Trag einmalig den publishable key aus Supabase ein. Du findest ihn unter Project Settings, API Keys.</p>
+    <div class="field"><label for="keyIn">Publishable key</label><input id="keyIn" autocomplete="off" required placeholder="sb_publishable_…"></div>
+    <button class="btn" type="submit">Speichern</button>
+    <div class="msg" id="setupMsg"></div>
+  </form>
+</div>
+
+<!-- Login -->
+<div id="login" class="gate hidden">
+  <form class="gate-card" id="loginForm">
+    <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg>Studio LDK</div>
+    <h1 class="appname">Ausschreibungsfinder</h1>
+    <p>Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
+    <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" required></div>
+    <div class="field"><label for="pw">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <button class="btn" type="submit" id="loginBtn">Anmelden</button>
+    <div class="msg" id="loginMsg" role="alert"></div>
+  </form>
+</div>
+
+<!-- App -->
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="top-in">
+      <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg><span class="appname">Ausschreibungsfinder</span></div>
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <label for="q" class="hidden">Suchen</label>
+        <input id="q" type="search" placeholder="Suchen, z.B. Labor, Lüftung, Reinigung" autocomplete="off">
+        <kbd aria-hidden="true">/</kbd>
+      </div>
+      <div class="user"><span class="em" id="userEm"></span><button class="linkbtn" id="logout">Abmelden</button></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="rail" aria-label="Filter">
+      <section>
+        <h2>Ansicht</h2>
+        <div class="seg" id="viewSeg"></div>
+      </section>
+      <section>
+        <h2>Frist</h2>
+        <div class="seg" id="fristSeg"></div>
+      </section>
+      <section>
+        <details class="bl" id="blDet">
+          <summary>Bundesland</summary>
+          <div class="checks" id="blList"></div>
+        </details>
+      </section>
+      <section class="keys-sec">
+        <h2>Tastatur</h2>
+        <div class="keys">
+          <span><kbd>J</kbd> <kbd>K</kbd></span><span>nächste, vorherige</span>
+          <span><kbd>Enter</kbd></span><span>Details öffnen</span>
+          <span><kbd>S</kbd></span><span>merken</span>
+          <span><kbd>X</kbd></span><span>ausblenden</span>
+          <span><kbd>/</kbd></span><span>suchen</span>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="loading" id="loading">Lade Ausschreibungen …</div>
+      <div id="errBox" class="hidden"></div>
+
+      <div id="content" class="hidden">
+        <section class="lage" aria-label="Lagebild">
+          <div class="big">
+            <span class="num" id="bigNum">0</span>
+            <span class="txt" id="bigTxt"></span>
+          </div>
+          <div class="facts">
+            <div class="fact urgent"><span class="v" id="f7">0</span><span class="l">Fristen in 7 Tagen</span></div>
+            <div class="fact"><span class="v" id="fStar">0</span><span class="l">gemerkt</span></div>
+            <div class="fact"><span class="v" id="fOpen">0</span><span class="l">offen insgesamt</span></div>
+          </div>
+        </section>
+
+        <section class="band" aria-label="Fristenband">
+          <div class="band-head">
+            <h2>Fristen in den nächsten 6 Wochen</h2>
+            <span id="bandHint">Tag anklicken, um nur diese Fristen zu sehen</span>
+          </div>
+          <div class="days" id="days"></div>
+          <div class="ticks" id="ticks"></div>
+        </section>
+
+        <section aria-label="Ausschreibungen">
+          <div class="list-head">
+            <h2>Ausschreibungen <span class="n" id="cnt"></span></h2>
+            <div class="chips">
+              <span id="activeChips" class="chips"></span>
+              <label for="sort" class="hidden">Sortierung</label>
+              <select id="sort">
+                <option value="new">Neueste zuerst</option>
+                <option value="due">Frist zuerst</option>
+              </select>
+            </div>
+          </div>
+          <div class="rows" id="rows" role="list"></div>
+          <button class="btn btn-ghost more hidden" id="moreBtn">Weitere anzeigen</button>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="scrim hidden" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Details zur Ausschreibung">
+    <div class="dr-top">
+      <span id="drDue" style="font-weight:700"></span>
+      <button class="ic" id="drClose" aria-label="Details schließen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="dr-body" id="drBody"></div>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* =========================================================================
+   Konfiguration
+   ========================================================================= */
+const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später durch den Produktnamen ersetzen
+const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
+const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
+
+/* NUTS-1-Codes der Bundesländer */
+const BL = {DE1:'Baden-Württemberg',DE2:'Bayern',DE3:'Berlin',DE4:'Brandenburg',DE5:'Bremen',DE6:'Hamburg',DE7:'Hessen',DE8:'Mecklenburg-Vorpommern',DE9:'Niedersachsen',DEA:'Nordrhein-Westfalen',DEB:'Rheinland-Pfalz',DEC:'Saarland',DED:'Sachsen',DEE:'Sachsen-Anhalt',DEF:'Schleswig-Holstein',DEG:'Thüringen'};
+
+/* =========================================================================
+   Hilfsfunktionen
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+function h(tag, attrs, ...kids){
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs||{})){
+    if (v === false || v == null) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'style') el.style.cssText = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()){ if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  return el;
+}
+const ICONS = {
+  star:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  starOn:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  hide:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12s3.5-6.5 9-6.5S21 12 21 12s-3.5 6.5-9 6.5S3 12 3 12z"/><circle cx="12" cy="12" r="2.6"/><path d="M4 20L20 4"/></svg>',
+  ext:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>'
+};
+const icon = name => { const s = h('span',{'aria-hidden':'true',style:'display:grid'}); s.innerHTML = ICONS[name]; return s; };
+
+const DAY = 86400000;
+const today = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+const fmtDay  = new Intl.DateTimeFormat('de-DE',{weekday:'short',day:'numeric',month:'short'});
+const fmtLong = new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const fmtShort= new Intl.DateTimeFormat('de-DE',{day:'numeric',month:'numeric'});
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function dueText(days){
+  if (days === null) return {d:'ohne Frist', w:'', cls:'x'};
+  if (days < 0)  return {d:'abgelaufen', w:'', cls:'x'};
+  if (days === 0) return {d:'heute', w:'', cls:'r'};
+  if (days === 1) return {d:'morgen', w:'', cls:'r'};
+  return {d:`noch ${days} Tage`, w:'', cls: days <= 7 ? 'r' : days <= 14 ? 'a' : ''};
+}
+function bundeslaender(region){
+  if (!region) return [];
+  const out = new Set();
+  for (const raw of String(region).split(/[,\s]+/)){
+    const c = raw.trim().toUpperCase();
+    if (c.length >= 3 && BL[c.slice(0,3)]) out.add(BL[c.slice(0,3)]);
+  }
+  return [...out];
+}
+
+/* =========================================================================
+   Zustand
+   ========================================================================= */
+const S = { db:null, user:null, rows:[], react:{}, view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
+
+function loadReact(){ try { S.react = JSON.parse(localStorage.getItem('ldk-react-'+S.user.id) || '{}'); } catch(e){ S.react = {}; } }
+function saveReact(){ try { localStorage.setItem('ldk-react-'+S.user.id, JSON.stringify(S.react)); } catch(e){} }
+function setReact(id, kind){
+  S.react[id] = S.react[id] === kind ? undefined : kind;
+  if (!S.react[id]) delete S.react[id];
+  saveReact(); render(false);
+  if (S.drawerRow && S.drawerRow.id === id) openDrawer(S.drawerRow);
+}
+
+/* =========================================================================
+   Start
+   ========================================================================= */
+document.querySelectorAll('.appname').forEach(e => e.textContent = APP_NAME);
+if (window.innerWidth > 900) $('blDet').open = true;
+document.title = APP_NAME;
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+function show(which){ ['setup','login','app'].forEach(id => $(id).classList.toggle('hidden', id !== which)); }
+
+function getKey(){ if (SUPABASE_KEY) return SUPABASE_KEY; try { return localStorage.getItem('ldk-sb-key') || ''; } catch(e){ return ''; } }
+
+async function init(){
+  if (!window.supabase){ show('login'); $('loginMsg').textContent = 'Die Verbindungsbibliothek konnte nicht geladen werden. Bist du online?'; return; }
+  const key = getKey();
+  if (!key){ show('setup'); $('keyIn').focus(); return; }
+  S.db = window.supabase.createClient(SUPABASE_URL, key, { db:{ schema:'tender' } });
+  S.db.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { show('login'); } });
+  const { data } = await S.db.auth.getSession();
+  if (data && data.session) start(data.session.user); else { show('login'); $('em').focus(); }
+}
+
+$('setupForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = $('keyIn').value.trim();
+  if (v.length < 20){ $('setupMsg').textContent = 'Das sieht nicht nach einem vollständigen Key aus.'; return; }
+  try { localStorage.setItem('ldk-sb-key', v); } catch(err){}
+  init();
+});
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('loginMsg').textContent = '';
+  $('loginBtn').disabled = true; $('loginBtn').textContent = 'Melde an …';
+  const { data, error } = await S.db.auth.signInWithPassword({ email:$('em').value.trim(), password:$('pw').value });
+  $('loginBtn').disabled = false; $('loginBtn').textContent = 'Anmelden';
+  if (error){
+    $('loginMsg').textContent = /invalid login/i.test(error.message) ? 'E-Mail oder Passwort stimmt nicht.' : 'Anmeldung fehlgeschlagen: ' + error.message;
+    return;
+  }
+  start(data.user);
+});
+
+$('logout').addEventListener('click', async () => { await S.db.auth.signOut(); show('login'); });
+
+async function start(user){
+  S.user = user; loadReact();
+  $('userEm').textContent = user.email || '';
+  show('app');
+  $('loading').classList.remove('hidden'); $('content').classList.add('hidden'); $('errBox').classList.add('hidden');
+  try {
+    S.rows = await fetchAll();
+  } catch(err){
+    showError(err); return;
+  }
+  $('loading').classList.add('hidden'); $('content').classList.remove('hidden');
+  render(true);
+}
+
+async function fetchAll(){
+  const all = []; const step = 1000;
+  for (let from = 0; ; from += step){
+    const { data, error } = await S.db.from('tenders')
+      .select('id,title,description,region,deadline,link,created_at,ted_publication_number')
+      .or(`deadline.gte.${isoDay(new Date(today.getTime() - 30*DAY))},deadline.is.null`)
+      .order('created_at', { ascending:false })
+      .range(from, from + step - 1);
+    if (error) throw error;
+    all.push(...data);
+    if (data.length < step || all.length >= 10000) break;
+  }
+  return all.map(r => {
+    const dl = r.deadline ? new Date(r.deadline + 'T00:00:00') : null;
+    return { ...r, dl, days: dl ? Math.round((dl - today) / DAY) : null, created: new Date(r.created_at), bls: bundeslaender(r.region), hay: ((r.title||'') + ' ' + (r.description||'')).toLowerCase() };
+  });
+}
+
+function showError(err){
+  $('loading').classList.add('hidden');
+  const m = (err && err.message) || String(err);
+  let hint = 'Versuch es gleich noch einmal. Wenn es bleibt, schick mir die Meldung.';
+  if (/schema/i.test(m)) hint = 'In Supabase muss das Schema "tender" unter Data API bei "Exposed schemas" eingetragen sein.';
+  else if (/permission|denied|42501/i.test(m)) hint = 'Dem eingeloggten Nutzer fehlen Leserechte. Prüf die GRANT-Befehle und die Policy auf tender.tenders.';
+  else if (/fetch|network/i.test(m)) hint = 'Keine Verbindung zu Supabase. Bist du online?';
+  const box = $('errBox'); box.innerHTML = ''; box.className = 'err';
+  box.append(h('b',{},'Die Ausschreibungen konnten nicht geladen werden.'), h('div',{},m), h('div',{style:'margin-top:8px'},hint));
+}
+
+/* =========================================================================
+   Filtern
+   ========================================================================= */
+function passBase(r){
+  const rx = S.react[r.id];
+  if (S.view === 'open'  && (rx === 'hide' || (r.days !== null && r.days < 0))) return false;
+  if (S.view === 'star'  && rx !== 'star') return false;
+  if (S.view === 'hide'  && rx !== 'hide') return false;
+  if (S.bl.size && !r.bls.some(b => S.bl.has(b))) return false;
+  if (S.q){ for (const term of S.q.split(/\s+/)) if (term && !r.hay.includes(term)) return false; }
+  return true;
+}
+function passFrist(r){
+  if (S.frist === 'all') return true;
+  if (S.frist === 'none') return r.days === null;
+  const n = +S.frist;
+  return r.days !== null && r.days >= 0 && r.days <= n;
+}
+function computeList(){
+  const base = S.rows.filter(passBase);
+  let list = base.filter(passFrist);
+  if (S.day !== null) list = list.filter(r => r.days === S.day);
+  list.sort(S.sort === 'due'
+    ? (a,b) => (a.days ?? 99999) - (b.days ?? 99999) || b.created - a.created
+    : (a,b) => b.created - a.created || (a.days ?? 99999) - (b.days ?? 99999));
+  return { base, list };
+}
+
+/* =========================================================================
+   Darstellen
+   ========================================================================= */
+function render(first){
+  const { base, list } = computeList();
+  S.list = list;
+  if (S.sel >= list.length) S.sel = list.length - 1;
+  renderLage(first);
+  renderRail();
+  renderBand(base);
+  renderList();
+}
+
+function renderLage(first){
+  const open = S.rows.filter(r => S.react[r.id] !== 'hide' && (r.days === null || r.days >= 0));
+  let latest = null;
+  for (const r of S.rows) if (!latest || r.created > latest) latest = r.created;
+  let n = 0, txt = 'Noch keine Ausschreibungen in der Datenbank. Der nächste Abruf läuft morgen früh.';
+  if (latest){
+    const key = isoDay(latest);
+    n = S.rows.filter(r => isoDay(r.created) === key).length;
+    const when = isoDay(latest) === isoDay(today) ? 'heute' : 'am ' + fmtLong.format(latest).replace(/ \d{4}$/,'');
+    txt = null;
+    $('bigTxt').replaceChildren('neue Ausschreibungen beim letzten Abruf ', h('b',{},when), '.');
+  }
+  if (txt) $('bigTxt').textContent = txt;
+  $('f7').textContent = open.filter(r => r.days !== null && r.days <= 7).length;
+  $('fStar').textContent = Object.values(S.react).filter(v => v === 'star').length;
+  $('fOpen').textContent = open.length;
+  countUp($('bigNum'), n, first);
+}
+function countUp(el, to, animate){
+  if (!animate || reduceMotion || to < 10){ el.textContent = to; return; }
+  const t0 = performance.now(), dur = 900;
+  const step = t => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+function renderRail(){
+  const views = [['open','Offen'],['star','Gemerkt'],['hide','Ausgeblendet']];
+  const cnt = { open:0, star:0, hide:0 };
+  for (const r of S.rows){
+    const rx = S.react[r.id];
+    if (rx === 'star') cnt.star++;
+    if (rx === 'hide') cnt.hide++;
+    if (rx !== 'hide' && (r.days === null || r.days >= 0)) cnt.open++;
+  }
+  $('viewSeg').replaceChildren(...views.map(([k,l]) => h('button',{'aria-pressed':String(S.view===k), onclick:()=>{ S.view=k; S.sel=-1; S.shown=PAGE; render(); }}, l, h('span',{class:'n'},cnt[k]))));
+
+  const fr = [['all','Alle'],['7','7 Tage'],['14','14 Tage'],['30','30 Tage'],['none','Ohne Frist']];
+  $('fristSeg').replaceChildren(...fr.map(([k,l]) => h('button',{'aria-pressed':String(S.frist===k), onclick:()=>{ S.frist=k; S.day=null; S.sel=-1; S.shown=PAGE; render(); }}, l)));
+
+  const counts = {};
+  for (const r of S.rows){ if (!passBaseNoBl(r)) continue; for (const b of r.bls) counts[b] = (counts[b]||0) + 1; }
+  const names = Object.keys(counts).sort((a,b) => counts[b] - counts[a] || a.localeCompare(b,'de'));
+  const box = $('blList');
+  if (!names.length){ box.replaceChildren(h('span',{class:'n',style:'padding:0 10px'},'Keine Angaben')); return; }
+  box.replaceChildren(...names.map(name => {
+    const id = 'bl-' + name.replace(/[^a-z]/gi,'');
+    const cb = h('input',{type:'checkbox',id, checked:S.bl.has(name)});
+    cb.addEventListener('change', () => { cb.checked ? S.bl.add(name) : S.bl.delete(name); S.sel=-1; S.shown=PAGE; render(); });
+    return h('label',{for:id}, cb, name, h('span',{class:'n'},counts[name]));
+  }));
+}
+function passBaseNoBl(r){ const keep = S.bl; S.bl = new Set(); const ok = passBase(r); S.bl = keep; return ok; }
+
+function renderBand(base){
+  const N = 42, counts = new Array(N).fill(0);
+  for (const r of base) if (r.days !== null && r.days >= 0 && r.days < N) counts[r.days]++;
+  const max = Math.max(1, ...counts);
+  const days = $('days'), ticks = $('ticks');
+  days.replaceChildren(); ticks.replaceChildren();
+  for (let i = 0; i < N; i++){
+    const d = new Date(today.getTime() + i * DAY);
+    const wd = d.getDay();
+    const c = counts[i];
+    const pct = c ? Math.max(4, Math.round(c / max * 100)) : 0;
+    const label = `${fmtDay.format(d)}: ${c} ${c === 1 ? 'Frist' : 'Fristen'}`;
+    const btn = h('button',{class:'day' + (i <= 7 ? ' soon' : '') + (wd === 0 || wd === 6 ? ' we' : ''), 'aria-pressed':String(S.day === i), 'aria-label':label, title:label, style:`--i:${i}`,
+      onclick:()=>{ S.day = S.day === i ? null : i; S.frist = 'all'; S.sel = -1; S.shown = PAGE; render(); }},
+      S.day === i && c ? h('span',{class:'c'},c) : null,
+      h('span',{class:'bar',style:`height:${pct}%;--i:${i}`}));
+    days.append(btn);
+    const isMo = wd === 1;
+    const showMo = isMo && i >= 3;
+    ticks.append(h('span',{class: showMo || i === 0 ? 'mo' : ''}, i === 0 ? 'heute' : showMo ? fmtShort.format(d) : ''));
+  }
+  $('bandHint').textContent = S.day !== null
+    ? `Gefiltert auf ${fmtLong.format(new Date(today.getTime() + S.day * DAY))}. Nochmal klicken zum Aufheben.`
+    : 'Tag anklicken, um nur diese Fristen zu sehen';
+}
+
+function renderList(){
+  const list = S.list;
+  $('cnt').textContent = list.length;
+  const chips = [];
+  if (S.day !== null) chips.push(['Frist ' + fmtShort.format(new Date(today.getTime() + S.day*DAY)), () => { S.day = null; }]);
+  if (S.q) chips.push(['„' + S.q + '“', () => { S.q = ''; $('q').value = ''; }]);
+  for (const b of S.bl) chips.push([b, () => S.bl.delete(b)]);
+  $('activeChips').replaceChildren(...chips.map(([l, off]) => h('span',{class:'chip'}, l, h('button',{'aria-label':l + ' entfernen', onclick:()=>{ off(); S.sel=-1; render(); }}, '×'))));
+
+  const rows = $('rows'); rows.replaceChildren();
+  if (!list.length){
+    const anyFilter = S.q || S.bl.size || S.day !== null || S.frist !== 'all';
+    rows.append(h('div',{class:'empty'},
+      h('b',{}, S.view === 'star' ? 'Noch nichts gemerkt.' : S.view === 'hide' ? 'Nichts ausgeblendet.' : 'Keine Ausschreibungen für diese Auswahl.'),
+      h('span',{}, S.view === 'star' ? 'Klick bei einer Ausschreibung auf den Stern oder drück S.' : anyFilter ? 'Lockere die Filter oder such nach einem anderen Begriff.' : 'Sobald der nächste Abruf neue Ausschreibungen findet, erscheinen sie hier.'),
+      anyFilter ? h('button',{class:'btn btn-ghost', onclick:resetFilters},'Filter zurücksetzen') : null));
+    $('moreBtn').classList.add('hidden');
+    return;
+  }
+  const n = Math.min(S.shown, list.length);
+  for (let i = 0; i < n; i++) rows.append(rowEl(list[i], i));
+  $('moreBtn').classList.toggle('hidden', n >= list.length);
+  $('moreBtn').textContent = `Weitere ${Math.min(PAGE, list.length - n)} anzeigen`;
+}
+$('moreBtn').addEventListener('click', () => { S.shown += PAGE; renderList(); });
+
+function rowEl(r, i){
+  const due = dueText(r.days);
+  const rx = S.react[r.id];
+  const el = h('div',{class:'row' + (i === S.sel ? ' sel' : '') + (rx === 'star' ? ' starred' : ''), role:'listitem', 'data-i':i, onclick:e => { if (e.target.closest('.acts')) return; S.sel = i; markSel(); openDrawer(r); }},
+    h('div',{class:'due ' + due.cls}, h('span',{class:'d'},due.d), h('span',{class:'w'}, r.dl ? fmtDay.format(r.dl) : '')),
+    h('div',{}, h('div',{class:'t'}, r.title || '(ohne Titel)'),
+      h('div',{class:'meta'}, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
+    h('div',{class:'acts'},
+      h('button',{class:'ic','aria-label':rx === 'star' ? 'Nicht mehr merken' : 'Merken', 'aria-pressed':String(rx === 'star'), title:'Merken (S)', onclick:()=>setReact(r.id,'star')}, icon(rx === 'star' ? 'starOn' : 'star')),
+      h('button',{class:'ic','aria-label':rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden', 'aria-pressed':String(rx === 'hide'), title:'Ausblenden (X)', onclick:()=>setReact(r.id,'hide')}, icon('hide')),
+      r.link ? h('a',{class:'ic', href:r.link, target:'_blank', rel:'noopener', 'aria-label':'Bei TED öffnen', title:'Bei TED öffnen'}, icon('ext')) : null));
+  return el;
+}
+function markSel(){
+  document.querySelectorAll('.row').forEach(el => el.classList.toggle('sel', +el.dataset.i === S.sel));
+  const cur = document.querySelector('.row.sel'); if (cur) cur.scrollIntoView({ block:'nearest' });
+}
+function resetFilters(){ S.q=''; $('q').value=''; S.bl.clear(); S.day=null; S.frist='all'; S.sel=-1; S.shown=PAGE; render(); }
+
+/* =========================================================================
+   Detailansicht
+   ========================================================================= */
+function openDrawer(r){
+  S.drawerRow = r;
+  const due = dueText(r.days);
+  $('drDue').textContent = due.d; $('drDue').style.color = due.cls === 'r' ? 'var(--red)' : due.cls === 'a' ? 'var(--amber)' : 'var(--ink)';
+  const rx = S.react[r.id];
+  $('drBody').replaceChildren(
+    h('h2',{}, r.title || '(ohne Titel)'),
+    h('dl',{class:'kv'},
+      h('dt',{},'Frist'), h('dd',{}, r.dl ? fmtLong.format(r.dl) : 'nicht angegeben'),
+      h('dt',{},'Ort'), h('dd',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'),
+      h('dt',{},'Eingegangen'), h('dd',{}, fmtLong.format(r.created)),
+      h('dt',{},'TED-Nummer'), h('dd',{}, r.ted_publication_number || '–')),
+    h('div',{class:'dr-acts'},
+      r.link ? h('a',{class:'btn btn-red', href:r.link, target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Bekanntmachung bei TED öffnen') : null,
+      h('button',{class:'btn btn-ghost', onclick:()=>setReact(r.id,'star')}, rx === 'star' ? 'Gemerkt' : 'Merken'),
+      h('button',{class:'btn btn-ghost', onclick:()=>{ setReact(r.id,'hide'); closeDrawer(); }}, rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden')),
+    r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du bei TED.'));
+  $('scrim').classList.remove('hidden');
+  requestAnimationFrame(() => { $('scrim').classList.add('on'); $('drawer').classList.add('on'); });
+  $('drawer').setAttribute('aria-hidden','false');
+  $('drClose').focus({ preventScroll:true });
+}
+function closeDrawer(){
+  if (!S.drawerRow) return;
+  S.drawerRow = null;
+  $('scrim').classList.remove('on'); $('drawer').classList.remove('on');
+  $('drawer').setAttribute('aria-hidden','true');
+  setTimeout(() => $('scrim').classList.add('hidden'), 220);
+  const cur = document.querySelector('.row.sel'); if (cur) cur.focus?.();
+}
+$('drClose').addEventListener('click', closeDrawer);
+$('scrim').addEventListener('click', closeDrawer);
+
+/* =========================================================================
+   Suche, Sortierung, Tastatur
+   ========================================================================= */
+let qTimer;
+$('q').addEventListener('input', e => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.q = e.target.value.trim().toLowerCase(); S.sel = -1; S.shown = PAGE; render(); }, 120); });
+$('sort').addEventListener('change', e => { S.sort = e.target.value; S.sel = -1; render(); });
+
+document.addEventListener('keydown', e => {
+  if ($('app').classList.contains('hidden')) return;
+  const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+  if (e.key === 'Escape'){ if (S.drawerRow) closeDrawer(); else if (typing) document.activeElement.blur(); return; }
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  const list = S.list;
+  if (e.key === '/'){ e.preventDefault(); $('q').focus(); return; }
+  if (e.key === 'j' || e.key === 'ArrowDown'){ e.preventDefault(); S.sel = Math.min(list.length - 1, S.sel + 1); if (S.sel >= S.shown){ S.shown += PAGE; renderList(); } markSel(); if (S.drawerRow) openDrawer(list[S.sel]); return; }
+  if (e.key === 'k' || e.key === 'ArrowUp'){ e.preventDefault(); S.sel = Math.max(0, S.sel - 1); markSel(); if (S.drawerRow) openDrawer(list[S.sel]); return; }
+  const r = list[S.sel] || S.drawerRow; if (!r) return;
+  if (e.key === 'Enter'){ e.preventDefault(); openDrawer(r); }
+  else if (e.key === 's'){ setReact(r.id, 'star'); markSel(); }
+  else if (e.key === 'x'){ setReact(r.id, 'hide'); if (S.drawerRow) closeDrawer(); markSel(); }
+});
+
+init();
+</script>
+</body>
+</html>
