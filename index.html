@@ -52,6 +52,33 @@ a{color:inherit}
 .trial a{color:#fff;font-weight:600}
 .trial.last{background:var(--red)}
 .hit{color:var(--red);font-weight:600}
+.neu{display:inline-block;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;margin-right:8px;vertical-align:2px}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;background:var(--panel);color:var(--ink);border:1px solid var(--line2)}
+.pill.angebot{background:var(--amber-bg);border-color:#EED9A0;color:var(--amber)}
+.pill.abgegeben{background:#E8EEF9;border-color:#C9D6EE;color:#244A8F}
+.pill.gewonnen{background:#E3F3E8;border-color:#BFE3CB;color:#1B6B3A}
+.pill.verloren{background:#F1F1F3;color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;padding-top:14px}
+.col{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.col h3{margin:0 2px;font-size:14px;display:flex;justify-content:space-between}
+.col h3 .n{font-weight:500}
+.card2{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;text-align:left;width:100%}
+.card2:hover{border-color:var(--line2);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.card2 .t{font-size:14px;-webkit-line-clamp:3}
+.card2 .m{font-size:12px;color:var(--muted)}
+.card2 .m.r{color:var(--red);font-weight:600}
+.col .empty2{font-size:13px;color:var(--faint);padding:6px 4px}
+.stati{display:flex;flex-wrap:wrap;gap:6px}
+.stati button{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:7px 13px;font-size:14px}
+.stati button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.note-lab{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+.note-lab span{font-weight:400;color:var(--muted)}
+.members{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.members > div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:15px}
+.members .r{font-size:13px;color:var(--muted)}
+.invite-link{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--panel);border-radius:10px;padding:12px}
+.invite-link code{font-size:13px;word-break:break-all;flex:1;min-width:220px}
+.btn-sm{height:36px;padding:0 14px;font-size:14px}
 .sum{margin-top:4px;font-size:14px;line-height:1.45;color:#3E434A;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:70em}
 .ki{background:var(--panel);border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.55}
 .ki .lab{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
@@ -313,7 +340,8 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
           </div>
           <div class="facts">
             <div class="fact urgent"><span class="v" id="f7">0</span><span class="l">Fristen in 7 Tagen</span></div>
-            <div class="fact"><span class="v" id="fStar">0</span><span class="l">gemerkt</span></div>
+            <div class="fact"><span class="v" id="fNeu">0</span><span class="l">neu seit letztem Besuch</span></div>
+            <div class="fact"><span class="v" id="fStar">0</span><span class="l">in der Pipeline</span></div>
             <div class="fact"><span class="v" id="fMatch">0</span><span class="l">passend für dich</span></div>
             <div class="fact"><span class="v" id="fOpen">0</span><span class="l">offen insgesamt</span></div>
           </div>
@@ -369,6 +397,18 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
           <h2>Regionen</h2>
           <p class="lead">Keine Auswahl heißt ganz Deutschland. Ausschreibungen ohne genaue Ortsangabe werden immer angezeigt.</p>
           <div class="blgrid" id="sBl"></div>
+        </section>
+
+        <section class="card" id="teamCard">
+          <h2>Team</h2>
+          <p class="lead">Alle im Team sehen denselben Bearbeitungsstand und dieselben Notizen. Ist ein Konto im Team freigeschaltet, haben alle Zugang.</p>
+          <div id="teamBox"><span class="hint">Lade Team …</span></div>
+          <div class="row2" id="inviteRow">
+            <div class="field"><label for="invEm">Kollegen einladen</label><input id="invEm" type="email" placeholder="kollege@firma.de" autocomplete="off"></div>
+            <button class="btn btn-ghost" type="button" id="invBtn">Einladen</button>
+          </div>
+          <div class="msg" id="invMsg"></div>
+          <div id="invOut"></div>
         </section>
 
         <section class="card">
@@ -468,10 +508,62 @@ function bundeslaender(region){
    Zustand
    ========================================================================= */
 const EMPTY_PREFS = { firma:'', beschreibung:'', suchbegriffe:[], ausschluss:[], bundeslaender:[] };
-const S = { db:null, user:null, rows:[], react:{}, prefs:{...EMPTY_PREFS}, draft:null, prefsErr:null, zugang:'', view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
+const S = { db:null, user:null, rows:[], react:{}, status:{}, team:null, teamErr:null, prevSeen:null, prefs:{...EMPTY_PREFS}, draft:null, prefsErr:null, zugang:'', view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
 
 function loadReact(){ try { S.react = JSON.parse(localStorage.getItem('ldk-react-'+S.user.id) || '{}'); } catch(e){ S.react = {}; } }
 function saveReact(){ try { localStorage.setItem('ldk-react-'+S.user.id, JSON.stringify(S.react)); } catch(e){} }
+/* ---------- Bearbeitungsstand (Pipeline), im Team geteilt ---------- */
+const STATI = [['pruefen','Prüfen'],['angebot','Angebot in Arbeit'],['abgegeben','Abgegeben'],['gewonnen','Gewonnen'],['verloren','Verloren']];
+const STATUS_LABEL = Object.fromEntries(STATI);
+const stOf = id => (S.status[id] && S.status[id].status) || null;
+function saveLocalStatus(){ try { localStorage.setItem('ldk-status-'+S.user.id, JSON.stringify(S.status)); } catch(e){} }
+async function loadStatus(){
+  S.status = {};
+  if (S.team){
+    const { data, error } = await S.db.from('tender_status').select('tender_id,status,notiz').eq('team_id', S.team);
+    if (!error && data) for (const x of data) S.status[x.tender_id] = { status:x.status, notiz:x.notiz };
+  } else {
+    try { S.status = JSON.parse(localStorage.getItem('ldk-status-'+S.user.id) || '{}'); } catch(e){ S.status = {}; }
+  }
+  // Alte "gemerkt"-Sterne einmalig in die Pipeline uebernehmen
+  const alt = Object.entries(S.react).filter(([,v]) => v === 'star').map(([k]) => k);
+  for (const id of alt){ if (!stOf(id)) await setStatus(id, { status:'pruefen' }, true); delete S.react[id]; }
+  if (alt.length) saveReact();
+}
+async function setStatus(id, patch, quiet){
+  const next = { ...(S.status[id] || {}), ...patch };
+  const leer = !next.status && !(next.notiz && next.notiz.trim());
+  if (leer) delete S.status[id]; else S.status[id] = next;
+  if (S.team){
+    const res = leer
+      ? await S.db.from('tender_status').delete().eq('team_id', S.team).eq('tender_id', id)
+      : await S.db.from('tender_status').upsert({ team_id:S.team, tender_id:id, status:next.status || null, notiz:next.notiz || null, updated_at:new Date().toISOString() }, { onConflict:'team_id,tender_id' });
+    if (res.error && !quiet) alert('Speichern hat nicht geklappt: ' + res.error.message);
+  } else saveLocalStatus();
+  if (!quiet){ render(false); }
+}
+function toggleMerken(r){
+  const st = stOf(r.id);
+  if (!st) setStatus(r.id, { status:'pruefen' });
+  else if (st === 'pruefen') setStatus(r.id, { status:null });
+  else openDrawer(r);
+  if (S.drawerRow && S.drawerRow.id === r.id) setTimeout(() => openDrawer(r), 0);
+}
+
+/* ---------- Team ---------- */
+async function loadTeam(){
+  S.team = null; S.teamErr = null; S.teamMsg = null;
+  let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
+  if (tok){
+    const { error } = await S.db.rpc('einladung_annehmen', { p_token: tok });
+    try { sessionStorage.removeItem('ldk-invite'); } catch(e){}
+    S.teamMsg = error ? 'Einladung: ' + error.message : 'Du bist dem Team beigetreten.';
+  }
+  const { data, error } = await S.db.rpc('mein_team');
+  if (error){ S.teamErr = error.message; return; }
+  S.team = data;
+}
+
 function setReact(id, kind){
   S.react[id] = S.react[id] === kind ? undefined : kind;
   if (!S.react[id]) delete S.react[id];
@@ -521,7 +613,16 @@ function setMode(m){
     reg ? 'Schon ein Konto? ' : 'Noch kein Konto? ',
     h('button',{type:'button', onclick:()=>setMode(reg ? 'login' : 'register')}, reg ? 'Anmelden' : '7 Tage kostenlos testen'));
 }
-setMode(new URLSearchParams(location.search).has('testen') ? 'register' : 'login');
+(() => {
+  const qs = new URLSearchParams(location.search);
+  const tok = qs.get('einladung');
+  if (tok){
+    try { sessionStorage.setItem('ldk-invite', tok); } catch(e){}
+    history.replaceState(null, '', location.pathname + location.hash);
+    setMode('register');
+    $('loginIntro').textContent = 'Du wurdest in ein Team eingeladen. Leg ein Konto mit der E-Mail an, an die die Einladung ging, oder melde dich an, falls du schon eins hast.';
+  } else setMode(qs.has('testen') ? 'register' : 'login');
+})();
 
 function authError(m){
   if (/invalid login/i.test(m)) return 'E-Mail oder Passwort stimmt nicht.';
@@ -563,16 +664,32 @@ async function start(user){
   $('loading').classList.remove('hidden'); $('content').classList.add('hidden'); $('errBox').classList.add('hidden'); $('lockedBox').classList.add('hidden');
   try {
     const ok = await checkAccess();
-    if (!ok){ $('loading').classList.add('hidden'); await loadPrefs(); route(false); return; }
+    if (!ok){ $('loading').classList.add('hidden'); await loadPrefs(); await loadTeam().catch(() => {}); route(false); return; }
     S.rows = await fetchAll();
     await loadPrefs();
+    await loadTeam();
+    await loadStatus();
   } catch(err){
     showError(err); return;
   }
   applyPrefs(S.prefs);
+  markNeu();
   if (hasPrefs(S.prefs)) S.view = 'match';
   $('loading').classList.add('hidden');
+  if (S.teamMsg){ $('trialTxt').textContent = S.teamMsg; $('trialBar').classList.remove('hidden'); }
   route(true);
+}
+
+/* ---------- Neu seit dem letzten Besuch ---------- */
+function markNeu(){
+  const key = 'ldk-seen-' + S.user.id, now = Date.now();
+  let seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e){}
+  // Ein Besuch zaehlt erst nach 30 Minuten Pause als neuer Besuch
+  if (!seen.last || now - seen.last > 30*60000){ seen.prev = seen.last || null; }
+  seen.last = now;
+  try { localStorage.setItem(key, JSON.stringify(seen)); } catch(e){}
+  S.prevSeen = seen.prev ? new Date(seen.prev) : null;
+  for (const r of S.rows) r.neu = !!S.prevSeen && r.created > S.prevSeen;
 }
 
 /* ---------- Einstellungen laden und anwenden ---------- */
@@ -625,6 +742,10 @@ async function checkAccess(){
   const end = new Date(data.trial_ends_at);
   const left = end.getTime() - now;
   S.locked = left <= 0;
+  if (left <= 0){
+    const r = await S.db.rpc('hat_zugang').catch(() => ({ data:false }));
+    if (r && r.data === true){ S.locked = false; S.zugang = 'Freigeschaltet über dein Team'; document.querySelector('.rail').classList.remove('hidden'); return true; }
+  }
   if (left <= 0){ S.zugang = 'Testphase abgelaufen'; $('lockedBox').classList.remove('hidden'); document.querySelector('.rail').classList.add('hidden'); return false; }
   document.querySelector('.rail').classList.remove('hidden');
   const days = Math.ceil(left / DAY);
@@ -689,7 +810,7 @@ function passBase(r){
   const rx = S.react[r.id];
   if ((S.view === 'open' || S.view === 'match') && !isOpen(r)) return false;
   if (S.view === 'match' && !r.match) return false;
-  if (S.view === 'star'  && rx !== 'star') return false;
+  if (S.view === 'pipe'  && !stOf(r.id)) return false;
   if (S.view === 'hide'  && rx !== 'hide') return false;
   if (S.bl.size && !r.bls.some(b => S.bl.has(b))) return false;
   if (S.q){ for (const term of S.q.split(/\s+/)) if (term && !r.fold.includes(fold(term))) return false; }
@@ -738,7 +859,8 @@ function renderLage(first){
   }
   if (txt) $('bigTxt').textContent = txt;
   $('f7').textContent = open.filter(r => r.days !== null && r.days <= 7).length;
-  $('fStar').textContent = Object.values(S.react).filter(v => v === 'star').length;
+  $('fStar').textContent = S.rows.filter(r => stOf(r.id)).length;
+  $('fNeu').textContent = S.prevSeen ? S.rows.filter(r => r.neu && isOpen(r)).length : '–';
   $('fOpen').textContent = open.length;
   $('fMatch').textContent = hasPrefs(S.prefs) ? open.filter(r => r.match).length : '–';
   countUp($('bigNum'), n, first);
@@ -751,11 +873,11 @@ function countUp(el, to, animate){
 }
 
 function renderRail(){
-  const views = [['match','Passend'],['open','Alle offenen'],['star','Gemerkt'],['hide','Ausgeblendet']];
-  const cnt = { match:0, open:0, star:0, hide:0 };
+  const views = [['match','Passend'],['open','Alle offenen'],['pipe','Pipeline'],['hide','Ausgeblendet']];
+  const cnt = { match:0, open:0, pipe:0, hide:0 };
   for (const r of S.rows){
     const rx = S.react[r.id];
-    if (rx === 'star') cnt.star++;
+    if (stOf(r.id)) cnt.pipe++;
     if (rx === 'hide') cnt.hide++;
     if (isOpen(r)){ cnt.open++; if (r.match) cnt.match++; }
   }
@@ -815,6 +937,7 @@ function renderList(){
   $('activeChips').replaceChildren(...chips.map(([l, off]) => h('span',{class:'chip'}, l, h('button',{'aria-label':l + ' entfernen', onclick:()=>{ off(); S.sel=-1; render(); }}, '×'))));
 
   const rows = $('rows'); rows.replaceChildren();
+  if (S.view === 'pipe'){ renderBoard(list); return; }
   if (!list.length && S.view === 'match' && !hasPrefs(S.prefs)){
     rows.append(h('div',{class:'empty'},
       h('b',{},'Sag der App, was dich interessiert.'),
@@ -826,8 +949,8 @@ function renderList(){
   if (!list.length){
     const anyFilter = S.q || S.bl.size || S.day !== null || S.frist !== 'all';
     rows.append(h('div',{class:'empty'},
-      h('b',{}, S.view === 'star' ? 'Noch nichts gemerkt.' : S.view === 'hide' ? 'Nichts ausgeblendet.' : 'Keine Ausschreibungen für diese Auswahl.'),
-      h('span',{}, S.view === 'star' ? 'Klick bei einer Ausschreibung auf den Stern oder drück S.' : anyFilter ? 'Lockere die Filter oder such nach einem anderen Begriff.' : 'Sobald der nächste Abruf neue Ausschreibungen findet, erscheinen sie hier.'),
+      h('b',{}, S.view === 'pipe' ? 'Noch nichts gemerkt.' : S.view === 'hide' ? 'Nichts ausgeblendet.' : 'Keine Ausschreibungen für diese Auswahl.'),
+      h('span',{}, S.view === 'pipe' ? 'Klick bei einer Ausschreibung auf den Stern oder drück S.' : anyFilter ? 'Lockere die Filter oder such nach einem anderen Begriff.' : 'Sobald der nächste Abruf neue Ausschreibungen findet, erscheinen sie hier.'),
       anyFilter ? h('button',{class:'btn btn-ghost', onclick:resetFilters},'Filter zurücksetzen') : null));
     $('moreBtn').classList.add('hidden');
     return;
@@ -839,16 +962,71 @@ function renderList(){
 }
 $('moreBtn').addEventListener('click', () => { S.shown += PAGE; renderList(); });
 
+function renderBoard(list){
+  $('moreBtn').classList.add('hidden');
+  const rows = $('rows');
+  const head = h('div',{class:'list-head', style:'margin:14px 0 0'},
+    h('span',{class:'hint'}, S.team ? 'Der Bearbeitungsstand gilt für dein ganzes Team.' : 'Der Bearbeitungsstand wird auf diesem Gerät gespeichert.'),
+    h('button',{class:'btn btn-ghost btn-sm', onclick:()=>icsDownload(list.filter(r => r.dl && !['gewonnen','verloren'].includes(stOf(r.id))), 'Fristen-Pipeline')}, 'Alle Fristen in den Kalender'));
+  const board = h('div',{class:'board'}, ...STATI.map(([k,l]) => {
+    const items = list.filter(r => stOf(r.id) === k);
+    return h('section',{class:'col','aria-label':l},
+      h('h3',{}, l, h('span',{class:'n'}, items.length)),
+      items.length ? items.map(r => { const d = dueText(r.days); return h('button',{class:'card2', type:'button', onclick:()=>openDrawer(r)},
+        h('span',{class:'t'}, r.title || '(ohne Titel)'),
+        h('span',{class:'m ' + (d.cls === 'r' ? 'r' : '')}, d.d + (r.dl ? ', ' + fmtShort.format(r.dl) : '')),
+        r.auftraggeber ? h('span',{class:'m'}, r.auftraggeber) : null,
+        S.status[r.id] && S.status[r.id].notiz ? h('span',{class:'m'}, '✎ ' + S.status[r.id].notiz.slice(0,80)) : null); })
+      : h('div',{class:'empty2'}, 'Noch nichts'));
+  }));
+  rows.append(head, board);
+}
+
+/* ---------- Kalender und Weiterleiten ---------- */
+function icsEsc(t){ return String(t || '').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/[,;]/g, m => '\\' + m); }
+function icsDownload(list, name){
+  if (!list.length){ alert('Keine Ausschreibungen mit Frist dabei.'); return; }
+  const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
+  const ymd = d => d.toISOString().slice(0,10).replace(/-/g,'');
+  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Studio LDK//Ausschreibungsfinder//DE','CALSCALE:GREGORIAN'];
+  for (const r of list){
+    const start = new Date(Date.UTC(r.dl.getFullYear(), r.dl.getMonth(), r.dl.getDate()));
+    const end = new Date(start.getTime() + DAY);
+    const desc = [r.auftraggeber, r.ki_zusammenfassung, safeUrl(r.unterlagen_url) || safeUrl(r.link)].filter(Boolean).join('\n\n');
+    lines.push('BEGIN:VEVENT', 'UID:' + r.id + '@studioldk.de', 'DTSTAMP:' + stamp, 'DTSTART;VALUE=DATE:' + ymd(start), 'DTEND;VALUE=DATE:' + ymd(end),
+      'SUMMARY:' + icsEsc('Angebotsfrist: ' + (r.title || '')), 'DESCRIPTION:' + icsEsc(desc),
+      'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:' + icsEsc('Frist in 3 Tagen: ' + (r.title || '')),'TRIGGER:-P3D','END:VALARM', 'END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  const blob = new Blob([lines.join('\r\n')], { type:'text/calendar' });
+  const a = h('a',{ href:URL.createObjectURL(blob), download:(name || 'Frist').replace(/[^\wäöüÄÖÜß -]/g,'').slice(0,60) + '.ics' });
+  document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function mailFor(r){
+  const link = safeUrl(r.unterlagen_url) || safeUrl(r.link) || '';
+  const body = [
+    'Hallo,', '', 'diese Ausschreibung könnte für uns interessant sein:', '',
+    r.title || '', '',
+    'Frist: ' + (r.dl ? fmtLong.format(r.dl) : 'nicht angegeben'),
+    r.auftraggeber ? 'Auftraggeber: ' + r.auftraggeber : null,
+    'Ort: ' + (r.bls.length ? r.bls.join(', ') : 'Deutschland'),
+    r.ki_zusammenfassung ? '\n' + r.ki_zusammenfassung : null,
+    link ? '\nUnterlagen: ' + link : null
+  ].filter(x => x !== null).join('\n').slice(0, 1800);
+  return 'mailto:?subject=' + encodeURIComponent('Ausschreibung: ' + (r.title || '').slice(0, 120)) + '&body=' + encodeURIComponent(body);
+}
+
 function rowEl(r, i){
   const due = dueText(r.days);
   const rx = S.react[r.id];
-  const el = h('div',{class:'row' + (i === S.sel ? ' sel' : '') + (rx === 'star' ? ' starred' : ''), role:'listitem', 'data-i':i, onclick:e => { if (e.target.closest('.acts')) return; S.sel = i; markSel(); openDrawer(r); }},
+  const st = stOf(r.id);
+  const el = h('div',{class:'row' + (i === S.sel ? ' sel' : ''), role:'listitem', 'data-i':i, onclick:e => { if (e.target.closest('.acts')) return; S.sel = i; markSel(); openDrawer(r); }},
     h('div',{class:'due ' + due.cls}, h('span',{class:'d'},due.d), h('span',{class:'w'}, r.dl ? fmtDay.format(r.dl) : '')),
-    h('div',{}, h('div',{class:'t'}, r.title || '(ohne Titel)'),
+    h('div',{}, h('div',{class:'t'}, r.neu ? h('span',{class:'neu'},'neu') : null, r.title || '(ohne Titel)'),
       r.ki_zusammenfassung ? h('div',{class:'sum'}, r.ki_zusammenfassung) : null,
-      h('div',{class:'meta'}, r.hits && r.hits.length ? h('span',{class:'hit'}, 'passt: ' + r.hits.join(', ')) : null, r.auftraggeber ? h('span',{}, r.auftraggeber) : null, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
+      h('div',{class:'meta'}, st ? h('span',{class:'pill ' + st}, STATUS_LABEL[st]) : null, r.hits && r.hits.length ? h('span',{class:'hit'}, 'passt: ' + r.hits.join(', ')) : null, r.auftraggeber ? h('span',{}, r.auftraggeber) : null, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
     h('div',{class:'acts'},
-      h('button',{class:'ic','aria-label':rx === 'star' ? 'Nicht mehr merken' : 'Merken', 'aria-pressed':String(rx === 'star'), title:'Merken (S)', onclick:()=>setReact(r.id,'star')}, icon(rx === 'star' ? 'starOn' : 'star')),
+      h('button',{class:'ic','aria-label':st ? 'In der Pipeline' : 'Merken', 'aria-pressed':String(!!st), title:'Merken (S)', onclick:()=>toggleMerken(r)}, icon(st ? 'starOn' : 'star')),
       h('button',{class:'ic','aria-label':rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden', 'aria-pressed':String(rx === 'hide'), title:'Ausblenden (X)', onclick:()=>setReact(r.id,'hide')}, icon('hide')),
       safeUrl(r.link) ? h('a',{class:'ic', href:safeUrl(r.link), target:'_blank', rel:'noopener', 'aria-label':'Bekanntmachung öffnen', title:'Bekanntmachung öffnen'}, icon('ext')) : null));
   return el;
@@ -872,6 +1050,7 @@ function openSettings(){
   $('pwMsg').textContent = ''; $('sPw').value = '';
   if (S.prefsErr){ $('setMsg').textContent = 'Einstellungen konnten nicht geladen werden: ' + S.prefsErr; }
   renderTags('Pos'); renderTags('Neg');
+  renderTeam();
   $('sBl').replaceChildren(...Object.values(BL).map(name => {
     const id = 'sbl-' + name.replace(/[^a-z]/gi,'');
     const cb = h('input',{type:'checkbox', id, checked:S.draft.bundeslaender.includes(name)});
@@ -937,6 +1116,60 @@ $('settings').addEventListener('submit', async e => {
   setTimeout(() => { if (S.page === 'settings') location.hash = ''; }, 700);
 });
 
+/* ---------- Team verwalten ---------- */
+const inviteLink = tok => location.origin + location.pathname + '?einladung=' + encodeURIComponent(tok);
+function inviteBox(tok, email){
+  const link = inviteLink(tok);
+  const mail = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent('Einladung zum ' + APP_NAME) + '&body=' + encodeURIComponent('Hallo,\n\nich habe dich in unser Team beim ' + APP_NAME + ' eingeladen. Über diesen Link kannst du ein Konto anlegen und siehst dann alle Ausschreibungen und unseren Bearbeitungsstand:\n\n' + link + '\n\nWichtig: Bitte registriere dich mit dieser E-Mail-Adresse: ' + email);
+  const copy = h('button',{class:'btn btn-ghost btn-sm', type:'button', onclick: async () => { try { await navigator.clipboard.writeText(link); copy.textContent = 'Kopiert'; } catch(e){ copy.textContent = 'Bitte markieren und kopieren'; } }}, 'Link kopieren');
+  return h('div',{class:'invite-link'}, h('code',{}, link), copy, h('a',{class:'btn btn-sm', href:mail, style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Per Mail senden'));
+}
+async function renderTeam(){
+  const box = $('teamBox');
+  $('invOut').replaceChildren(); $('invMsg').textContent = '';
+  if (!S.team){
+    box.replaceChildren(h('span',{class:'hint'}, 'Teams sind noch nicht eingerichtet. ' + (S.teamErr ? '(' + S.teamErr + ')' : '')));
+    $('inviteRow').classList.add('hidden'); return;
+  }
+  $('inviteRow').classList.remove('hidden');
+  const [tm, mem, inv] = await Promise.all([
+    S.db.from('teams').select('name').eq('id', S.team).maybeSingle(),
+    S.db.from('team_members').select('user_id,rolle,email').eq('team_id', S.team),
+    S.db.from('team_invites').select('token,email').eq('team_id', S.team).is('accepted_at', null)
+  ]);
+  const members = mem.data || [];
+  const ich = members.find(m => m.user_id === S.user.id);
+  const owner = ich && ich.rolle === 'owner';
+  const list = h('div',{class:'members'},
+    ...members.map(m => h('div',{},
+      h('span',{}, m.email || 'ohne E-Mail', m.user_id === S.user.id ? ' (du)' : ''),
+      h('span',{class:'r'}, m.rolle === 'owner' ? 'Inhaber' : 'Mitglied', ' ',
+        owner && m.user_id !== S.user.id ? h('button',{class:'linkbtn', type:'button', onclick: async () => { if (!confirm((m.email || 'Mitglied') + ' aus dem Team entfernen?')) return; await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', m.user_id); renderTeam(); }}, 'Entfernen') : null))),
+    ...(inv.data || []).map(i => h('div',{},
+      h('span',{}, i.email),
+      h('span',{class:'r'}, 'eingeladen ',
+        h('button',{class:'linkbtn', type:'button', onclick: () => $('invOut').replaceChildren(inviteBox(i.token, i.email)) }, 'Link'), ' ',
+        h('button',{class:'linkbtn', type:'button', onclick: async () => { await S.db.from('team_invites').delete().eq('token', i.token); renderTeam(); }}, 'Zurückziehen')))));
+  const kids = [h('div',{style:'font-weight:600;margin-bottom:8px'}, (tm.data && tm.data.name) || 'Dein Team'), list];
+  if (ich && !owner) kids.push(h('button',{class:'linkbtn', type:'button', style:'margin-top:10px', onclick: async () => {
+    if (!confirm('Team wirklich verlassen? Du siehst dann den Bearbeitungsstand des Teams nicht mehr.')) return;
+    await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', S.user.id);
+    await loadTeam(); await loadStatus(); renderTeam(); }}, 'Team verlassen'));
+  box.replaceChildren(...kids);
+}
+$('invBtn').addEventListener('click', async () => {
+  const em = $('invEm').value.trim().toLowerCase(), msg = $('invMsg'); msg.className = 'msg';
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ msg.textContent = 'Bitte eine gültige E-Mail-Adresse eintragen.'; return; }
+  $('invBtn').disabled = true;
+  const { data, error } = await S.db.from('team_invites').insert({ team_id:S.team, email:em }).select('token').single();
+  $('invBtn').disabled = false;
+  if (error){ msg.textContent = 'Einladen hat nicht geklappt: ' + error.message; return; }
+  $('invEm').value = '';
+  await renderTeam();
+  msg.className = 'msg ok'; msg.textContent = 'Einladung erstellt. Schick deinem Kollegen diesen Link:';
+  $('invOut').replaceChildren(inviteBox(data.token, em));
+});
+
 $('pwBtn').addEventListener('click', async () => {
   const pw = $('sPw').value, msg = $('pwMsg'); msg.className = 'msg';
   if (pw.length < 8){ msg.textContent = 'Das neue Passwort braucht mindestens 8 Zeichen.'; return; }
@@ -966,16 +1199,30 @@ function openDrawer(r){
       h('dt',{},'Eingegangen'), h('dd',{}, fmtLong.format(r.created)),
       h('dt',{},'Quelle'), h('dd',{}, r.source === 'DOE' ? 'Datenservice Öffentlicher Einkauf' : 'TED, EU-Amtsblatt'),
       r.ted_publication_number ? [h('dt',{},'TED-Nummer'), h('dd',{}, r.ted_publication_number)] : null),
+    h('div',{class:'stati', role:'group', 'aria-label':'Bearbeitungsstand'},
+      ...STATI.map(([k,l]) => h('button',{type:'button','aria-pressed':String(stOf(r.id) === k), onclick:async ()=>{ await setStatus(r.id, { status: stOf(r.id) === k ? null : k }); openDrawer(r); }}, l))),
+    noteField(r),
     h('div',{class:'dr-acts'},
       safeUrl(r.unterlagen_url) ? h('a',{class:'btn btn-red', href:safeUrl(r.unterlagen_url), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Vergabeunterlagen öffnen') : null,
       safeUrl(r.link) && r.link !== r.unterlagen_url ? h('a',{class:'btn ' + (safeUrl(r.unterlagen_url) ? 'btn-ghost' : 'btn-red'), href:safeUrl(r.link), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Bekanntmachung bei TED') : null,
-      h('button',{class:'btn btn-ghost', onclick:()=>setReact(r.id,'star')}, rx === 'star' ? 'Gemerkt' : 'Merken'),
+      r.dl ? h('button',{class:'btn btn-ghost', onclick:()=>icsDownload([r], 'Frist ' + (r.title || ''))}, 'In den Kalender') : null,
+      h('a',{class:'btn btn-ghost', href:mailFor(r), style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Weiterleiten'),
       h('button',{class:'btn btn-ghost', onclick:()=>{ setReact(r.id,'hide'); closeDrawer(); }}, rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden')),
     r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du über die Bekanntmachung.')].filter(Boolean));
   $('scrim').classList.remove('hidden');
   requestAnimationFrame(() => { $('scrim').classList.add('on'); $('drawer').classList.add('on'); });
   $('drawer').setAttribute('aria-hidden','false');
   $('drClose').focus({ preventScroll:true });
+}
+function noteField(r){
+  const ta = h('textarea',{id:'noteTa', placeholder:'z.B. Ortsbesichtigung am 20.10., Herrn Maier fragen', style:'min-height:80px'});
+  ta.value = (S.status[r.id] && S.status[r.id].notiz) || '';
+  const info = h('span',{}, S.team ? 'fürs ganze Team sichtbar' : 'nur auf diesem Gerät');
+  let t;
+  const save = async () => { clearTimeout(t); if ((S.status[r.id]?.notiz || '') === ta.value) return; info.textContent = 'speichere …'; await setStatus(r.id, { notiz: ta.value }, true); info.textContent = 'gespeichert'; render(false); };
+  ta.addEventListener('input', () => { clearTimeout(t); t = setTimeout(save, 900); });
+  ta.addEventListener('blur', save);
+  return h('div',{class:'field'}, h('label',{class:'note-lab', for:'noteTa'}, 'Notiz', info), ta);
 }
 function closeDrawer(){
   if (!S.drawerRow) return;
@@ -1006,7 +1253,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'k' || e.key === 'ArrowUp'){ e.preventDefault(); S.sel = Math.max(0, S.sel - 1); markSel(); if (S.drawerRow) openDrawer(list[S.sel]); return; }
   const r = list[S.sel] || S.drawerRow; if (!r) return;
   if (e.key === 'Enter'){ e.preventDefault(); openDrawer(r); }
-  else if (e.key === 's'){ setReact(r.id, 'star'); markSel(); }
+  else if (e.key === 's'){ toggleMerken(r); markSel(); }
   else if (e.key === 'x'){ setReact(r.id, 'hide'); if (S.drawerRow) closeDrawer(); markSel(); }
 });
 
