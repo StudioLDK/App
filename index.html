@@ -79,6 +79,13 @@ a{color:inherit}
 .invite-link{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--panel);border-radius:10px;padding:12px}
 .invite-link code{font-size:13px;word-break:break-all;flex:1;min-width:220px}
 .btn-sm{height:36px;padding:0 14px;font-size:14px}
+.help-fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;height:44px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:600;padding:0 18px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+dialog.help{border:0;border-radius:16px;padding:0;width:min(480px,calc(100% - 32px));box-shadow:0 30px 80px rgba(0,0,0,.25)}
+dialog.help::backdrop{background:rgba(10,12,15,.35)}
+dialog.help form{padding:24px;display:flex;flex-direction:column;gap:14px}
+dialog.help h2{margin:0;font-size:22px;font-weight:750;font-stretch:108%}
+dialog.help p{margin:0;color:var(--muted);font-size:14px}
+.help-acts{display:flex;justify-content:flex-end;gap:10px}
 .sum{margin-top:4px;font-size:14px;line-height:1.45;color:#3E434A;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:70em}
 .ki{background:var(--panel);border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.55}
 .ki .lab{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
@@ -430,6 +437,17 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
     </main>
   </div>
 
+  <button class="help-fab" id="helpBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>Hilfe</button>
+  <dialog class="help" id="helpDlg" aria-labelledby="helpTitle">
+    <form method="dialog" id="helpForm">
+      <h2 id="helpTitle">Wie können wir helfen?</h2>
+      <p>Schreib kurz, was nicht klappt oder was dir fehlt. Die Antwort kommt per Mail an <b id="helpEm"></b>.</p>
+      <div class="stati" id="helpArt" role="group" aria-label="Art der Nachricht"></div>
+      <div class="field"><label for="helpTxt">Nachricht</label><textarea id="helpTxt" required placeholder="z.B. Beim Klick auf Vergabeunterlagen passiert nichts"></textarea></div>
+      <div class="msg" id="helpMsg"></div>
+      <div class="help-acts"><button class="btn btn-ghost" type="button" id="helpCancel">Abbrechen</button><button class="btn" type="submit" id="helpSend">Senden</button></div>
+    </form>
+  </dialog>
   <div class="scrim hidden" id="scrim"></div>
   <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Details zur Ausschreibung">
     <div class="dr-top">
@@ -1114,6 +1132,34 @@ $('settings').addEventListener('submit', async e => {
   if (hasPrefs(S.prefs)) S.view = 'match';
   msg.className = 'msg ok'; msg.textContent = 'Gespeichert.';
   setTimeout(() => { if (S.page === 'settings') location.hash = ''; }, 700);
+});
+
+/* ---------- Hilfe und Feedback ---------- */
+const HELP_ARTEN = [['fehler','Etwas klappt nicht'],['frage','Frage'],['idee','Idee']];
+let helpArt = 'fehler';
+function renderHelpArt(){ $('helpArt').replaceChildren(...HELP_ARTEN.map(([k,l]) => h('button',{type:'button','aria-pressed':String(helpArt === k), onclick:()=>{ helpArt = k; renderHelpArt(); }}, l))); }
+$('helpBtn').addEventListener('click', () => {
+  helpArt = 'fehler'; renderHelpArt();
+  $('helpEm').textContent = (S.user && S.user.email) || 'dich';
+  $('helpMsg').textContent = ''; $('helpMsg').className = 'msg'; $('helpTxt').value = '';
+  $('helpSend').disabled = false; $('helpSend').classList.remove('hidden'); $('helpCancel').textContent = 'Abbrechen';
+  $('helpDlg').showModal(); $('helpTxt').focus();
+});
+$('helpCancel').addEventListener('click', () => $('helpDlg').close());
+$('helpForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const txt = $('helpTxt').value.trim(), msg = $('helpMsg');
+  if (txt.length < 3){ msg.textContent = 'Schreib bitte kurz, worum es geht.'; return; }
+  const kontext = JSON.stringify({ seite: S.page || 'list', ansicht: S.view, ausschreibung: S.drawerRow ? (S.drawerRow.quelle_id || S.drawerRow.ted_publication_number || S.drawerRow.id) : null, titel: S.drawerRow ? S.drawerRow.title : null, browser: navigator.userAgent, breite: window.innerWidth, zeit: new Date().toISOString() });
+  $('helpSend').disabled = true;
+  const { error } = await S.db.from('feedback').insert({ user_id:S.user.id, email:S.user.email, art:helpArt, nachricht:txt, kontext });
+  if (error){
+    $('helpSend').disabled = false;
+    msg.replaceChildren('Das Senden hat nicht geklappt. Schreib uns stattdessen einfach an ', h('a',{href:'mailto:info@studioldk.de?subject=' + encodeURIComponent('Hilfe: ' + APP_NAME) + '&body=' + encodeURIComponent(txt)}, 'info@studioldk.de'), '.');
+    return;
+  }
+  msg.className = 'msg ok'; msg.textContent = 'Danke, ist angekommen. Du hörst bald von uns.';
+  $('helpSend').classList.add('hidden'); $('helpCancel').textContent = 'Schließen';
 });
 
 /* ---------- Team verwalten ---------- */
