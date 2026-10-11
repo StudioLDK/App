@@ -58,6 +58,8 @@ a{color:inherit}
 .pill.abgegeben{background:#E8EEF9;border-color:#C9D6EE;color:#244A8F}
 .pill.gewonnen{background:#E3F3E8;border-color:#BFE3CB;color:#1B6B3A}
 .pill.verloren{background:#F1F1F3;color:var(--muted)}
+.pill.vor{background:#EEF3FF;color:#1F3F8F;border-color:#C9D6F5}
+.pill.chg{background:var(--amber-bg);color:var(--amber);border-color:#EED9A6}
 .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;padding-top:14px}
 .col{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:120px}
 .col h3{margin:0 2px;font-size:14px;display:flex;justify-content:space-between}
@@ -130,6 +132,10 @@ dialog.help p{margin:0;color:var(--muted);font-size:14px}
 .tops button{display:flex;justify-content:space-between;gap:12px;border:0;border-bottom:1px solid var(--line);background:none;padding:9px 0;text-align:left;font-size:14px;width:100%}
 .tops button:hover b{text-decoration:underline}
 .tops button span{color:var(--muted);white-space:nowrap}
+.facts.adm-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 18px;margin-bottom:28px}
+.adm-bars{display:flex;align-items:flex-end;gap:3px;height:90px;border-bottom:1px solid var(--line2)}
+.adm-bars span{flex:1;background:var(--red);border-radius:2px 2px 0 0;min-height:2px}
+.adm-bars span.z{background:var(--line)}
 .gear{display:inline-flex;align-items:center;gap:6px}
 .set{max-width:780px;padding:8px 0 80px}
 .set-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:28px}
@@ -140,6 +146,24 @@ dialog.help p{margin:0;color:var(--muted);font-size:14px}
 .field textarea{border:1px solid var(--line2);border-radius:8px;padding:12px 14px;min-height:96px;resize:vertical;font:inherit}
 .field textarea:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(28,31,35,.12)}
 .hint{font-size:13px;color:var(--muted)}
+.lab2{font-weight:600;font-size:15px}
+.chipgrid{display:flex;flex-wrap:wrap;gap:8px}
+.chipgrid button{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:7px 13px;font-size:14px}
+.chipgrid button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.del-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.btn.danger{color:var(--red);border-color:#E9B4B3}
+body.alt .new2{display:none}
+dialog.help.onb{width:min(640px,calc(100% - 32px));max-height:calc(100vh - 32px);overflow:auto}
+.onb-in{display:flex;flex-direction:column;gap:14px;padding:26px 28px 18px}
+@media (max-width:600px){ .onb-in{padding:20px 18px 14px} }
+.onb-steps{display:flex;gap:6px}
+.onb-steps i{height:4px;flex:1;border-radius:2px;background:var(--line)}
+.onb-steps i.on{background:var(--red)}
+.onb h2{margin:4px 0 0}
+#onbLead{margin:-4px 0 0}
+.onb-skip{align-self:center;color:var(--muted);font-weight:500;font-size:14px}
+.onb-count{font-size:15px;color:var(--muted)}
+.onb-count b{color:var(--ink);font-size:22px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line2);border-radius:8px;padding:7px 8px;min-height:46px;cursor:text}
 .tags:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(28,31,35,.12)}
 .tags input{flex:1;min-width:140px;border:0;outline:none;height:30px;padding:0 6px;background:transparent}
@@ -267,6 +291,16 @@ select{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 10p
 .kv dd{margin:0;font-weight:600}
 .desc{white-space:pre-line;color:#343840;font-size:15px;line-height:1.6}
 .dr-acts{display:flex;gap:10px;flex-wrap:wrap}
+.note{border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.45}
+.note.vor{background:#EEF3FF;color:#1F3F8F}
+.note.chg{background:var(--amber-bg);color:#5C3D00}
+.field.zust{flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap}
+.field.zust select{min-width:220px}
+.linkbtn.ag{padding:0;font-weight:600;text-align:left;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.pn{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pn div{background:var(--panel);border-radius:10px;padding:10px 12px}
+.pn b{display:block;font-size:17px}
+.pn span{font-size:12px;color:var(--muted)}
 .btn-red{background:var(--red)}
 
 details.bl summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;font-size:13px;font-weight:700;color:var(--muted)}
@@ -342,10 +376,10 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
       <div class="search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <label for="q" class="hidden">Suchen</label>
-        <input id="q" type="search" placeholder="Suchen, z.B. Labor, Lüftung, Reinigung" autocomplete="off">
+        <input id="q" type="search" placeholder="Suchen, z.B. Elektro, Lüftung, Reinigung" autocomplete="off">
         <kbd aria-hidden="true">/</kbd>
       </div>
-      <div class="user"><span class="em" id="userEm"></span><a class="linkbtn" href="#wettbewerb" id="wbBtn">Wettbewerb</a><a class="linkbtn gear" href="#einstellungen" id="gearBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Einstellungen</a><button class="linkbtn" id="logout">Abmelden</button></div>
+      <div class="user"><span class="em" id="userEm"></span><a class="linkbtn hidden" href="#admin" id="adminBtn">Admin</a><a class="linkbtn" href="#wettbewerb" id="wbBtn">Wettbewerb</a><a class="linkbtn gear" href="#einstellungen" id="gearBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Einstellungen</a><button class="linkbtn" id="logout">Abmelden</button></div>
     </div>
   </header>
 
@@ -420,6 +454,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
                 <option value="new">Neueste zuerst</option>
                 <option value="due">Frist zuerst</option>
               </select>
+              <button class="btn btn-ghost btn-sm" type="button" id="csvBtn" title="Aktuelle Liste als Excel-Datei (CSV) herunterladen">Export</button>
             </div>
           </div>
           <div class="rows" id="rows" role="list"></div>
@@ -437,20 +472,34 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
           <h2>Deine Firma</h2>
           <p class="lead">Hilft später der KI, jede Ausschreibung für dich zu bewerten.</p>
           <div class="field"><label for="sFirma">Firmenname</label><input id="sFirma" autocomplete="organization"></div>
-          <div class="field"><label for="sBesch">Was macht deine Firma?</label><textarea id="sBesch" placeholder="Zum Beispiel: Wir planen und bauen Laboreinrichtungen für Schulen, Hochschulen und Industrie, mit Abzügen, Möbeln und Medienversorgung."></textarea></div>
+          <div class="field"><label for="sBesch">Was macht deine Firma?</label><textarea id="sBesch" placeholder="Zum Beispiel: Elektrofachbetrieb mit 25 Mitarbeitern, Schwerpunkt Elektroinstallation, Beleuchtung und Blitzschutz für öffentliche Gebäude."></textarea></div>
         </section>
 
         <section class="card">
           <h2>Was dich interessiert</h2>
-          <p class="lead">Eine Ausschreibung passt, wenn mindestens ein Suchbegriff im Titel oder in der Beschreibung vorkommt und kein Ausschlussbegriff.</p>
-          <div class="field"><label for="tagPos">Suchbegriffe</label><div class="tags" id="tagsPos"><input id="tagPos" placeholder="Begriff tippen, Enter drücken"></div><span class="hint">Tipp: Wortanfänge reichen. "labor" findet auch Laboreinrichtung und Schullabor.</span></div>
+          <p class="lead">Eine Ausschreibung passt, wenn ein Suchbegriff im Titel oder in der Beschreibung vorkommt oder ihr CPV-Code passt, und kein Ausschlussbegriff vorkommt.</p>
+          <div class="field new2"><span class="lab2">Branchen-Vorlagen</span><div class="chipgrid" id="sBranchen"></div><span class="hint">Ein Klick fügt typische Suchbegriffe und CPV-Gruppen hinzu. Danach kannst du alles anpassen.</span></div>
+          <div class="field"><label for="tagPos">Suchbegriffe</label><div class="tags" id="tagsPos"><input id="tagPos" placeholder="Begriff tippen, Enter drücken"></div><span class="hint">Tipp: Wortanfänge reichen. "elektro" findet auch Elektroinstallation und Elektroarbeiten.</span></div>
           <div class="field"><label for="tagNeg">Ausschlussbegriffe</label><div class="tags" id="tagsNeg"><input id="tagNeg" placeholder="z.B. reinigung, winterdienst"></div></div>
+          <div class="field new2"><label for="tagCpv">CPV-Codes</label><div class="tags" id="tagsCpv"><input id="tagCpv" placeholder="z.B. 4531 für Elektroinstallation" inputmode="numeric"></div><span class="hint">Der Anfang reicht: 4531 findet alle Codes, die mit 4531 beginnen. Die CPV ist das EU-weite Verzeichnis für Leistungen.</span></div>
         </section>
 
         <section class="card">
           <h2>Regionen</h2>
           <p class="lead">Keine Auswahl heißt ganz Deutschland. Ausschreibungen ohne genaue Ortsangabe werden immer angezeigt.</p>
+          <div class="row2 new2">
+            <div class="field"><label for="sSitz">Firmensitz (Landkreis oder Stadt)</label><input id="sSitz" list="nutsList" placeholder="z.B. Oberallgäu" autocomplete="off"><datalist id="nutsList"></datalist></div>
+            <div class="field" style="flex:0 0 200px;min-width:0"><label for="sKm">Umkreis</label><select id="sKm"><option value="">ganz Deutschland</option><option value="30">30 km</option><option value="50">50 km</option><option value="100">100 km</option><option value="150">150 km</option><option value="200">200 km</option><option value="300">300 km</option></select></div>
+          </div>
+          <span class="hint new2" id="sSitzHint"></span>
+          <span class="lab2 new2" style="margin-top:6px">Oder nach Bundesländern</span>
           <div class="blgrid" id="sBl"></div>
+        </section>
+
+        <section class="card new2">
+          <h2>Treffer-Mail</h2>
+          <p class="lead">Morgens eine Mail mit den neuen passenden Ausschreibungen, Fristen aus deiner Pipeline und neuen Zuschlägen beobachteter Wettbewerber. Ohne Neuigkeiten kommt keine Mail.</p>
+          <div class="stati" role="radiogroup" aria-label="Häufigkeit der Treffer-Mail" id="sMail"></div>
         </section>
 
         <section class="card" id="teamCard">
@@ -473,7 +522,8 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
             <button class="btn btn-ghost" type="button" id="pwBtn">Passwort ändern</button>
           </div>
           <div class="msg" id="pwMsg"></div>
-          <span class="hint">Konto löschen: Schreib an <a href="mailto:info@studioldk.de?subject=Konto%20l%C3%B6schen">info@studioldk.de</a>, dann werden alle deine Daten entfernt.</span>
+          <div class="del-row"><button class="btn btn-ghost btn-sm danger" type="button" id="delBtn">Konto löschen</button><span class="hint">Entfernt dein Konto, deine Einstellungen und deinen Zugang. Gemeinsame Daten deines Teams bleiben für die anderen erhalten.</span></div>
+          <div class="msg" id="delMsg"></div>
         </section>
 
         <div class="live">
@@ -490,7 +540,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
         <p class="lead2">Wer öffentliche Aufträge gewinnt, bei wem und in welcher Höhe. Grundlage sind die veröffentlichten Zuschläge aus ganz Deutschland.</p>
         <div class="wb-ctrl">
           <label for="wbQ" class="hidden">Firma oder Auftraggeber suchen</label>
-          <input id="wbQ" type="search" placeholder="Firma suchen, z.B. Waldner" autocomplete="off">
+          <input id="wbQ" type="search" placeholder="Firma suchen, z.B. Bau GmbH" autocomplete="off">
           <div class="stati" role="group" aria-label="Suchen nach" id="wbMode"></div>
           <select id="wbTage" aria-label="Zeitraum">
             <option value="90">letzte 3 Monate</option>
@@ -501,6 +551,14 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
         </div>
         <div id="wbWatch"></div>
         <div id="wbList"></div>
+      </section>
+
+      <section id="adm" class="wb hidden" aria-labelledby="admH">
+        <div class="set-head">
+          <h1 id="admH">Admin</h1>
+          <div style="display:flex;gap:18px;align-items:center"><button class="linkbtn" type="button" id="admReload">Aktualisieren</button><a class="linkbtn" href="#">Zurück</a></div>
+        </div>
+        <div id="admBody"><div class="loading">Lade Kennzahlen …</div></div>
       </section>
     </main>
   </div>
@@ -515,6 +573,17 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
       <div class="msg" id="helpMsg"></div>
       <div class="help-acts"><button class="btn btn-ghost" type="button" id="helpCancel">Abbrechen</button><button class="btn" type="submit" id="helpSend">Senden</button></div>
     </form>
+  </dialog>
+  <dialog class="help onb" id="onbDlg" aria-labelledby="onbTitle">
+    <div class="onb-in">
+      <div class="onb-steps" id="onbSteps" aria-hidden="true"></div>
+      <h2 id="onbTitle"></h2>
+      <p id="onbLead"></p>
+      <div id="onbBody"></div>
+      <div class="msg" id="onbMsg"></div>
+      <div class="help-acts"><button class="btn btn-ghost" type="button" id="onbBack">Zurück</button><button class="btn" type="button" id="onbNext">Weiter</button></div>
+      <button class="linkbtn onb-skip" type="button" id="onbSkip">Später einrichten</button>
+    </div>
   </dialog>
   <div class="scrim hidden" id="scrim"></div>
   <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Details zur Ausschreibung">
@@ -535,6 +604,28 @@ const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später 
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
+const APP_VERSION = '2026-10-12';
+
+/* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
+const BRANCHEN = [
+  ['elektro',  'Elektro',                 ['elektro','elektroinstallation','beleuchtung','blitzschutz','photovoltaik'], ['4531','3152','0931']],
+  ['shk',      'Heizung, Lüftung, Sanitär',['heizung','lüftung','sanitär','klima','raumlufttechnik','wärmepumpe'], ['4533','4232','3971']],
+  ['reinigung','Gebäudereinigung',        ['reinigung','unterhaltsreinigung','glasreinigung','grundreinigung'], ['909']],
+  ['galabau',  'Garten- und Landschaftsbau',['grünpflege','landschaftsbau','baumpflege','grünflächen','spielplatz'], ['7731','45112','7734']],
+  ['tiefbau',  'Straßen- und Tiefbau',    ['straßenbau','tiefbau','kanalbau','asphalt','erdarbeiten'], ['4523','45111','45112']],
+  ['hochbau',  'Hochbau und Rohbau',      ['rohbau','hochbau','mauerarbeiten','betonarbeiten','neubau'], ['4521','45223','45262']],
+  ['ausbau',   'Trockenbau und Innenausbau',['trockenbau','innenausbau','akustikdecke','estrich'], ['4541','45421','45432']],
+  ['maler',    'Maler und Bodenbeläge',   ['maler','anstrich','bodenbelag','fliesen','tapezier'], ['45442','4543']],
+  ['dach',     'Dach und Fassade',        ['dach','fassade','dachdecker','zimmerer','spengler'], ['4526','45443']],
+  ['metall',   'Fenster, Türen, Metallbau',['fenster','türen','metallbau','schlosser','tore','geländer'], ['4542','4422','4421']],
+  ['it',       'IT und Software',         ['software','it-dienstleistung','hardware','netzwerk','lizenzen','rechenzentrum'], ['48','72','302']],
+  ['planung',  'Planung und Ingenieurbüro',['planung','ingenieurleistungen','architekt','objektplanung','tragwerksplanung'], ['71']],
+  ['sicherheit','Sicherheitsdienst',      ['bewachung','sicherheitsdienst','pfortendienst','objektschutz'], ['7971']],
+  ['entsorgung','Entsorgung und Transport',['entsorgung','abfall','umzug','transport','winterdienst'], ['905','9062','6010']],
+  ['catering', 'Verpflegung',             ['verpflegung','catering','schulverpflegung','mittagessen'], ['5552','5551','5532']],
+  ['fahrzeuge','Fahrzeuge',               ['fahrzeug','feuerwehrfahrzeug','kommunalfahrzeug','nutzfahrzeug'], ['341','3414','3514']],
+  ['buero',    'Büro und Druck',          ['büromaterial','druck','papier','büromöbel'], ['301','798','3912']]
+];
 
 /* NUTS-1-Codes der Bundesländer */
 const BL = {DE1:'Baden-Württemberg',DE2:'Bayern',DE3:'Berlin',DE4:'Brandenburg',DE5:'Bremen',DE6:'Hamburg',DE7:'Hessen',DE8:'Mecklenburg-Vorpommern',DE9:'Niedersachsen',DEA:'Nordrhein-Westfalen',DEB:'Rheinland-Pfalz',DEC:'Saarland',DED:'Sachsen',DEE:'Sachsen-Anhalt',DEF:'Schleswig-Holstein',DEG:'Thüringen'};
@@ -578,7 +669,7 @@ function dueText(days){
   if (days === 1) return {d:'morgen', w:'', cls:'r'};
   return {d:`noch ${days} Tage`, w:'', cls: days <= 7 ? 'r' : days <= 14 ? 'a' : ''};
 }
-// Kleinbuchstaben und Umlaute vereinheitlichen, damit "abzug" auch "Abzügen" findet
+// Kleinbuchstaben und Umlaute vereinheitlichen, damit "turen" auch "Türen" findet
 const fold = s => String(s).toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss');
 function bundeslaender(region){
   if (!region) return [];
@@ -593,8 +684,8 @@ function bundeslaender(region){
 /* =========================================================================
    Zustand
    ========================================================================= */
-const EMPTY_PREFS = { firma:'', beschreibung:'', suchbegriffe:[], ausschluss:[], bundeslaender:[] };
-const S = { db:null, user:null, rows:[], react:{}, status:{}, team:null, teamErr:null, prevSeen:null, prefs:{...EMPTY_PREFS}, draft:null, prefsErr:null, zugang:'', view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
+const EMPTY_PREFS = { firma:'', beschreibung:'', suchbegriffe:[], ausschluss:[], bundeslaender:[], cpv:[], branchen:[], sitz_nuts:null, umkreis_km:null, mail_frequenz:'taeglich', onboarding_am:null };
+const S = { feat:{}, nuts:null, members:[], db:null, user:null, rows:[], react:{}, status:{}, team:null, teamErr:null, prevSeen:null, prefs:{...EMPTY_PREFS}, draft:null, prefsErr:null, zugang:'', view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
 
 function loadReact(){ try { S.react = JSON.parse(localStorage.getItem('ldk-react-'+S.user.id) || '{}'); } catch(e){ S.react = {}; } }
 function saveReact(){ try { localStorage.setItem('ldk-react-'+S.user.id, JSON.stringify(S.react)); } catch(e){} }
@@ -606,8 +697,10 @@ function saveLocalStatus(){ try { localStorage.setItem('ldk-status-'+S.user.id, 
 async function loadStatus(){
   S.status = {};
   if (S.team){
-    const { data, error } = await S.db.from('tender_status').select('tender_id,status,notiz').eq('team_id', S.team);
-    if (!error && data) for (const x of data) S.status[x.tender_id] = { status:x.status, notiz:x.notiz };
+    let { data, error } = await S.db.from('tender_status').select('tender_id,status,notiz,zustaendig').eq('team_id', S.team);
+    S.feat.zust = !error;
+    if (error) ({ data, error } = await S.db.from('tender_status').select('tender_id,status,notiz').eq('team_id', S.team));
+    if (!error && data) for (const x of data) S.status[x.tender_id] = { status:x.status, notiz:x.notiz, zustaendig:x.zustaendig || null };
   } else {
     try { S.status = JSON.parse(localStorage.getItem('ldk-status-'+S.user.id) || '{}'); } catch(e){ S.status = {}; }
   }
@@ -618,12 +711,12 @@ async function loadStatus(){
 }
 async function setStatus(id, patch, quiet){
   const next = { ...(S.status[id] || {}), ...patch };
-  const leer = !next.status && !(next.notiz && next.notiz.trim());
+  const leer = !next.status && !(next.notiz && next.notiz.trim()) && !next.zustaendig;
   if (leer) delete S.status[id]; else S.status[id] = next;
   if (S.team){
     const res = leer
       ? await S.db.from('tender_status').delete().eq('team_id', S.team).eq('tender_id', id)
-      : await S.db.from('tender_status').upsert({ team_id:S.team, tender_id:id, status:next.status || null, notiz:next.notiz || null, updated_at:new Date().toISOString() }, { onConflict:'team_id,tender_id' });
+      : await S.db.from('tender_status').upsert({ team_id:S.team, tender_id:id, status:next.status || null, notiz:next.notiz || null, ...(S.feat.zust ? { zustaendig:next.zustaendig || null } : {}), updated_at:new Date().toISOString() }, { onConflict:'team_id,tender_id' });
     if (res.error && !quiet) alert('Speichern hat nicht geklappt: ' + res.error.message);
   } else saveLocalStatus();
   if (!quiet){ render(false); }
@@ -648,7 +741,10 @@ async function loadTeam(){
   const { data, error } = await S.db.rpc('mein_team');
   if (error){ S.teamErr = error.message; return; }
   S.team = data;
+  const m = await S.db.from('team_members').select('user_id,email,rolle').eq('team_id', S.team);
+  S.members = (m && m.data) || [];
 }
+const memberName = uid => { const m = S.members.find(x => x.user_id === uid); return m ? (m.user_id === S.user.id ? 'ich' : (m.email || 'Mitglied').split('@')[0]) : null; };
 
 function setReact(id, kind){
   S.react[id] = S.react[id] === kind ? undefined : kind;
@@ -665,6 +761,25 @@ if (window.innerWidth > 900) $('blDet').open = true;
 document.title = APP_NAME;
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 
+/* ---------- Fehler automatisch melden (fürs Admin-Dashboard) ---------- */
+const FEHLER = { n:0, gesehen:new Set() };
+function fehlerMelden(meldung, stelle, stack){
+  try {
+    if (!S.db || !S.user || FEHLER.n >= 15) return;
+    const key = String(meldung).slice(0, 200);
+    if (FEHLER.gesehen.has(key)) return;
+    FEHLER.gesehen.add(key); FEHLER.n++;
+    S.db.from('fehler').insert({ user_id:S.user.id, meldung:String(meldung).slice(0, 1000), stelle:stelle ? String(stelle).slice(0, 300) : null,
+      stack:stack ? String(stack).slice(0, 4000) : null, seite:(S.page || 'list') + (location.hash || ''), browser:navigator.userAgent.slice(0, 300), version:APP_VERSION })
+      .then(() => {}, () => {});
+  } catch(e){}
+}
+function fehlerAufzeichnen(){
+  if (FEHLER.an) return; FEHLER.an = true;
+  window.addEventListener('error', e => fehlerMelden(e.message || 'Fehler', (e.filename || '') + ':' + (e.lineno || 0) + ':' + (e.colno || 0), e.error && e.error.stack));
+  window.addEventListener('unhandledrejection', e => { const r = e.reason || {}; fehlerMelden(r.message || String(r), 'Promise', r.stack); });
+}
+
 function show(which){ ['setup','login','app'].forEach(id => $(id).classList.toggle('hidden', id !== which)); }
 
 function getKey(){ if (SUPABASE_KEY) return SUPABASE_KEY; try { return localStorage.getItem('ldk-sb-key') || ''; } catch(e){ return ''; } }
@@ -674,6 +789,7 @@ async function init(){
   const key = getKey();
   if (!key){ show('setup'); $('keyIn').focus(); return; }
   S.db = window.supabase.createClient(SUPABASE_URL, key, { db:{ schema:'tender' } });
+  fehlerAufzeichnen();
   S.db.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { show('login'); } });
   const { data } = await S.db.auth.getSession();
   if (data && data.session) start(data.session.user); else { show('login'); $('em').focus(); }
@@ -755,6 +871,7 @@ async function start(user){
     await loadPrefs();
     await loadTeam();
     await loadStatus();
+    await loadWatch().catch(() => {});
   } catch(err){
     showError(err); return;
   }
@@ -764,6 +881,8 @@ async function start(user){
   $('loading').classList.add('hidden');
   if (S.teamMsg){ $('trialTxt').textContent = S.teamMsg; $('trialBar').classList.remove('hidden'); }
   route(true);
+  if (onbNoetig() && !location.hash) openOnboarding();
+  S.db.rpc('ist_admin').then(r => { if (r && r.data === true){ S.admin = true; $('adminBtn').classList.remove('hidden'); if (location.hash === '#admin') route(false); } }, () => {});
 }
 
 /* ---------- Neu seit dem letzten Besuch ---------- */
@@ -779,33 +898,69 @@ function markNeu(){
 }
 
 /* ---------- Einstellungen laden und anwenden ---------- */
+const PREF_COLS_NEU = 'firma,beschreibung,suchbegriffe,ausschluss,bundeslaender,cpv,branchen,sitz_nuts,umkreis_km,mail_frequenz,onboarding_am';
 async function loadPrefs(){
-  const { data, error } = await S.db.from('settings').select('firma,beschreibung,suchbegriffe,ausschluss,bundeslaender').eq('user_id', S.user.id).maybeSingle();
+  let { data, error } = await S.db.from('settings').select(PREF_COLS_NEU).eq('user_id', S.user.id).maybeSingle();
+  S.feat.prefs2 = !error;
+  if (error && /column|does not exist/i.test(error.message)) ({ data, error } = await S.db.from('settings').select('firma,beschreibung,suchbegriffe,ausschluss,bundeslaender').eq('user_id', S.user.id).maybeSingle());
   if (error){ S.prefsErr = error.message; S.prefs = {...EMPTY_PREFS}; return; }
   S.prefsErr = null;
-  S.prefs = data ? { ...EMPTY_PREFS, ...data, suchbegriffe:data.suchbegriffe||[], ausschluss:data.ausschluss||[], bundeslaender:data.bundeslaender||[] } : {...EMPTY_PREFS};
+  S.prefs = { ...EMPTY_PREFS };
+  if (data) for (const [k, v] of Object.entries(data)) if (v != null) S.prefs[k] = v;
+  if (S.prefs.sitz_nuts && S.prefs.umkreis_km) await loadNuts();
 }
-const hasPrefs = p => p.suchbegriffe.length > 0 || p.ausschluss.length > 0 || p.bundeslaender.length > 0;
+/* Mittelpunkte der Landkreise und Regionen (Eurostat GISCO, © EuroGeographics) für den Umkreis */
+async function loadNuts(){
+  if (S.nuts) return S.nuts;
+  try { const r = await fetch('nuts_de.json', { cache:'force-cache' }); S.nuts = await r.json(); } catch(e){ S.nuts = null; }
+  return S.nuts;
+}
+function kmZwischen(a, b){
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLa = rad(b[1] - a[1]), dLo = rad(b[2] - a[2]);
+  const h = Math.sin(dLa/2)**2 + Math.cos(rad(a[1])) * Math.cos(rad(b[1])) * Math.sin(dLo/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function imUmkreis(r, sitz, km){
+  if (!sitz || !km || !S.nuts || !S.nuts[sitz]) return true;
+  if (!r.nuts.length) return true; // ohne Ortsangabe lieber anzeigen
+  const s = S.nuts[sitz];
+  for (let c of r.nuts){
+    while (c.length > 3 && !S.nuts[c]) c = c.slice(0, -1);
+    if (!S.nuts[c]) continue;
+    const extra = c.length >= 5 ? 0 : c.length === 4 ? 60 : 120;
+    if (sitz.startsWith(c) || kmZwischen(s, S.nuts[c]) <= km + extra) return true;
+  }
+  return false;
+}
+const hasPrefs = p => p.suchbegriffe.length > 0 || p.ausschluss.length > 0 || p.bundeslaender.length > 0 || (p.cpv || []).length > 0 || !!(p.sitz_nuts && p.umkreis_km);
 function matchOf(r, p){
+  const cpv = p.cpv || [];
   const hits = p.suchbegriffe.filter(t => r.fold.includes(fold(t)));
-  if (p.suchbegriffe.length && !hits.length) return null;
+  const cpvHits = cpv.filter(c => r.cpvs.some(x => x.startsWith(c)));
+  if ((p.suchbegriffe.length || cpv.length) && !hits.length && !cpvHits.length) return null;
   if (p.ausschluss.some(t => r.fold.includes(fold(t)))) return null;
   if (p.bundeslaender.length && r.bls.length && !r.bls.some(b => p.bundeslaender.includes(b))) return null;
-  return hits;
+  if (p.sitz_nuts && p.umkreis_km && !imUmkreis(r, p.sitz_nuts, p.umkreis_km)) return null;
+  return hits.concat(cpvHits.map(c => 'CPV ' + c));
 }
 function applyPrefs(p){ for (const r of S.rows){ const m = hasPrefs(p) ? matchOf(r, p) : null; r.match = !!m; r.hits = m || []; } }
-const isOpen = r => S.react[r.id] !== 'hide' && (r.days === null || r.days >= 0);
+const isOpen = r => r.art !== 'vorinfo' && S.react[r.id] !== 'hide' && (r.days === null || r.days >= 0);
+const isVorinfo = r => r.art === 'vorinfo' && S.react[r.id] !== 'hide';
 
 /* ---------- Seiten: Liste oder Einstellungen ---------- */
 function route(first){
   if ($('app').classList.contains('hidden') || !S.rows) return;
   const set = location.hash === '#einstellungen';
-  const wb = location.hash === '#wettbewerb';
-  S.page = set ? 'settings' : wb ? 'wettbewerb' : 'list';
+  const adm = location.hash === '#admin' && !!S.admin;
+  const wb = location.hash === '#wettbewerb' || adm;
+  S.page = set ? 'settings' : adm ? 'admin' : wb ? 'wettbewerb' : 'list';
+  $('adm').classList.toggle('hidden', !adm);
+  $('adminBtn').toggleAttribute('aria-current', adm);
   if (S.drawerRow) closeDrawer();
   document.querySelector('.layout').classList.toggle('solo', set || wb || !!S.locked);
-  $('wbBtn').toggleAttribute('aria-current', wb);
-  $('wb').classList.toggle('hidden', !wb || !!S.locked);
+  $('wbBtn').toggleAttribute('aria-current', wb && !adm);
+  $('wb').classList.toggle('hidden', !wb || adm || !!S.locked);
   if (S.locked && !set){
     $('settings').classList.add('hidden'); $('content').classList.add('hidden');
     document.querySelector('.rail').classList.add('hidden'); $('lockedBox').classList.remove('hidden');
@@ -815,6 +970,7 @@ function route(first){
   $('content').classList.toggle('hidden', set || wb);
   document.querySelector('.rail').classList.toggle('hidden', set || wb);
   if (set){ $('lockedBox').classList.add('hidden'); openSettings(); }
+  else if (adm) openAdmin();
   else if (wb) openWb();
   else render(first);
   window.scrollTo(0, 0);
@@ -851,20 +1007,24 @@ async function checkAccess(){
 
 const COLS_BASE = 'id,title,description,region,deadline,link,created_at,ted_publication_number';
 const COLS_MORE = COLS_BASE + ',source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung';
+// Neue Spalten: Kurzfassung statt voller Beschreibung (spart Datenvolumen), Art, Änderungen
+const COLS_NEU = 'id,title,kurz,region,deadline,link,created_at,ted_publication_number,source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung,art,geaendert_am,aenderung';
 async function fetchAll(){
-  let cols = COLS_MORE;
+  let cols = COLS_NEU;
   const all = []; const step = 1000;
   for (let from = 0; ; from += step){
     const { data, error } = await S.db.from('tenders')
       .select(cols)
-      .or(`deadline.gte.${isoDay(new Date(today.getTime() - 30*DAY))},deadline.is.null`)
+      .or(`deadline.gte.${isoDay(new Date(today.getTime() - 14*DAY))},deadline.is.null`)
       .order('created_at', { ascending:false })
       .range(from, from + step - 1);
+    if (error && cols === COLS_NEU && /column|does not exist|function|kurz/i.test(error.message)){ cols = COLS_MORE; from -= step; continue; }
     if (error && cols === COLS_MORE && /column|does not exist/i.test(error.message)){ cols = COLS_BASE; from -= step; continue; }
     if (error) throw error;
     all.push(...data);
-    if (data.length < step || all.length >= 10000) break;
+    if (data.length < step || all.length >= 30000) break;
   }
+  S.feat.neu = cols === COLS_NEU;
   // EU-weite Ausschreibungen stehen oft bei TED und beim Datenservice: doppelte zusammenfassen
   const seen = new Map();
   for (const r of all){
@@ -875,8 +1035,11 @@ async function fetchAll(){
   }
   return [...seen.values()].map(r => {
     const dl = r.deadline ? new Date(r.deadline + 'T00:00:00') : null;
+    if (r.kurz !== undefined && r.description === undefined){ r.description = r.kurz; r.descKurz = true; }
     const text = [r.title, r.description, r.auftraggeber, r.ki_zusammenfassung].filter(Boolean).join(' ');
-    return { ...r, dl, days: dl ? Math.round((dl - today) / DAY) : null, created: new Date(r.created_at), bls: bundeslaender(r.region), hay: text.toLowerCase(), fold: fold(text) };
+    const nuts = String(r.region || '').split(/[,\s]+/).map(x => x.trim().toUpperCase()).filter(x => x.startsWith('DE') && x.length >= 3);
+    const cpvs = String(r.cpv_code || '').match(/\d{8}/g) || [];
+    return { ...r, dl, days: dl ? Math.round((dl - today) / DAY) : null, created: new Date(r.created_at), bls: bundeslaender(r.region), nuts, cpvs, hay: text.toLowerCase(), fold: fold(text) };
   });
 }
 // Nur echte Web-Adressen als Link zulassen (Schutz vor manipulierten Daten)
@@ -901,6 +1064,7 @@ function passBase(r){
   const rx = S.react[r.id];
   if ((S.view === 'open' || S.view === 'match') && !isOpen(r)) return false;
   if (S.view === 'match' && !r.match) return false;
+  if (S.view === 'vorinfo' && (!isVorinfo(r) || (hasPrefs(S.prefs) && !r.match))) return false;
   if (S.view === 'pipe'  && !stOf(r.id)) return false;
   if (S.view === 'hide'  && rx !== 'hide') return false;
   if (S.bl.size && !r.bls.some(b => S.bl.has(b))) return false;
@@ -937,7 +1101,7 @@ function render(first){
 }
 
 function renderLage(first){
-  const open = S.rows.filter(r => S.react[r.id] !== 'hide' && (r.days === null || r.days >= 0));
+  const open = S.rows.filter(isOpen);
   let latest = null;
   for (const r of S.rows) if (!latest || r.created > latest) latest = r.created;
   let n = 0, txt = 'Noch keine Ausschreibungen in der Datenbank. Der nächste Abruf läuft morgen früh.';
@@ -964,14 +1128,16 @@ function countUp(el, to, animate){
 }
 
 function renderRail(){
-  const views = [['match','Passend'],['open','Alle offenen'],['pipe','Pipeline'],['hide','Ausgeblendet']];
-  const cnt = { match:0, open:0, pipe:0, hide:0 };
+  const views = [['match','Passend'],['open','Alle offenen'],['vorinfo','Frühwarnung'],['pipe','Pipeline'],['hide','Ausgeblendet']];
+  const cnt = { match:0, open:0, vorinfo:0, pipe:0, hide:0 };
   for (const r of S.rows){
     const rx = S.react[r.id];
     if (stOf(r.id)) cnt.pipe++;
     if (rx === 'hide') cnt.hide++;
     if (isOpen(r)){ cnt.open++; if (r.match) cnt.match++; }
+    if (isVorinfo(r) && (!hasPrefs(S.prefs) || r.match)) cnt.vorinfo++;
   }
+  if (!S.feat.neu) views.splice(2, 1);
   if (!hasPrefs(S.prefs)) cnt.match = '–';
   $('viewSeg').replaceChildren(...views.map(([k,l]) => h('button',{'aria-pressed':String(S.view===k), onclick:()=>{ S.view=k; S.sel=-1; S.shown=PAGE; render(); }}, l, h('span',{class:'n'},cnt[k]))));
 
@@ -1040,8 +1206,8 @@ function renderList(){
   if (!list.length){
     const anyFilter = S.q || S.bl.size || S.day !== null || S.frist !== 'all';
     rows.append(h('div',{class:'empty'},
-      h('b',{}, S.view === 'pipe' ? 'Noch nichts gemerkt.' : S.view === 'hide' ? 'Nichts ausgeblendet.' : 'Keine Ausschreibungen für diese Auswahl.'),
-      h('span',{}, S.view === 'pipe' ? 'Klick bei einer Ausschreibung auf den Stern oder drück S.' : anyFilter ? 'Lockere die Filter oder such nach einem anderen Begriff.' : 'Sobald der nächste Abruf neue Ausschreibungen findet, erscheinen sie hier.'),
+      h('b',{}, S.view === 'pipe' ? 'Noch nichts gemerkt.' : S.view === 'hide' ? 'Nichts ausgeblendet.' : S.view === 'vorinfo' ? 'Gerade keine passenden Vorinformationen.' : 'Keine Ausschreibungen für diese Auswahl.'),
+      h('span',{}, S.view === 'pipe' ? 'Klick bei einer Ausschreibung auf den Stern oder drück S.' : S.view === 'vorinfo' ? 'Hier erscheinen Vorhaben, die Auftraggeber vorab ankündigen. So kannst du dich vorbereiten, bevor die Ausschreibung startet.' : anyFilter ? 'Lockere die Filter oder such nach einem anderen Begriff.' : 'Sobald der nächste Abruf neue Ausschreibungen findet, erscheinen sie hier.'),
       anyFilter ? h('button',{class:'btn btn-ghost', onclick:resetFilters},'Filter zurücksetzen') : null));
     $('moreBtn').classList.add('hidden');
     return;
@@ -1067,6 +1233,8 @@ function renderBoard(list){
         h('span',{class:'t'}, r.title || '(ohne Titel)'),
         h('span',{class:'m ' + (d.cls === 'r' ? 'r' : '')}, d.d + (r.dl ? ', ' + fmtShort.format(r.dl) : '')),
         r.auftraggeber ? h('span',{class:'m'}, r.auftraggeber) : null,
+        S.status[r.id] && S.status[r.id].zustaendig ? h('span',{class:'m'}, 'Zuständig: ' + (memberName(S.status[r.id].zustaendig) || 'ehemaliges Mitglied')) : null,
+        r.geaendert_am ? h('span',{class:'m', style:'color:var(--amber);font-weight:600'}, 'geändert am ' + fmtShort.format(new Date(r.geaendert_am))) : null,
         S.status[r.id] && S.status[r.id].notiz ? h('span',{class:'m'}, '✎ ' + S.status[r.id].notiz.slice(0,80)) : null); })
       : h('div',{class:'empty2'}, 'Noch nichts'));
   }));
@@ -1093,6 +1261,23 @@ function icsDownload(list, name){
   const a = h('a',{ href:URL.createObjectURL(blob), download:(name || 'Frist').replace(/[^\wäöüÄÖÜß -]/g,'').slice(0,60) + '.ics' });
   document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
+/* ---------- Export für Excel (CSV mit Semikolon, Umlaute korrekt) ---------- */
+function csvExport(list, name){
+  if (!list.length){ alert('Die Liste ist leer.'); return; }
+  const zelle = v => { const t = v == null ? '' : String(v).replace(/\r?\n/g, ' '); return /[;"]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
+  const kopf = ['Titel','Auftraggeber','Frist','Ort','CPV','Status','Zuständig','Notiz','Eingegangen','Quelle','Link'];
+  const zeilen = list.map(r => {
+    const st = S.status[r.id] || {};
+    const zu = st.zustaendig ? (S.members.find(m => m.user_id === st.zustaendig) || {}).email : '';
+    return [r.title, r.auftraggeber, r.dl ? r.dl.toLocaleDateString('de-DE') : '', r.bls.join(', ') || 'Deutschland', r.cpv_code, STATUS_LABEL[st.status] || '', zu || '', st.notiz || '',
+      r.created.toLocaleDateString('de-DE'), r.source === 'DOE' ? 'Datenservice Öffentlicher Einkauf' : 'TED', safeUrl(r.unterlagen_url) || safeUrl(r.link) || ''].map(zelle).join(';');
+  });
+  const blob = new Blob(['\ufeff' + [kopf.join(';'), ...zeilen].join('\r\n')], { type:'text/csv;charset=utf-8' });
+  const a = h('a',{ href:URL.createObjectURL(blob), download:(name || 'Ausschreibungen') + ' ' + isoDay(new Date()) + '.csv' });
+  document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$('csvBtn').addEventListener('click', () => csvExport(S.list, S.view === 'pipe' ? 'Pipeline' : 'Ausschreibungen'));
+
 function mailFor(r){
   const link = safeUrl(r.unterlagen_url) || safeUrl(r.link) || '';
   const body = [
@@ -1115,7 +1300,7 @@ function rowEl(r, i){
     h('div',{class:'due ' + due.cls}, h('span',{class:'d'},due.d), h('span',{class:'w'}, r.dl ? fmtDay.format(r.dl) : '')),
     h('div',{}, h('div',{class:'t'}, r.neu ? h('span',{class:'neu'},'neu') : null, r.title || '(ohne Titel)'),
       r.ki_zusammenfassung ? h('div',{class:'sum'}, r.ki_zusammenfassung) : null,
-      h('div',{class:'meta'}, st ? h('span',{class:'pill ' + st}, STATUS_LABEL[st]) : null, r.hits && r.hits.length ? h('span',{class:'hit'}, 'passt: ' + r.hits.join(', ')) : null, r.auftraggeber ? h('span',{}, r.auftraggeber) : null, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
+      h('div',{class:'meta'}, st ? h('span',{class:'pill ' + st}, STATUS_LABEL[st]) : null, r.art === 'vorinfo' ? h('span',{class:'pill vor'}, 'Vorinformation') : null, r.geaendert_am ? h('span',{class:'pill chg', title:r.aenderung || ''}, 'geändert ' + fmtShort.format(new Date(r.geaendert_am))) : null, r.hits && r.hits.length ? h('span',{class:'hit'}, 'passt: ' + r.hits.join(', ')) : null, r.auftraggeber ? h('span',{}, r.auftraggeber) : null, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
     h('div',{class:'acts'},
       h('button',{class:'ic','aria-label':st ? 'In der Pipeline' : 'Merken', 'aria-pressed':String(!!st), title:'Merken (S)', onclick:()=>toggleMerken(r)}, icon(st ? 'starOn' : 'star')),
       h('button',{class:'ic','aria-label':rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden', 'aria-pressed':String(rx === 'hide'), title:'Ausblenden (X)', onclick:()=>setReact(r.id,'hide')}, icon('hide')),
@@ -1132,9 +1317,50 @@ function resetFilters(){ S.q=''; $('q').value=''; S.bl.clear(); S.day=null; S.fr
    Einstellungen
    ========================================================================= */
 const norm = t => t.trim().toLowerCase().replace(/\s+/g,' ');
-function openSettings(){
+const MAIL_OPT = [['taeglich','Jeden Morgen'],['woechentlich','Montags, Wochenüberblick'],['aus','Keine Mails']];
+const arrFor = kind => kind === 'Pos' ? S.draft.suchbegriffe : kind === 'Neg' ? S.draft.ausschluss : S.draft.cpv;
+function nutsName(code){ const n = S.nuts && S.nuts[code]; return n ? n[0] : ''; }
+function sitzAusText(v){
+  if (!S.nuts || !v) return null;
+  const m = v.match(/\b(DE[0-9A-G][0-9A-Z]{0,2})\b/i); if (m && S.nuts[m[1].toUpperCase()]) return m[1].toUpperCase();
+  const t = fold(v.trim());
+  const treffer = Object.entries(S.nuts).filter(([k, x]) => k.length === 5 && fold(x[0]) === t);
+  if (treffer.length) return treffer[0][0];
+  const teil = Object.entries(S.nuts).filter(([k, x]) => k.length === 5 && fold(x[0]).startsWith(t));
+  return teil.length === 1 ? teil[0][0] : null;
+}
+function renderBranchen(){
+  $('sBranchen').replaceChildren(...BRANCHEN.map(([k, l, worte, cpv]) => h('button',{type:'button','aria-pressed':String(S.draft.branchen.includes(k)), onclick:()=>{
+    const d = S.draft, an = !d.branchen.includes(k);
+    if (an){ d.branchen.push(k); for (const w of worte) if (!d.suchbegriffe.includes(w)) d.suchbegriffe.push(w); for (const c of cpv) if (!d.cpv.includes(c)) d.cpv.push(c); }
+    else {
+      d.branchen.splice(d.branchen.indexOf(k), 1);
+      const rest = BRANCHEN.filter(b => d.branchen.includes(b[0]));
+      d.suchbegriffe = d.suchbegriffe.filter(w => !worte.includes(w) || rest.some(b => b[2].includes(w)));
+      d.cpv = d.cpv.filter(c => !cpv.includes(c) || rest.some(b => b[3].includes(c)));
+    }
+    renderBranchen(); renderTags('Pos'); renderTags('Cpv'); updateLive(); }}, l)));
+}
+function renderMailOpt(){
+  $('sMail').replaceChildren(...MAIL_OPT.map(([k, l]) => h('button',{type:'button', role:'radio','aria-checked':String(S.draft.mail_frequenz === k),'aria-pressed':String(S.draft.mail_frequenz === k), onclick:()=>{ S.draft.mail_frequenz = k; renderMailOpt(); }}, l)));
+}
+function renderSitzHint(){
+  const c = S.draft.sitz_nuts, km = S.draft.umkreis_km;
+  $('sSitzHint').textContent = c && km ? `Du siehst Ausschreibungen bis etwa ${km} km um ${nutsName(c)}. Ausschreibungen, die nur ein ganzes Bundesland nennen, werden mitgezählt.` : c ? 'Wähle noch einen Umkreis, sonst gilt ganz Deutschland.' : '';
+}
+async function openSettings(){
   const p = S.prefs;
-  S.draft = { ...p, suchbegriffe:[...p.suchbegriffe], ausschluss:[...p.ausschluss], bundeslaender:[...p.bundeslaender] };
+  S.draft = { ...p, suchbegriffe:[...p.suchbegriffe], ausschluss:[...p.ausschluss], bundeslaender:[...p.bundeslaender], cpv:[...(p.cpv || [])], branchen:[...(p.branchen || [])] };
+  document.body.classList.toggle('alt', !S.feat.prefs2);
+  renderBranchen(); renderMailOpt(); renderTags('Cpv');
+  $('sKm').value = p.umkreis_km ? String(p.umkreis_km) : '';
+  $('sSitz').value = '';
+  loadNuts().then(n => {
+    if (!n) return;
+    $('nutsList').replaceChildren(...Object.entries(n).filter(([k]) => k.length === 5).sort((a, b) => a[1][0].localeCompare(b[1][0], 'de')).map(([k, x]) => h('option',{value:x[0]})));
+    if (S.draft.sitz_nuts) $('sSitz').value = nutsName(S.draft.sitz_nuts);
+    renderSitzHint(); updateLive();
+  });
   $('sFirma').value = p.firma || ''; $('sBesch').value = p.beschreibung || '';
   $('sEmail').textContent = S.user.email || ''; $('sZugang').textContent = S.zugang || '';
   $('setMsg').textContent = ''; $('setMsg').className = 'msg';
@@ -1152,26 +1378,33 @@ function openSettings(){
 }
 function renderTags(kind){
   const box = $('tags' + kind), input = $('tag' + kind);
-  const arr = kind === 'Pos' ? S.draft.suchbegriffe : S.draft.ausschluss;
+  const arr = arrFor(kind);
   box.querySelectorAll('.tag').forEach(e => e.remove());
   arr.forEach((t, i) => box.insertBefore(h('span',{class:'tag' + (kind === 'Neg' ? ' neg' : '')}, t,
     h('button',{type:'button','aria-label':t + ' entfernen', onclick:()=>{ arr.splice(i,1); renderTags(kind); updateLive(); input.focus(); }}, '×')), input));
 }
 function addTag(kind){
   const input = $('tag' + kind);
-  const arr = kind === 'Pos' ? S.draft.suchbegriffe : S.draft.ausschluss;
-  for (const part of input.value.split(',')){ const t = norm(part); if (t.length >= 2 && !arr.includes(t)) arr.push(t); }
+  const arr = arrFor(kind);
+  const teile = kind === 'Cpv' ? input.value.split(/[,;\s]+/) : input.value.split(',');
+  for (const part of teile){
+    const t = kind === 'Cpv' ? part.replace(/\D/g, '').slice(0, 8) : norm(part);
+    if (t.length >= 2 && !arr.includes(t)) arr.push(t);
+  }
   input.value = ''; renderTags(kind); updateLive();
 }
-for (const kind of ['Pos','Neg']){
+for (const kind of ['Pos','Neg','Cpv']){
   const input = $('tag' + kind);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ','){ e.preventDefault(); addTag(kind); }
-    else if (e.key === 'Backspace' && !input.value){ const arr = kind === 'Pos' ? S.draft.suchbegriffe : S.draft.ausschluss; if (arr.length){ arr.pop(); renderTags(kind); updateLive(); } }
+    else if (e.key === 'Backspace' && !input.value){ const arr = arrFor(kind); if (arr.length){ arr.pop(); renderTags(kind); updateLive(); } }
   });
   input.addEventListener('blur', () => { if (input.value.trim()) addTag(kind); });
   $('tags' + kind).addEventListener('click', e => { if (e.target === e.currentTarget) input.focus(); });
 }
+$('sSitz').addEventListener('input', () => { S.draft.sitz_nuts = sitzAusText($('sSitz').value); renderSitzHint(); updateLive(); });
+$('sSitz').addEventListener('change', () => { const c = sitzAusText($('sSitz').value); S.draft.sitz_nuts = c; if (c) $('sSitz').value = nutsName(c); if (c && !S.draft.umkreis_km){ S.draft.umkreis_km = 100; $('sKm').value = '100'; } renderSitzHint(); updateLive(); });
+$('sKm').addEventListener('change', () => { S.draft.umkreis_km = +$('sKm').value || null; renderSitzHint(); updateLive(); });
 function draftWithTyping(){
   const d = { ...S.draft, suchbegriffe:[...S.draft.suchbegriffe], ausschluss:[...S.draft.ausschluss] };
   const p = norm($('tagPos').value), n = norm($('tagNeg').value);
@@ -1194,8 +1427,11 @@ $('settings').addEventListener('submit', async e => {
   if ($('tagPos').value.trim()) addTag('Pos');
   if ($('tagNeg').value.trim()) addTag('Neg');
   const msg = $('setMsg'); msg.className = 'msg'; msg.textContent = '';
+  if ($('tagCpv').value.trim()) addTag('Cpv');
   const row = { user_id:S.user.id, firma:$('sFirma').value.trim() || null, beschreibung:$('sBesch').value.trim() || null,
     suchbegriffe:S.draft.suchbegriffe, ausschluss:S.draft.ausschluss, bundeslaender:S.draft.bundeslaender, updated_at:new Date().toISOString() };
+  if (S.feat.prefs2) Object.assign(row, { cpv:S.draft.cpv, branchen:S.draft.branchen, sitz_nuts:S.draft.sitz_nuts || null, umkreis_km:S.draft.sitz_nuts ? S.draft.umkreis_km : null,
+    mail_frequenz:S.draft.mail_frequenz || 'taeglich', onboarding_am:S.prefs.onboarding_am || new Date().toISOString() });
   $('saveBtn').disabled = true; $('saveBtn').textContent = 'Speichere …';
   const { error } = await S.db.from('settings').upsert(row, { onConflict:'user_id' });
   $('saveBtn').disabled = false; $('saveBtn').textContent = 'Speichern';
@@ -1310,13 +1546,38 @@ const zDate = d => d ? fmtNum.format(new Date(d + 'T12:00:00')) : '';
 const likeEsc = t => t.replace(/[\\%_]/g, m => '\\' + m);
 const WB_MODES = [['firma','Firma'],['auftraggeber','Auftraggeber']];
 
-function watchList(){ try { return JSON.parse(localStorage.getItem('ldk-watch-'+S.user.id) || '[]'); } catch(e){ return []; } }
-function saveWatch(l){ try { localStorage.setItem('ldk-watch-'+S.user.id, JSON.stringify(l)); } catch(e){} }
+/* Beobachtete Wettbewerber: im Team in der Datenbank, sonst auf dem Gerät */
+function localWatch(){ try { return JSON.parse(localStorage.getItem('ldk-watch-'+S.user.id) || '[]'); } catch(e){ return []; } }
+function saveLocalWatch(l){ try { localStorage.setItem('ldk-watch-'+S.user.id, JSON.stringify(l)); } catch(e){} }
+async function loadWatch(){
+  S.watch = localWatch(); S.feat.watchDb = false;
+  if (!S.team) return;
+  const { data, error } = await S.db.from('beobachtet').select('gewinner_key,name,ort,created_at').eq('team_id', S.team).order('created_at', { ascending:false });
+  if (error) return;
+  S.feat.watchDb = true;
+  const db = data.map(d => ({ key:d.gewinner_key, name:d.name, ort:d.ort || '' }));
+  // Bisher nur lokal gemerkte einmalig ins Team übernehmen
+  const neu = S.watch.filter(w => !db.some(d => d.key === w.key));
+  if (neu.length){
+    await S.db.from('beobachtet').upsert(neu.map(w => ({ team_id:S.team, gewinner_key:w.key, name:w.name, ort:w.ort || null })), { onConflict:'team_id,gewinner_key' });
+    db.push(...neu);
+  }
+  saveLocalWatch([]);
+  S.watch = db;
+}
+const watchList = () => S.watch || [];
 const isWatched = key => watchList().some(w => w.key === key);
-function toggleWatch(x){
+async function toggleWatch(x){
   const l = watchList(), i = l.findIndex(w => w.key === x.gewinner_key);
-  if (i >= 0) l.splice(i, 1); else l.unshift({ key:x.gewinner_key, name:x.gewinner, ort:x.gewinner_ort || '' });
-  saveWatch(l.slice(0, 40));
+  const weg = i >= 0;
+  if (weg) l.splice(i, 1); else l.unshift({ key:x.gewinner_key, name:x.gewinner, ort:x.gewinner_ort || '' });
+  S.watch = l.slice(0, 100);
+  if (S.feat.watchDb){
+    const res = weg
+      ? await S.db.from('beobachtet').delete().eq('team_id', S.team).eq('gewinner_key', x.gewinner_key)
+      : await S.db.from('beobachtet').upsert({ team_id:S.team, gewinner_key:x.gewinner_key, name:x.gewinner, ort:x.gewinner_ort || null }, { onConflict:'team_id,gewinner_key' });
+    if (res.error) alert('Speichern hat nicht geklappt: ' + res.error.message);
+  } else saveLocalWatch(S.watch);
 }
 
 function openWb(){
@@ -1332,12 +1593,31 @@ function openWb(){
 }
 function renderWbMode(){
   $('wbMode').replaceChildren(...WB_MODES.map(([k,l]) => h('button',{type:'button','aria-pressed':String(WB.mode === k), onclick:()=>{ WB.mode = k; renderWbMode(); if (WB.q) loadWb(); }}, l)));
-  $('wbQ').placeholder = WB.mode === 'firma' ? 'Firma suchen, z.B. Waldner' : 'Auftraggeber suchen, z.B. Universität Leipzig';
+  $('wbQ').placeholder = WB.mode === 'firma' ? 'Firma suchen, z.B. Bau GmbH' : 'Auftraggeber suchen, z.B. Stadt Augsburg';
 }
-function renderWatch(){
+async function renderWatch(){
   const l = watchList();
-  $('wbWatch').replaceChildren(...(l.length ? [h('div',{class:'watch'}, h('span',{},'Beobachtet'),
-    ...l.map(w => h('button',{type:'button', onclick:()=>openProfil({ gewinner_key:w.key, gewinner:w.name, gewinner_ort:w.ort })}, w.name)))] : []));
+  const box = $('wbWatch');
+  if (!l.length){ box.replaceChildren(); return; }
+  const chips = h('div',{class:'watch'}, h('span',{},'Beobachtet'),
+    ...l.map(w => h('button',{type:'button', onclick:()=>openProfil({ gewinner_key:w.key, gewinner:w.name, gewinner_ort:w.ort })}, w.name)));
+  box.replaceChildren(chips);
+  // Neue Zuschläge der beobachteten Firmen seit dem letzten Besuch dieser Seite
+  const key = 'ldk-wb-seen-' + S.user.id;
+  let seit = null; try { seit = localStorage.getItem(key); } catch(e){}
+  const ab = seit || new Date(Date.now() - 14 * DAY).toISOString();
+  try { localStorage.setItem(key, new Date().toISOString()); } catch(e){}
+  const { data } = await S.db.from('zuschlaege').select('title,auftraggeber,gewinner,gewinner_key,gewinner_ort,wert,zuschlag_am,created_at')
+    .in('gewinner_key', l.map(w => w.key).slice(0, 100)).gte('created_at', ab).gte('zuschlag_am', isoDay(new Date(Date.now() - 45 * DAY)))
+    .order('zuschlag_am', { ascending:false }).limit(30);
+  if (!data || !data.length) return;
+  const liste = h('div',{});
+  const zeig = n => liste.replaceChildren(zuschlagListe(data.slice(0, n), false),
+    data.length > n ? h('button',{class:'linkbtn', type:'button', style:'margin-top:8px', onclick:()=>zeig(data.length)}, `Alle ${data.length} anzeigen`) : null);
+  zeig(4);
+  box.replaceChildren(chips, h('div',{class:'wbsec', style:'margin:0 0 26px;border:0;padding:0'},
+    h('h3',{}, data.length === 1 ? 'Neu: 1 Zuschlag bei beobachteten Firmen' : `Neu: ${data.length} Zuschläge bei beobachteten Firmen`),
+    h('p',{class:'sub'}, seit ? 'seit deinem letzten Besuch dieser Seite' : 'in den letzten 14 Tagen'), liste));
 }
 
 async function loadWb(){
@@ -1441,24 +1721,219 @@ async function openProfil(x, zurueck){
     rows.length ? h('div',{class:'wbsec'}, h('h3',{},'Gewonnene Aufträge'), liste) : h('p',{style:'color:var(--muted);margin:0'},'Noch keine Zuschläge gespeichert.')].filter(Boolean));
 }
 
+/* Typische Zuschlagswerte für ähnliche Aufträge (CPV-Gruppe), als Kalkulationshilfe */
+async function preisniveau(cpv){
+  const code = (String(cpv || '').match(/\d{8}/) || [])[0];
+  if (!code) return null;
+  for (const len of [5, 4, 3]){
+    const { data, error } = await S.db.rpc('preisniveau', { p_cpv: code.slice(0, len), p_tage: 730 });
+    if (error) return null;
+    const x = data && data[0];
+    if (x && +x.anzahl >= 8) return { ...x, gruppe: code.slice(0, len) };
+  }
+  return null;
+}
+function preisBox(pn){
+  return h('div',{},
+    h('p',{class:'sub', style:'margin:0 0 8px'}, `Typische Zuschlagswerte für ähnliche Aufträge (CPV ${pn.gruppe}…), aus ${pn.anzahl} Zuschlägen der letzten 2 Jahre`),
+    h('div',{class:'pn'},
+      h('div',{}, h('b',{}, eurK.format(pn.p25)), h('span',{}, 'unteres Viertel')),
+      h('div',{}, h('b',{}, eurK.format(pn.median)), h('span',{}, 'Mitte (Median)')),
+      h('div',{}, h('b',{}, eurK.format(pn.p75)), h('span',{}, 'oberes Viertel'))));
+}
+
+async function openAuftraggeber(name, zurueck){
+  const me = { _profil:true, title:name };
+  S.drawerRow = me;
+  $('drDue').textContent = 'Auftraggeber'; $('drDue').style.color = 'var(--ink)';
+  const back = zurueck && !zurueck._profil ? h('button',{class:'linkbtn', type:'button', style:'align-self:flex-start', onclick:()=>openDrawer(zurueck)}, 'Zurück zur Ausschreibung') : null;
+  $('drBody').replaceChildren(...[back, h('h2',{}, name), h('div',{class:'loading', style:'padding:30px 0'}, 'Lade Profil …')].filter(Boolean));
+  drawerAuf(); $('drClose').focus({ preventScroll:true });
+  const [z, top] = await Promise.all([
+    S.db.from('zuschlaege').select('title,gewinner,gewinner_key,gewinner_ort,wert,cpv,zuschlag_am').eq('auftraggeber', name).order('zuschlag_am', { ascending:false }).limit(300),
+    S.db.rpc('wettbewerb_top', { p_auftraggeber: likeEsc(name), p_tage: 1095, p_limit: 8 })
+  ]);
+  if (S.drawerRow !== me) return;
+  const rows = (z && z.data) || [];
+  const offen = S.rows.filter(r => r.auftraggeber === name && (isOpen(r) || isVorinfo(r)));
+  const mitWert = rows.filter(x => x.wert).map(x => Number(x.wert)).sort((a, b) => a - b);
+  const median = mitWert.length ? mitWert[Math.floor(mitWert.length / 2)] : null;
+  const proJahr = {};
+  for (const x of rows) if (x.zuschlag_am) proJahr[x.zuschlag_am.slice(0, 4)] = (proJahr[x.zuschlag_am.slice(0, 4)] || 0) + 1;
+  const winners = (top && top.data) || [];
+  $('drBody').replaceChildren(...[back, h('h2',{}, name),
+    h('dl',{class:'kv'},
+      h('dt',{},'Offene Ausschreibungen'), h('dd',{}, String(offen.length)),
+      h('dt',{},'Zuschläge gespeichert'), h('dd',{}, String(rows.length) + (rows.length >= 300 ? ' oder mehr' : '')),
+      Object.keys(proJahr).length ? [h('dt',{},'Pro Jahr'), h('dd',{}, Object.entries(proJahr).sort().reverse().slice(0, 3).map(([j, n]) => `${j}: ${n}`).join(', '))] : null,
+      median ? [h('dt',{},'Typischer Auftragswert'), h('dd',{}, eurV.format(median) + ` (Median aus ${mitWert.length})`)] : null),
+    offen.length ? h('div',{class:'wbsec'}, h('h3',{},'Laufende Ausschreibungen'),
+      h('div',{class:'tops'}, ...offen.slice(0, 8).map(r => h('button',{type:'button', onclick:()=>openDrawer(r)}, h('b',{}, r.title || ''), h('span',{}, r.art === 'vorinfo' ? 'Vorinfo' : dueText(r.days).d))))) : null,
+    winners.length ? h('div',{class:'wbsec'}, h('h3',{},'Wer hier gewinnt'), h('p',{class:'sub'}, 'letzte 3 Jahre'),
+      h('div',{class:'tops'}, ...winners.map(c => h('button',{type:'button', onclick:()=>openProfil(c, zurueck)}, h('b',{}, c.gewinner), h('span',{}, (c.anzahl == 1 ? '1 Zuschlag' : c.anzahl + ' Zuschläge') + (c.summe ? ', ' + eurK.format(c.summe) : '')))))) : null,
+    rows.length ? h('div',{class:'wbsec'}, h('h3',{},'Letzte Zuschläge'), zuschlagListe(rows.slice(0, 20), false))
+      : h('p',{style:'color:var(--muted);margin:0'}, 'Zu diesem Auftraggeber sind noch keine Zuschläge gespeichert.')].filter(Boolean));
+}
+
 async function drawerWettbewerb(r){
   const box = $('drWb'); if (!box) return;
   const jobs = [
     r.auftraggeber ? S.db.from('zuschlaege').select('title,gewinner,gewinner_key,gewinner_ort,wert,zuschlag_am').eq('auftraggeber', r.auftraggeber).order('zuschlag_am', { ascending:false }).limit(6) : null,
-    r.cpv_code ? S.db.rpc('wettbewerb_top', { p_cpv: String(r.cpv_code).slice(0, 5), p_tage: 730, p_limit: 5 }) : null
+    r.cpv_code ? S.db.rpc('wettbewerb_top', { p_cpv: String(r.cpv_code).slice(0, 5), p_tage: 730, p_limit: 5 }) : null,
+    r.cpv_code ? preisniveau(r.cpv_code) : null
   ];
-  const [ag, cpv] = await Promise.all(jobs.map(j => j ? j.then(x => x, () => ({ error:true })) : Promise.resolve(null)));
+  const [ag, cpv, pn] = await Promise.all(jobs.map(j => j ? Promise.resolve(j).then(x => x, () => ({ error:true })) : Promise.resolve(null)));
   if (S.drawerRow !== r || !document.body.contains(box)) return;
   const agRows = ag && !ag.error ? ag.data || [] : [];
   const cpvRows = cpv && !cpv.error ? cpv.data || [] : [];
-  if (!agRows.length && !cpvRows.length) return;
+  const preis = pn && !pn.error ? pn : null;
+  if (!agRows.length && !cpvRows.length && !preis) return;
   box.className = 'wbsec';
   box.replaceChildren(...[h('h3',{},'Wettbewerb'),
+    preis ? preisBox(preis) : null,
     agRows.length ? h('p',{class:'sub'}, 'Wer zuletzt bei diesem Auftraggeber gewonnen hat') : null,
     agRows.length ? zuschlagListe(agRows, false) : null,
     cpvRows.length ? h('p',{class:'sub', style:'margin-top:8px'}, 'Wer ähnliche Aufträge gewinnt, letzte 2 Jahre') : null,
     cpvRows.length ? h('div',{class:'tops'}, ...cpvRows.map(c => h('button',{type:'button', onclick:()=>openProfil(c, r)}, h('b',{}, c.gewinner), h('span',{}, (c.anzahl == 1 ? '1 Zuschlag' : c.anzahl + ' Zuschläge') + (c.summe ? ', ' + eurK.format(c.summe) : ''))))) : null].filter(Boolean));
 }
+
+/* ---------- Admin-Dashboard (nur für Admins, Daten kommen geprüft vom Server) ---------- */
+const fmtZeit = new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const zeit = t => t ? fmtZeit.format(new Date(t)) : '';
+async function openAdmin(){
+  const body = $('admBody');
+  body.replaceChildren(h('div',{class:'loading'},'Lade Kennzahlen …'));
+  const { data:a, error } = await S.db.rpc('admin_uebersicht');
+  if (error){ body.replaceChildren(h('div',{class:'err'}, 'Kennzahlen nicht abrufbar: ' + error.message)); return; }
+  const kpi = (v, l, warn) => h('div',{class:'fact' + (warn ? ' urgent' : '')}, h('span',{class:'v'}, String(v ?? 0)), h('span',{class:'l'}, l));
+  const reg = a.registrierungen || [], maxR = Math.max(1, ...reg.map(x => x.n));
+  const quellen = Object.entries(a.tenders_quellen || {}).map(([k, v]) => `${k === 'DOE' ? 'Datenservice' : k} ${v}`).join(', ') || 'keine';
+  const altStd = a.letzter_abruf ? (Date.now() - new Date(a.letzter_abruf)) / 36e5 : 999;
+  body.replaceChildren(
+    h('div',{class:'facts adm-facts'}, kpi(a.nutzer, 'Konten'), kpi(a.neu_7, 'neu in 7 Tagen'), kpi(a.aktiv_7, 'aktiv in 7 Tagen'), kpi(a.trial, 'in der Testphase'), kpi(a.zahlend, 'zahlend'), kpi(a.trial_abgelaufen, 'Testphase abgelaufen'),
+      kpi(a.mit_suchprofil, 'mit Suchprofil'), kpi(a.teams_mehrere, 'Teams mit mehreren'), kpi(a.fehler_7, 'Fehler in 7 Tagen', a.fehler_7 > 0)),
+    h('section',{class:'card'}, h('h2',{}, 'Registrierungen, letzte 30 Tage'),
+      h('div',{class:'adm-bars', role:'img', 'aria-label':'Registrierungen pro Tag'}, ...reg.map(x => h('span',{title:`${zDate(x.tag)}: ${x.n}`, style:`height:${Math.max(2, Math.round(x.n / maxR * 100))}%`, class: x.n ? '' : 'z'}))),
+      h('span',{class:'hint'}, `${a.bestaetigt} von ${a.nutzer} Konten haben ihre E-Mail bestätigt. Treffer-Mail an: ${a.mail_an}.`)),
+    h('section',{class:'card'}, h('h2',{}, 'Daten und Abruf'),
+      h('dl',{class:'kv', style:'border:0;padding:0'},
+        h('dt',{},'Letzter Eingang'), h('dd',{style: altStd > 30 ? 'color:var(--red)' : ''}, a.letzter_abruf ? zeit(a.letzter_abruf) + (altStd > 30 ? ', länger als einen Tag her' : '') : 'noch nie'),
+        h('dt',{},'Neu in 24 Stunden'), h('dd',{}, `${a.tenders_heute} (${quellen})`),
+        h('dt',{},'Offene Ausschreibungen'), h('dd',{}, String(a.tenders_offen)),
+        h('dt',{},'Vorinformationen'), h('dd',{}, String(a.vorinfos)),
+        h('dt',{},'Zuschläge'), h('dd',{}, `${a.zuschlaege} (neu in 24 Stunden: ${a.zuschlaege_heute})`),
+        h('dt',{},'Mails in 24 Stunden'), h('dd',{style: a.mails_fehler_24h ? 'color:var(--red)' : ''}, `${a.mails_24h} gesendet, ${a.mails_fehler_24h} fehlgeschlagen`)),
+      (a.abrufe || []).length ? h('div',{class:'zl'}, ...a.abrufe.map(x => h('div',{}, h('span',{class:'d'}, zeit(x.created_at)), h('span',{class:'t', style: x.ok ? '' : 'color:var(--red)'}, `${x.quelle}: ${x.anzahl}` + (x.ok ? '' : ', Fehler')), h('span',{class:'w'}, ''), h('span',{class:'s'}, x.info || '')))) : h('span',{class:'hint'}, 'Das Abruf-Protokoll füllt sich ab dem nächsten Abruf.')),
+    h('section',{class:'card'}, h('h2',{}, 'Fehler in der App, letzte 14 Tage'),
+      (a.fehler_gruppen || []).length ? h('div',{class:'zl'}, ...a.fehler_gruppen.map(f => h('div',{},
+        h('span',{class:'d'}, `${f.anzahl}× bei ${f.nutzer} Nutzer`), h('span',{class:'t'}, f.meldung), h('span',{class:'w'}, ''),
+        h('span',{class:'s'}, `zuletzt ${zeit(f.zuletzt)}, erstmals ${zeit(f.erstmals)}, Version ${f.version || '?'}` + (f.stelle ? `, ${f.stelle}` : ''))))) : h('p',{style:'margin:0;color:var(--muted)'}, 'Keine Fehler gemeldet.')),
+    h('section',{class:'card'}, h('h2',{}, 'Feedback'),
+      (a.feedback || []).length ? h('div',{class:'zl'}, ...a.feedback.map(f => h('div',{},
+        h('span',{class:'d'}, zeit(f.created_at)), h('span',{class:'t', style: f.erledigt ? 'color:var(--faint);text-decoration:line-through' : ''}, f.nachricht),
+        h('span',{class:'w'}, h('button',{class:'linkbtn', type:'button', onclick: async () => { await S.db.rpc('admin_feedback_erledigt', { p_id:f.id, p_erledigt:!f.erledigt }); openAdmin(); }}, f.erledigt ? 'wieder öffnen' : 'erledigt')),
+        h('span',{class:'s'}, [f.art, f.email].filter(Boolean).join(', '), f.email ? [' ', h('a',{href:'mailto:' + encodeURIComponent(f.email) + '?subject=' + encodeURIComponent('Deine Nachricht')}, 'antworten')] : null)))) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch kein Feedback.')));
+}
+$('admReload').addEventListener('click', openAdmin);
+
+/* ---------- Einrichtung beim ersten Login ---------- */
+const ONB = { step:0, d:null };
+function onbNoetig(){ return S.feat.prefs2 && !S.locked && !S.prefs.onboarding_am && !hasPrefs(S.prefs) && !S.prefsErr; }
+async function openOnboarding(){
+  ONB.step = 0;
+  ONB.d = { branchen:[], suchbegriffe:[], cpv:[], sitz_nuts:null, umkreis_km:100, mail_frequenz:'taeglich' };
+  loadNuts();
+  renderOnb();
+  try { $('onbDlg').showModal(); } catch(e){ $('onbDlg').setAttribute('open',''); }
+}
+function onbTreffer(){
+  const p = { ...EMPTY_PREFS, suchbegriffe:ONB.d.suchbegriffe, cpv:ONB.d.cpv, sitz_nuts:ONB.d.sitz_nuts, umkreis_km:ONB.d.sitz_nuts ? ONB.d.umkreis_km : null };
+  return S.rows.filter(r => isOpen(r) && matchOf(r, p)).length;
+}
+function renderOnb(){
+  const d = ONB.d, st = ONB.step;
+  $('onbSteps').replaceChildren(...[0,1,2].map(i => h('i',{class: i <= st ? 'on' : ''})));
+  $('onbMsg').textContent = '';
+  $('onbBack').classList.toggle('hidden', st === 0);
+  $('onbNext').textContent = st === 2 ? 'Fertig' : 'Weiter';
+  const body = $('onbBody');
+  if (st === 0){
+    $('onbTitle').textContent = 'Was macht deine Firma?';
+    $('onbLead').textContent = 'Wähl eine oder mehrere Branchen. Wir legen passende Suchbegriffe und CPV-Gruppen an, die du später jederzeit ändern kannst.';
+    const own = h('input',{id:'onbOwn', placeholder:'Eigene Suchbegriffe, mit Komma getrennt', autocomplete:'off', value:d.suchbegriffe.filter(w => !BRANCHEN.some(b => b[2].includes(w))).join(', ')});
+    own.addEventListener('change', () => onbOwn(own.value));
+    body.replaceChildren(h('div',{class:'chipgrid'}, ...BRANCHEN.map(([k, l, worte, cpv]) => h('button',{type:'button','aria-pressed':String(d.branchen.includes(k)), onclick:()=>{
+      if (d.branchen.includes(k)) d.branchen.splice(d.branchen.indexOf(k), 1); else d.branchen.push(k);
+      onbOwn($('onbOwn').value); renderOnb(); }}, l))),
+      h('div',{class:'field', style:'margin-top:14px'}, h('label',{for:'onbOwn'}, 'Fehlt etwas?'), own));
+  } else if (st === 1){
+    $('onbTitle').textContent = 'Wo seid ihr unterwegs?';
+    $('onbLead').textContent = 'Gib euren Firmensitz an. Dann zeigen wir nur Ausschreibungen in eurem Umkreis.';
+    const inp = h('input',{id:'onbSitz', list:'nutsList2', placeholder:'Landkreis oder Stadt, z.B. Oberallgäu', autocomplete:'off', value:d.sitz_nuts ? nutsName(d.sitz_nuts) : ''});
+    const dl = h('datalist',{id:'nutsList2'}, ...(S.nuts ? Object.entries(S.nuts).filter(([k]) => k.length === 5).sort((a, b) => a[1][0].localeCompare(b[1][0], 'de')).map(([k, x]) => h('option',{value:x[0]})) : []));
+    const km = h('select',{id:'onbKm'}, ...[['30','30 km'],['50','50 km'],['100','100 km'],['150','150 km'],['200','200 km'],['300','300 km'],['','ganz Deutschland']].map(([v, l]) => h('option',{value:v, selected:String(d.umkreis_km || '') === v}, l)));
+    const info = h('p',{class:'onb-count'});
+    const upd = () => { d.sitz_nuts = sitzAusText(inp.value); d.umkreis_km = +km.value || null; info.replaceChildren(...(d.sitz_nuts && d.umkreis_km ? ['Gerade passend: ', h('b',{}, onbTreffer()), ' offene Ausschreibungen.'] : inp.value && !d.sitz_nuts ? ['Wähl einen Eintrag aus der Liste.'] : ['Gerade passend in ganz Deutschland: ', h('b',{}, onbTreffer())])); };
+    inp.addEventListener('input', upd); km.addEventListener('change', upd);
+    body.replaceChildren(h('div',{class:'row2'}, h('div',{class:'field'}, h('label',{for:'onbSitz'}, 'Firmensitz'), inp, dl), h('div',{class:'field', style:'flex:0 0 180px;min-width:0'}, h('label',{for:'onbKm'}, 'Umkreis'), km)), info);
+    if (!S.nuts) loadNuts().then(() => { if (ONB.step === 1) renderOnb(); });
+    upd();
+  } else {
+    $('onbTitle').textContent = 'Sollen wir dir Bescheid geben?';
+    $('onbLead').textContent = 'Wir schicken dir morgens die neuen passenden Ausschreibungen. Ohne Neuigkeiten kommt keine Mail.';
+    body.replaceChildren(h('div',{class:'stati', role:'radiogroup'}, ...MAIL_OPT.map(([k, l]) => h('button',{type:'button','aria-pressed':String(d.mail_frequenz === k), role:'radio','aria-checked':String(d.mail_frequenz === k), onclick:()=>{ d.mail_frequenz = k; renderOnb(); }}, l))),
+      h('p',{class:'onb-count', style:'margin-top:16px'}, 'Mit deiner Auswahl passen gerade ', h('b',{}, onbTreffer()), ' offene Ausschreibungen.'));
+  }
+}
+function onbOwn(txt){
+  const d = ONB.d;
+  const worte = [], cpv = [];
+  for (const b of BRANCHEN) if (d.branchen.includes(b[0])){ worte.push(...b[2]); cpv.push(...b[3]); }
+  for (const w of String(txt || '').split(',')){ const t = norm(w); if (t.length >= 2) worte.push(t); }
+  d.suchbegriffe = [...new Set(worte)]; d.cpv = [...new Set(cpv)];
+}
+async function onbSpeichern(fertig){
+  const d = ONB.d;
+  const row = { user_id:S.user.id, updated_at:new Date().toISOString(), onboarding_am:new Date().toISOString() };
+  if (fertig) Object.assign(row, { suchbegriffe:d.suchbegriffe, cpv:d.cpv, branchen:d.branchen, sitz_nuts:d.sitz_nuts, umkreis_km:d.sitz_nuts ? d.umkreis_km : null, mail_frequenz:d.mail_frequenz,
+    ausschluss:S.prefs.ausschluss, bundeslaender:S.prefs.bundeslaender, firma:S.prefs.firma || null, beschreibung:S.prefs.beschreibung || null });
+  $('onbNext').disabled = true;
+  const { error } = await S.db.from('settings').upsert(row, { onConflict:'user_id' });
+  $('onbNext').disabled = false;
+  if (error){ $('onbMsg').textContent = 'Speichern hat nicht geklappt: ' + error.message; return false; }
+  S.prefs = { ...S.prefs, ...row };
+  applyPrefs(S.prefs);
+  if (hasPrefs(S.prefs)) S.view = 'match';
+  return true;
+}
+$('onbNext').addEventListener('click', async () => {
+  if (ONB.step === 0){ onbOwn($('onbOwn').value); if (!ONB.d.suchbegriffe.length){ $('onbMsg').textContent = 'Wähl mindestens eine Branche oder gib einen Suchbegriff ein.'; return; } }
+  if (ONB.step < 2){ ONB.step++; renderOnb(); return; }
+  if (await onbSpeichern(true)){ $('onbDlg').close(); S.sel = -1; S.shown = PAGE; render(false); }
+});
+$('onbBack').addEventListener('click', () => { if (ONB.step > 0){ ONB.step--; renderOnb(); } });
+$('onbSkip').addEventListener('click', async () => { await onbSpeichern(false); $('onbDlg').close(); });
+$('onbDlg').addEventListener('cancel', e => e.preventDefault());
+
+/* ---------- Konto löschen ---------- */
+$('delBtn').addEventListener('click', async () => {
+  const msg = $('delMsg'); msg.className = 'msg'; msg.textContent = '';
+  const ok = prompt('Wirklich löschen? Das lässt sich nicht rückgängig machen. Tippe LÖSCHEN zum Bestätigen.');
+  if (!ok || ok.trim().toUpperCase() !== 'LÖSCHEN') return;
+  $('delBtn').disabled = true;
+  const { error } = await S.db.rpc('konto_loeschen');
+  $('delBtn').disabled = false;
+  if (error){
+    if (/PGRST202|konto_loeschen|not find|does not exist/i.test((error.code || '') + error.message)){
+      msg.replaceChildren('Das automatische Löschen wird gerade eingerichtet. Schreib uns bitte an ', h('a',{href:'mailto:info@studioldk.de?subject=Konto%20l%C3%B6schen'}, 'info@studioldk.de'), ', dann löschen wir dein Konto sofort.');
+    } else msg.textContent = 'Das hat nicht geklappt: ' + error.message;
+    return;
+  }
+  try { for (const k of Object.keys(localStorage)) if (k.includes(S.user.id)) localStorage.removeItem(k); } catch(e){}
+  await S.db.auth.signOut();
+  show('login'); setMode('login');
+  $('loginMsg').className = 'msg ok'; $('loginMsg').textContent = 'Dein Konto wurde gelöscht.';
+});
 
 /* =========================================================================
    Detailansicht
@@ -1470,10 +1945,12 @@ function openDrawer(r){
   const rx = S.react[r.id];
   $('drBody').replaceChildren(...[
     h('h2',{}, r.title || '(ohne Titel)'),
+    r.art === 'vorinfo' ? h('div',{class:'note vor'}, h('b',{},'Vorinformation. '), 'Der Auftraggeber kündigt hier ein Vorhaben an. Die eigentliche Ausschreibung folgt meist einige Wochen oder Monate später. Merk sie dir, dann siehst du sie in der Pipeline.') : null,
+    r.geaendert_am ? h('div',{class:'note chg'}, h('b',{}, 'Geändert am ' + fmtLong.format(new Date(r.geaendert_am)) + '. '), r.aenderung || 'Prüf die aktuelle Fassung der Unterlagen.') : null,
     r.ki_zusammenfassung ? h('div',{class:'ki'}, h('div',{class:'lab'},'Kurz erklärt, von der KI zusammengefasst'), h('div',{}, r.ki_zusammenfassung)) : null,
     h('dl',{class:'kv'},
       h('dt',{},'Frist'), h('dd',{}, r.dl ? fmtLong.format(r.dl) : 'nicht angegeben'),
-      r.auftraggeber ? [h('dt',{},'Auftraggeber'), h('dd',{}, r.auftraggeber)] : null,
+      r.auftraggeber ? [h('dt',{},'Auftraggeber'), h('dd',{}, h('button',{class:'linkbtn ag', type:'button', title:'Profil des Auftraggebers', onclick:()=>openAuftraggeber(r.auftraggeber, r)}, r.auftraggeber))] : null,
       h('dt',{},'Ort'), h('dd',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'),
       r.cpv_code ? [h('dt',{},'CPV'), h('dd',{}, r.cpv_code)] : null,
       h('dt',{},'Eingegangen'), h('dd',{}, fmtLong.format(r.created)),
@@ -1481,6 +1958,7 @@ function openDrawer(r){
       r.ted_publication_number ? [h('dt',{},'TED-Nummer'), h('dd',{}, r.ted_publication_number)] : null),
     h('div',{class:'stati', role:'group', 'aria-label':'Bearbeitungsstand'},
       ...STATI.map(([k,l]) => h('button',{type:'button','aria-pressed':String(stOf(r.id) === k), onclick:async ()=>{ await setStatus(r.id, { status: stOf(r.id) === k ? null : k }); openDrawer(r); }}, l))),
+    zustField(r),
     noteField(r),
     h('div',{class:'dr-acts'},
       safeUrl(r.unterlagen_url) ? h('a',{class:'btn btn-red', href:safeUrl(r.unterlagen_url), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Vergabeunterlagen öffnen') : null,
@@ -1489,12 +1967,27 @@ function openDrawer(r){
       h('a',{class:'btn btn-ghost', href:mailFor(r), style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Weiterleiten'),
       h('button',{class:'btn btn-ghost', onclick:()=>{ setReact(r.id,'hide'); closeDrawer(); }}, rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden')),
     h('div',{id:'drWb', class:'hidden'}),
-    r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du über die Bekanntmachung.')].filter(Boolean));
+    r.description ? h('div',{class:'desc', id:'drDesc'}, r.description + (r.descKurz && r.description.length >= 600 ? ' …' : '')) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du über die Bekanntmachung.')].filter(Boolean));
+  if (r.descKurz && r.description && r.description.length >= 600) volleBeschreibung(r);
   $('scrim').classList.remove('hidden');
   requestAnimationFrame(() => { $('scrim').classList.add('on'); $('drawer').classList.add('on'); });
   $('drawer').setAttribute('aria-hidden','false');
   $('drClose').focus({ preventScroll:true });
   drawerWettbewerb(r);
+}
+async function volleBeschreibung(r){
+  const { data } = await S.db.from('tenders').select('description').eq('id', r.id).maybeSingle();
+  if (!data || !data.description || S.drawerRow !== r) return;
+  r.description = data.description; r.descKurz = false;
+  const el = $('drDesc'); if (el) el.textContent = data.description;
+}
+function zustField(r){
+  if (!S.team || !S.feat.zust || S.members.length < 2) return null;
+  const cur = (S.status[r.id] && S.status[r.id].zustaendig) || '';
+  const sel = h('select',{id:'zustSel'}, h('option',{value:''}, 'niemand'),
+    ...S.members.map(m => h('option',{value:m.user_id, selected:m.user_id === cur}, m.user_id === S.user.id ? (m.email || 'ich') + ' (ich)' : (m.email || 'Mitglied'))));
+  sel.addEventListener('change', async () => { const patch = { zustaendig: sel.value || null }; if (sel.value && !stOf(r.id)) patch.status = 'pruefen'; await setStatus(r.id, patch); openDrawer(r); });
+  return h('div',{class:'field zust'}, h('label',{for:'zustSel'}, 'Zuständig'), sel, h('span',{class:'hint'}, 'Die zuständige Person bekommt die Fristen-Erinnerung per Mail.'));
 }
 function noteField(r){
   const ta = h('textarea',{id:'noteTa', placeholder:'z.B. Ortsbesichtigung am 20.10., Herrn Maier fragen', style:'min-height:80px'});
