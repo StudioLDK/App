@@ -90,6 +90,46 @@ dialog.help p{margin:0;color:var(--muted);font-size:14px}
 .ki{background:var(--panel);border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.55}
 .ki .lab{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
 .layout.solo{grid-template-columns:minmax(0,1fr)}
+.wb{max-width:1000px;padding:8px 0 80px}
+.wb .lead2{margin:-14px 0 22px;color:var(--muted);font-size:15px;max-width:44em}
+.wb-ctrl{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.wb-ctrl input{height:42px;border:1px solid var(--line2);border-radius:8px;padding:0 14px;flex:1 1 280px;min-width:0;background:#fff}
+.wb-ctrl .stati{margin:0}
+.watch{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:22px}
+.watch > span{font-size:13px;font-weight:700;color:var(--muted);margin-right:4px}
+.watch button{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:600}
+.watch button:hover{border-color:var(--ink)}
+.wb-note{font-size:14px;color:var(--muted);margin:0 0 14px}
+.wb-note a{color:var(--ink);font-weight:600}
+.rank{display:flex;flex-direction:column}
+.rank-h,.rank .r{display:grid;grid-template-columns:30px minmax(0,1fr) 170px 120px 104px;gap:16px;align-items:center;padding:0 8px}
+.rank-h{font-size:12px;font-weight:600;color:var(--faint);padding-bottom:8px;border-bottom:1px solid var(--line)}
+.rank-h span:nth-child(n+3),.rank .num{text-align:right}
+.rank .r{padding:14px 8px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;width:100%;border-radius:0}
+.rank .r:hover{background:var(--panel)}
+.rank .pos{color:var(--faint);font-weight:700;font-size:14px}
+.rank .nm{min-width:0}
+.rank .nm b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank .nm span{font-size:13px;color:var(--muted)}
+.rank .num{font-weight:700}
+.rank .num small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.meter{height:5px;background:var(--panel);border-radius:3px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--red);border-radius:3px}
+.wpill{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--red);vertical-align:2px}
+.zl{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.zl > div{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:4px 14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:baseline}
+.zl .d{color:var(--muted);font-size:13px}
+.zl .t{font-weight:600;min-width:0}
+.zl .s{grid-column:2;color:var(--muted);font-size:13px}
+.zl .w{font-weight:700;text-align:right;white-space:nowrap}
+.zl .linkbtn{padding:0;text-align:left;font-weight:700;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.wbsec{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:20px}
+.wbsec h3{margin:0;font-size:17px;font-weight:750;font-stretch:108%}
+.wbsec .sub{margin:-6px 0 0;font-size:13px;color:var(--muted)}
+.tops{display:flex;flex-direction:column}
+.tops button{display:flex;justify-content:space-between;gap:12px;border:0;border-bottom:1px solid var(--line);background:none;padding:9px 0;text-align:left;font-size:14px;width:100%}
+.tops button:hover b{text-decoration:underline}
+.tops button span{color:var(--muted);white-space:nowrap}
 .gear{display:inline-flex;align-items:center;gap:6px}
 .set{max-width:780px;padding:8px 0 80px}
 .set-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:28px}
@@ -251,6 +291,13 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
   .band{padding:14px 12px 10px}
   .days{height:90px;gap:2px}
   .ticks{gap:2px}
+  .rank-h{display:none}
+  .rank .r{grid-template-columns:24px minmax(0,1fr) auto;gap:10px;padding:12px 2px}
+  .rank .r .sum,.rank .r .last{display:none}
+  .rank .cnt{text-align:right;min-width:70px}
+  .zl > div{grid-template-columns:1fr auto}
+  .zl .d{grid-column:1/-1}
+  .zl .s{grid-column:1}
 }
 @media (prefers-reduced-motion:reduce){
   .bar{animation:none}
@@ -298,7 +345,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
         <input id="q" type="search" placeholder="Suchen, z.B. Labor, Lüftung, Reinigung" autocomplete="off">
         <kbd aria-hidden="true">/</kbd>
       </div>
-      <div class="user"><span class="em" id="userEm"></span><a class="linkbtn gear" href="#einstellungen" id="gearBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Einstellungen</a><button class="linkbtn" id="logout">Abmelden</button></div>
+      <div class="user"><span class="em" id="userEm"></span><a class="linkbtn" href="#wettbewerb" id="wbBtn">Wettbewerb</a><a class="linkbtn gear" href="#einstellungen" id="gearBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Einstellungen</a><button class="linkbtn" id="logout">Abmelden</button></div>
     </div>
   </header>
 
@@ -434,6 +481,27 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
           <div style="display:flex;align-items:center;gap:14px"><span class="msg" id="setMsg"></span><button class="btn" type="submit" id="saveBtn">Speichern</button></div>
         </div>
       </form>
+
+      <section id="wb" class="wb hidden" aria-labelledby="wbH">
+        <div class="set-head">
+          <h1 id="wbH">Wettbewerb</h1>
+          <a class="linkbtn" href="#">Zurück zu den Ausschreibungen</a>
+        </div>
+        <p class="lead2">Wer öffentliche Aufträge gewinnt, bei wem und in welcher Höhe. Grundlage sind die veröffentlichten Zuschläge aus ganz Deutschland.</p>
+        <div class="wb-ctrl">
+          <label for="wbQ" class="hidden">Firma oder Auftraggeber suchen</label>
+          <input id="wbQ" type="search" placeholder="Firma suchen, z.B. Waldner" autocomplete="off">
+          <div class="stati" role="group" aria-label="Suchen nach" id="wbMode"></div>
+          <select id="wbTage" aria-label="Zeitraum">
+            <option value="90">letzte 3 Monate</option>
+            <option value="180">letzte 6 Monate</option>
+            <option value="365" selected>letzte 12 Monate</option>
+            <option value="730">letzte 2 Jahre</option>
+          </select>
+        </div>
+        <div id="wbWatch"></div>
+        <div id="wbList"></div>
+      </section>
     </main>
   </div>
 
@@ -732,17 +800,22 @@ const isOpen = r => S.react[r.id] !== 'hide' && (r.days === null || r.days >= 0)
 function route(first){
   if ($('app').classList.contains('hidden') || !S.rows) return;
   const set = location.hash === '#einstellungen';
-  S.page = set ? 'settings' : 'list';
-  document.querySelector('.layout').classList.toggle('solo', set || !!S.locked);
+  const wb = location.hash === '#wettbewerb';
+  S.page = set ? 'settings' : wb ? 'wettbewerb' : 'list';
+  if (S.drawerRow) closeDrawer();
+  document.querySelector('.layout').classList.toggle('solo', set || wb || !!S.locked);
+  $('wbBtn').toggleAttribute('aria-current', wb);
+  $('wb').classList.toggle('hidden', !wb || !!S.locked);
   if (S.locked && !set){
     $('settings').classList.add('hidden'); $('content').classList.add('hidden');
     document.querySelector('.rail').classList.add('hidden'); $('lockedBox').classList.remove('hidden');
     return;
   }
   $('settings').classList.toggle('hidden', !set);
-  $('content').classList.toggle('hidden', set);
-  document.querySelector('.rail').classList.toggle('hidden', set);
+  $('content').classList.toggle('hidden', set || wb);
+  document.querySelector('.rail').classList.toggle('hidden', set || wb);
   if (set){ $('lockedBox').classList.add('hidden'); openSettings(); }
+  else if (wb) openWb();
   else render(first);
   window.scrollTo(0, 0);
 }
@@ -1227,6 +1300,167 @@ $('pwBtn').addEventListener('click', async () => {
 });
 
 /* =========================================================================
+   Wettbewerb: wer gewinnt was
+   ========================================================================= */
+const WB = { tage:365, mode:'firma', scope:'mine', q:'', seq:0, ready:false };
+const eurK = new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',notation:'compact',maximumFractionDigits:1});
+const eurV = new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const fmtNum = new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+const zDate = d => d ? fmtNum.format(new Date(d + 'T12:00:00')) : '';
+const likeEsc = t => t.replace(/[\\%_]/g, m => '\\' + m);
+const WB_MODES = [['firma','Firma'],['auftraggeber','Auftraggeber']];
+
+function watchList(){ try { return JSON.parse(localStorage.getItem('ldk-watch-'+S.user.id) || '[]'); } catch(e){ return []; } }
+function saveWatch(l){ try { localStorage.setItem('ldk-watch-'+S.user.id, JSON.stringify(l)); } catch(e){} }
+const isWatched = key => watchList().some(w => w.key === key);
+function toggleWatch(x){
+  const l = watchList(), i = l.findIndex(w => w.key === x.gewinner_key);
+  if (i >= 0) l.splice(i, 1); else l.unshift({ key:x.gewinner_key, name:x.gewinner, ort:x.gewinner_ort || '' });
+  saveWatch(l.slice(0, 40));
+}
+
+function openWb(){
+  if (!WB.ready){
+    WB.ready = true;
+    let t;
+    $('wbQ').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => { WB.q = e.target.value.trim(); loadWb(); }, 250); });
+    $('wbTage').addEventListener('change', e => { WB.tage = +e.target.value; loadWb(); });
+  }
+  if ($('wbQ').value !== WB.q) $('wbQ').value = WB.q;
+  renderWbMode();
+  loadWb();
+}
+function renderWbMode(){
+  $('wbMode').replaceChildren(...WB_MODES.map(([k,l]) => h('button',{type:'button','aria-pressed':String(WB.mode === k), onclick:()=>{ WB.mode = k; renderWbMode(); if (WB.q) loadWb(); }}, l)));
+  $('wbQ').placeholder = WB.mode === 'firma' ? 'Firma suchen, z.B. Waldner' : 'Auftraggeber suchen, z.B. Universität Leipzig';
+}
+function renderWatch(){
+  const l = watchList();
+  $('wbWatch').replaceChildren(...(l.length ? [h('div',{class:'watch'}, h('span',{},'Beobachtet'),
+    ...l.map(w => h('button',{type:'button', onclick:()=>openProfil({ gewinner_key:w.key, gewinner:w.name, gewinner_ort:w.ort })}, w.name)))] : []));
+}
+
+async function loadWb(){
+  const seq = ++WB.seq;
+  renderWatch();
+  $('wbList').replaceChildren(h('div',{class:'loading'},'Lade Zuschläge …'));
+  const begriffe = S.prefs.suchbegriffe || [];
+  const p = { p_tage: WB.tage, p_limit: 60 };
+  if (WB.q){ if (WB.mode === 'firma') p.p_firma = likeEsc(WB.q); else p.p_auftraggeber = likeEsc(WB.q); }
+  else if (WB.scope === 'mine' && begriffe.length) p.p_begriffe = begriffe.map(likeEsc);
+  const { data, error } = await S.db.rpc('wettbewerb_top', p);
+  if (seq !== WB.seq) return;
+  const zeitraum = $('wbTage').selectedOptions[0].textContent;
+  if (error){
+    $('wbList').replaceChildren(h('div',{class:'empty'}, h('b',{},'Die Zuschläge sind gerade nicht erreichbar.'),
+      h('span',{}, /PGRST202|wettbewerb_top|does not exist/.test(error.message || error.code || '') ? 'Die Wettbewerbsdaten werden noch eingerichtet. Schau morgen wieder rein.' : 'Lade die Seite in ein paar Minuten neu.')));
+    return;
+  }
+  const rows = data || [];
+  const note = [];
+  if (WB.q){
+    note.push(WB.mode === 'firma' ? `Firmen mit „${WB.q}“ im Namen, ${zeitraum}.` : `Wer bei Auftraggebern mit „${WB.q}“ im Namen gewonnen hat, ${zeitraum}.`);
+  } else if (WB.scope === 'mine' && begriffe.length){
+    note.push(`Gewinner von Aufträgen zu deinen Suchbegriffen (${begriffe.slice(0,6).join(', ')}${begriffe.length > 6 ? ' …' : ''}), ${zeitraum}. `,
+      h('a',{href:'#', onclick:e=>{ e.preventDefault(); WB.scope = 'all'; loadWb(); }}, 'Alle Branchen zeigen'));
+  } else {
+    note.push(`Alle Branchen, ${zeitraum}. `);
+    if (begriffe.length) note.push(h('a',{href:'#', onclick:e=>{ e.preventDefault(); WB.scope = 'mine'; loadWb(); }}, 'Nur meine Suchbegriffe'));
+    else note.push(h('a',{href:'#einstellungen'}, 'Suchbegriffe hinterlegen'), ', dann siehst du hier nur deine Branche.');
+  }
+  if (!rows.length){
+    $('wbList').replaceChildren(h('p',{class:'wb-note'}, ...note), h('div',{class:'empty'}, h('b',{},'Keine Zuschläge gefunden.'),
+      h('span',{}, WB.q ? 'Prüf die Schreibweise oder such nur nach einem Teil des Namens.' : 'Vergrößere den Zeitraum oder lass dir alle Branchen zeigen.')));
+    return;
+  }
+  const max = Math.max(...rows.map(r => +r.anzahl));
+  $('wbList').replaceChildren(h('p',{class:'wb-note'}, ...note),
+    h('div',{class:'rank'},
+      h('div',{class:'rank-h', 'aria-hidden':'true'}, h('span',{},''), h('span',{},'Firma'), h('span',{},'Zuschläge'), h('span',{},'Bekannter Wert'), h('span',{},'Zuletzt')),
+      ...rows.map((r, i) => h('button',{class:'r', type:'button', onclick:()=>openProfil(r)},
+        h('span',{class:'pos'}, String(i + 1)),
+        h('div',{class:'nm'}, h('b',{}, r.gewinner, isWatched(r.gewinner_key) ? h('span',{class:'wpill'},'beobachtet') : null),
+          h('span',{}, [r.gewinner_ort, +r.auftraggeber_anzahl === 1 ? '1 Auftraggeber' : r.auftraggeber_anzahl + ' Auftraggeber'].filter(Boolean).join(', '))),
+        h('div',{class:'num cnt'}, String(r.anzahl), h('div',{class:'meter'}, h('i',{style:`width:${Math.max(4, Math.round(100 * r.anzahl / max))}%`}))),
+        h('div',{class:'num sum'}, r.summe ? eurK.format(r.summe) : '', h('small',{}, +r.mit_wert ? `aus ${r.mit_wert} mit Wert` : 'kein Wert genannt')),
+        h('div',{class:'num last'}, zDate(r.letzter))))));
+}
+
+function zuschlagListe(rows, ohneGewinner){
+  return h('div',{class:'zl'}, ...rows.map(z => h('div',{},
+    h('span',{class:'d'}, zDate(z.zuschlag_am)),
+    h('span',{class:'t'}, z.title),
+    h('span',{class:'w'}, z.wert ? eurK.format(z.wert) : ''),
+    h('span',{class:'s'}, ...(ohneGewinner ? [z.auftraggeber || ''] :
+      [h('button',{class:'linkbtn', type:'button', onclick:()=>openProfil(z, S.drawerRow)}, z.gewinner), z.gewinner_ort ? ', ' + z.gewinner_ort : '']))))) ;
+}
+function drawerAuf(){
+  $('scrim').classList.remove('hidden');
+  requestAnimationFrame(() => { $('scrim').classList.add('on'); $('drawer').classList.add('on'); });
+  $('drawer').setAttribute('aria-hidden','false');
+}
+
+async function openProfil(x, zurueck){
+  const me = { _profil:true, title:x.gewinner, key:x.gewinner_key };
+  S.drawerRow = me;
+  $('drDue').textContent = 'Wettbewerber'; $('drDue').style.color = 'var(--ink)';
+  const back = zurueck && !zurueck._profil ? h('button',{class:'linkbtn', type:'button', style:'align-self:flex-start', onclick:()=>openDrawer(zurueck)}, 'Zurück zur Ausschreibung') : null;
+  $('drBody').replaceChildren(...[back, h('h2',{}, x.gewinner), x.gewinner_ort ? h('p',{style:'margin:-12px 0 0;color:var(--muted)'}, x.gewinner_ort) : null, h('div',{class:'loading', style:'padding:30px 0'}, 'Lade Zuschläge …')].filter(Boolean));
+  drawerAuf();
+  $('drClose').focus({ preventScroll:true });
+  const { data, error } = await S.db.from('zuschlaege')
+    .select('title,auftraggeber,auftraggeber_ort,gewinner,gewinner_ort,wert,cpv,zuschlag_am')
+    .eq('gewinner_key', x.gewinner_key).order('zuschlag_am', { ascending:false }).limit(400);
+  if (S.drawerRow !== me) return;
+  const rows = data || [];
+  const mitWert = rows.filter(z => z.wert);
+  const summe = mitWert.reduce((a, z) => a + Number(z.wert), 0);
+  const ag = {};
+  for (const z of rows) if (z.auftraggeber) ag[z.auftraggeber] = (ag[z.auftraggeber] || 0) + 1;
+  const topAg = Object.entries(ag).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const ort = x.gewinner_ort || (rows[0] && rows[0].gewinner_ort) || '';
+  let zeige = 25;
+  const liste = h('div',{});
+  const fuelle = () => liste.replaceChildren(zuschlagListe(rows.slice(0, zeige), true),
+    rows.length > zeige ? h('button',{class:'btn btn-ghost', type:'button', style:'margin-top:12px', onclick:()=>{ zeige += 50; fuelle(); }}, `Weitere ${Math.min(50, rows.length - zeige)} anzeigen`) : null);
+  fuelle();
+  const watchBtn = h('button',{class:'btn ' + (isWatched(x.gewinner_key) ? 'btn-ghost' : 'btn-red'), type:'button', onclick:()=>{ toggleWatch({ ...x, gewinner_ort:ort }); openProfil(x, zurueck); if (S.page === 'wettbewerb') loadWb(); }},
+    isWatched(x.gewinner_key) ? 'Nicht mehr beobachten' : 'Beobachten');
+  $('drBody').replaceChildren(...[back,
+    h('h2',{}, x.gewinner), ort ? h('p',{style:'margin:-12px 0 0;color:var(--muted)'}, ort) : null,
+    error ? h('p',{style:'color:var(--red);margin:0'}, 'Die Zuschläge konnten nicht geladen werden: ' + error.message) : null,
+    h('dl',{class:'kv'},
+      h('dt',{},'Zuschläge'), h('dd',{}, String(rows.length) + (rows.length >= 400 ? ' oder mehr' : '')),
+      h('dt',{},'Bekannter Auftragswert'), h('dd',{}, summe ? eurV.format(summe) + (mitWert.length < rows.length ? ` (bei ${mitWert.length} von ${rows.length} genannt)` : '') : 'nicht veröffentlicht'),
+      h('dt',{},'Auftraggeber'), h('dd',{}, String(Object.keys(ag).length)),
+      rows[0] ? [h('dt',{},'Zuletzt gewonnen'), h('dd',{}, zDate(rows[0].zuschlag_am))] : null),
+    h('div',{class:'dr-acts'}, watchBtn,
+      h('a',{class:'btn btn-ghost', href:'https://www.google.com/search?q=' + encodeURIComponent(x.gewinner + ' ' + ort), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Im Web suchen')),
+    topAg.length ? h('div',{class:'wbsec'}, h('h3',{},'Häufigste Auftraggeber'),
+      h('div',{class:'tops'}, ...topAg.map(([n, c]) => h('button',{type:'button', onclick:()=>{ WB.mode = 'auftraggeber'; WB.q = n; if (location.hash === '#wettbewerb') { closeDrawer(); openWb(); } else location.hash = '#wettbewerb'; }}, h('b',{}, n), h('span',{}, c === 1 ? '1 Zuschlag' : c + ' Zuschläge'))))) : null,
+    rows.length ? h('div',{class:'wbsec'}, h('h3',{},'Gewonnene Aufträge'), liste) : h('p',{style:'color:var(--muted);margin:0'},'Noch keine Zuschläge gespeichert.')].filter(Boolean));
+}
+
+async function drawerWettbewerb(r){
+  const box = $('drWb'); if (!box) return;
+  const jobs = [
+    r.auftraggeber ? S.db.from('zuschlaege').select('title,gewinner,gewinner_key,gewinner_ort,wert,zuschlag_am').eq('auftraggeber', r.auftraggeber).order('zuschlag_am', { ascending:false }).limit(6) : null,
+    r.cpv_code ? S.db.rpc('wettbewerb_top', { p_cpv: String(r.cpv_code).slice(0, 5), p_tage: 730, p_limit: 5 }) : null
+  ];
+  const [ag, cpv] = await Promise.all(jobs.map(j => j ? j.then(x => x, () => ({ error:true })) : Promise.resolve(null)));
+  if (S.drawerRow !== r || !document.body.contains(box)) return;
+  const agRows = ag && !ag.error ? ag.data || [] : [];
+  const cpvRows = cpv && !cpv.error ? cpv.data || [] : [];
+  if (!agRows.length && !cpvRows.length) return;
+  box.className = 'wbsec';
+  box.replaceChildren(...[h('h3',{},'Wettbewerb'),
+    agRows.length ? h('p',{class:'sub'}, 'Wer zuletzt bei diesem Auftraggeber gewonnen hat') : null,
+    agRows.length ? zuschlagListe(agRows, false) : null,
+    cpvRows.length ? h('p',{class:'sub', style:'margin-top:8px'}, 'Wer ähnliche Aufträge gewinnt, letzte 2 Jahre') : null,
+    cpvRows.length ? h('div',{class:'tops'}, ...cpvRows.map(c => h('button',{type:'button', onclick:()=>openProfil(c, r)}, h('b',{}, c.gewinner), h('span',{}, (c.anzahl == 1 ? '1 Zuschlag' : c.anzahl + ' Zuschläge') + (c.summe ? ', ' + eurK.format(c.summe) : ''))))) : null].filter(Boolean));
+}
+
+/* =========================================================================
    Detailansicht
    ========================================================================= */
 function openDrawer(r){
@@ -1254,11 +1488,13 @@ function openDrawer(r){
       r.dl ? h('button',{class:'btn btn-ghost', onclick:()=>icsDownload([r], 'Frist ' + (r.title || ''))}, 'In den Kalender') : null,
       h('a',{class:'btn btn-ghost', href:mailFor(r), style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Weiterleiten'),
       h('button',{class:'btn btn-ghost', onclick:()=>{ setReact(r.id,'hide'); closeDrawer(); }}, rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden')),
+    h('div',{id:'drWb', class:'hidden'}),
     r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du über die Bekanntmachung.')].filter(Boolean));
   $('scrim').classList.remove('hidden');
   requestAnimationFrame(() => { $('scrim').classList.add('on'); $('drawer').classList.add('on'); });
   $('drawer').setAttribute('aria-hidden','false');
   $('drClose').focus({ preventScroll:true });
+  drawerWettbewerb(r);
 }
 function noteField(r){
   const ta = h('textarea',{id:'noteTa', placeholder:'z.B. Ortsbesichtigung am 20.10., Herrn Maier fragen', style:'min-height:80px'});
@@ -1289,7 +1525,8 @@ $('q').addEventListener('input', e => { clearTimeout(qTimer); qTimer = setTimeou
 $('sort').addEventListener('change', e => { S.sort = e.target.value; S.sel = -1; render(); });
 
 document.addEventListener('keydown', e => {
-  if ($('app').classList.contains('hidden') || S.page === 'settings') return;
+  if ($('app').classList.contains('hidden')) return;
+  if (S.page !== 'list' || (S.drawerRow && S.drawerRow._profil)){ if (e.key === 'Escape' && S.drawerRow) closeDrawer(); return; }
   const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
   if (e.key === 'Escape'){ if (S.drawerRow) closeDrawer(); else if (typing) document.activeElement.blur(); return; }
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
