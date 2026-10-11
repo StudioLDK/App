@@ -850,7 +850,7 @@ function rowEl(r, i){
     h('div',{class:'acts'},
       h('button',{class:'ic','aria-label':rx === 'star' ? 'Nicht mehr merken' : 'Merken', 'aria-pressed':String(rx === 'star'), title:'Merken (S)', onclick:()=>setReact(r.id,'star')}, icon(rx === 'star' ? 'starOn' : 'star')),
       h('button',{class:'ic','aria-label':rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden', 'aria-pressed':String(rx === 'hide'), title:'Ausblenden (X)', onclick:()=>setReact(r.id,'hide')}, icon('hide')),
-      safeUrl(r.link) ? h('a',{class:'ic', href:safeUrl(r.link), target:'_blank', rel:'noopener', 'aria-label':'Bei TED öffnen', title:'Bei TED öffnen'}, icon('ext')) : null));
+      safeUrl(r.link) ? h('a',{class:'ic', href:safeUrl(r.link), target:'_blank', rel:'noopener', 'aria-label':'Bekanntmachung öffnen', title:'Bekanntmachung öffnen'}, icon('ext')) : null));
   return el;
 }
 function markSel(){
@@ -971,7 +971,7 @@ function openDrawer(r){
       safeUrl(r.link) && r.link !== r.unterlagen_url ? h('a',{class:'btn ' + (safeUrl(r.unterlagen_url) ? 'btn-ghost' : 'btn-red'), href:safeUrl(r.link), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Bekanntmachung bei TED') : null,
       h('button',{class:'btn btn-ghost', onclick:()=>setReact(r.id,'star')}, rx === 'star' ? 'Gemerkt' : 'Merken'),
       h('button',{class:'btn btn-ghost', onclick:()=>{ setReact(r.id,'hide'); closeDrawer(); }}, rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden')),
-    r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du bei TED.')].filter(Boolean));
+    r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du über die Bekanntmachung.')].filter(Boolean));
   $('scrim').classList.remove('hidden');
   requestAnimationFrame(() => { $('scrim').classList.add('on'); $('drawer').classList.add('on'); });
   $('drawer').setAttribute('aria-hidden','false');
