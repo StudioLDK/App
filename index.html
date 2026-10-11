@@ -638,7 +638,7 @@ async function checkAccess(){
 }
 
 const COLS_BASE = 'id,title,description,region,deadline,link,created_at,ted_publication_number';
-const COLS_MORE = COLS_BASE + ',cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung';
+const COLS_MORE = COLS_BASE + ',source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung';
 async function fetchAll(){
   let cols = COLS_MORE;
   const all = []; const step = 1000;
@@ -653,7 +653,15 @@ async function fetchAll(){
     all.push(...data);
     if (data.length < step || all.length >= 10000) break;
   }
-  return all.map(r => {
+  // EU-weite Ausschreibungen stehen oft bei TED und beim Datenservice: doppelte zusammenfassen
+  const seen = new Map();
+  for (const r of all){
+    const key = fold(r.title || '').replace(/[^a-z0-9]/g,'').slice(0,90) + '|' + (r.deadline || '');
+    const prev = seen.get(key);
+    if (!prev) { seen.set(key, r); continue; }
+    seen.set(key, { ...prev, ...Object.fromEntries(Object.entries(r).filter(([k,v]) => v != null && prev[k] == null)) });
+  }
+  return [...seen.values()].map(r => {
     const dl = r.deadline ? new Date(r.deadline + 'T00:00:00') : null;
     const text = [r.title, r.description, r.auftraggeber, r.ki_zusammenfassung].filter(Boolean).join(' ');
     return { ...r, dl, days: dl ? Math.round((dl - today) / DAY) : null, created: new Date(r.created_at), bls: bundeslaender(r.region), hay: text.toLowerCase(), fold: fold(text) };
@@ -956,10 +964,11 @@ function openDrawer(r){
       h('dt',{},'Ort'), h('dd',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'),
       r.cpv_code ? [h('dt',{},'CPV'), h('dd',{}, r.cpv_code)] : null,
       h('dt',{},'Eingegangen'), h('dd',{}, fmtLong.format(r.created)),
-      h('dt',{},'TED-Nummer'), h('dd',{}, r.ted_publication_number || '–')),
+      h('dt',{},'Quelle'), h('dd',{}, r.source === 'DOE' ? 'Datenservice Öffentlicher Einkauf' : 'TED, EU-Amtsblatt'),
+      r.ted_publication_number ? [h('dt',{},'TED-Nummer'), h('dd',{}, r.ted_publication_number)] : null),
     h('div',{class:'dr-acts'},
       safeUrl(r.unterlagen_url) ? h('a',{class:'btn btn-red', href:safeUrl(r.unterlagen_url), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Vergabeunterlagen öffnen') : null,
-      safeUrl(r.link) ? h('a',{class:'btn ' + (safeUrl(r.unterlagen_url) ? 'btn-ghost' : 'btn-red'), href:safeUrl(r.link), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Bekanntmachung bei TED') : null,
+      safeUrl(r.link) && r.link !== r.unterlagen_url ? h('a',{class:'btn ' + (safeUrl(r.unterlagen_url) ? 'btn-ghost' : 'btn-red'), href:safeUrl(r.link), target:'_blank', rel:'noopener', style:'display:inline-flex;align-items:center;text-decoration:none'}, 'Bekanntmachung bei TED') : null,
       h('button',{class:'btn btn-ghost', onclick:()=>setReact(r.id,'star')}, rx === 'star' ? 'Gemerkt' : 'Merken'),
       h('button',{class:'btn btn-ghost', onclick:()=>{ setReact(r.id,'hide'); closeDrawer(); }}, rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden')),
     r.description ? h('div',{class:'desc'}, r.description) : h('p',{style:'color:var(--muted);margin:0'},'Keine Beschreibung vorhanden. Die vollständigen Unterlagen findest du bei TED.')].filter(Boolean));
