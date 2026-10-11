@@ -598,7 +598,7 @@ function renderLage(first){
     n = S.rows.filter(r => isoDay(r.created) === key).length;
     const when = isoDay(latest) === isoDay(today) ? 'heute' : 'am ' + fmtLong.format(latest).replace(/ \d{4}$/,'');
     txt = null;
-    $('bigTxt').replaceChildren('neue Ausschreibungen beim letzten Abruf ', h('b',{},when), '.');
+    $('bigTxt').replaceChildren('neue Ausschreibungen kamen zuletzt ', h('b',{},when), ' dazu.', h('br'), h('span',{style:'font-size:15px'},'TED veröffentlicht nur werktags, der Abruf läuft jeden Morgen.'));
   }
   if (txt) $('bigTxt').textContent = txt;
   $('f7').textContent = open.filter(r => r.days !== null && r.days <= 7).length;
