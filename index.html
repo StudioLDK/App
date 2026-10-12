@@ -89,6 +89,8 @@ a{color:inherit}
 .invite-link{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--panel);border-radius:10px;padding:12px}
 .invite-link code{font-size:13px;word-break:break-all;flex:1;min-width:220px}
 .btn-sm{height:36px;padding:0 14px;font-size:14px}
+.legal-link{font-size:13px;color:var(--muted);align-self:center}
+.legal{max-width:1440px;margin:0 auto;padding:28px 20px 90px;font-size:13px;color:var(--muted)}
 .help-fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;height:44px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:600;padding:0 18px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 dialog.help{border:0;border-radius:16px;padding:0;width:min(480px,calc(100% - 32px));box-shadow:0 30px 80px rgba(0,0,0,.25)}
 dialog.help::backdrop{background:rgba(10,12,15,.35)}
@@ -375,6 +377,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
     <button class="btn" type="submit" id="loginBtn">Anmelden</button>
     <div class="msg" id="loginMsg" role="alert"></div>
     <div class="switch" id="modeSwitch"></div>
+    <a class="legal-link" href="impressum.html">Impressum und Kontakt</a>
   </form>
 </div>
 
@@ -582,6 +585,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
         <div id="admBody"><div class="loading">Lade Kennzahlen …</div></div>
       </section>
     </main>
+    <footer class="legal"><a href="impressum.html">Impressum und Kontakt</a></footer>
   </div>
 
   <button class="help-fab" id="helpBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>Hilfe</button>
@@ -625,7 +629,7 @@ const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später 
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-12b';
+const APP_VERSION = '2026-10-12c';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1530,12 +1534,14 @@ $('helpForm').addEventListener('submit', async e => {
   if (txt.length < 3){ msg.textContent = 'Schreib bitte kurz, worum es geht.'; return; }
   const kontext = JSON.stringify({ seite: S.page || 'list', ansicht: S.view, ausschreibung: S.drawerRow ? (S.drawerRow.quelle_id || S.drawerRow.ted_publication_number || S.drawerRow.id) : null, titel: S.drawerRow ? S.drawerRow.title : null, browser: navigator.userAgent, breite: window.innerWidth, zeit: new Date().toISOString() });
   $('helpSend').disabled = true;
-  const { error } = await S.db.from('feedback').insert({ user_id:S.user.id, email:S.user.email, art:helpArt, nachricht:txt, kontext });
+  const fid = (crypto.randomUUID ? crypto.randomUUID() : null);
+  const { error } = await S.db.from('feedback').insert({ ...(fid ? { id:fid } : {}), user_id:S.user.id, email:S.user.email, art:helpArt, nachricht:txt, kontext });
   if (error){
     $('helpSend').disabled = false;
     msg.replaceChildren('Das Senden hat nicht geklappt. Schreib uns stattdessen einfach an ', h('a',{href:'mailto:info@studioldk.de?subject=' + encodeURIComponent('Hilfe: ' + APP_NAME) + '&body=' + encodeURIComponent(txt)}, 'info@studioldk.de'), '.');
     return;
   }
+  if (fid) fetch(SUPABASE_URL + '/functions/v1/kontakt', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ feedback_id:fid }) }).catch(() => {}); // Mail an dich, sobald Resend eingerichtet ist
   msg.className = 'msg ok'; msg.textContent = 'Danke, ist angekommen. Du hörst bald von uns.';
   $('helpSend').classList.add('hidden'); $('helpCancel').textContent = 'Schließen';
 });

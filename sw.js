@@ -1,8 +1,8 @@
 // Hintergrunddienst der App: hält die App-Oberfläche vor, damit sie schnell
 // und auch bei schlechtem Netz startet. Daten von Supabase werden NIE
 // zwischengespeichert, die kommen immer frisch.
-const CACHE = 'ldk-app-v14';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './nuts_de.json', './vendor/supabase.js', './fonts/archivo-latin-wdth-normal.woff2', './fonts/archivo-latin-ext-wdth-normal.woff2'];
+const CACHE = 'ldk-app-v15';
+const SHELL = ['./', './index.html', './impressum.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './nuts_de.json', './vendor/supabase.js', './fonts/archivo-latin-wdth-normal.woff2', './fonts/archivo-latin-ext-wdth-normal.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -21,10 +21,13 @@ self.addEventListener('fetch', e => {
 
   if (req.mode === 'navigate') {
     // Seite: immer erst online versuchen, offline die gespeicherte Version zeigen
+    // Nur die App selbst wird als index.html gemerkt, andere Seiten (z.B. Impressum) unter ihrem eigenen Namen
+    const app = /\/(index\.html)?$/.test(url.pathname);
+    const ziel = app ? './index.html' : req;
     e.respondWith(fetch(req).then(res => {
-      const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy));
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(ziel, copy)); }
       return res;
-    }).catch(() => caches.match('./index.html')));
+    }).catch(() => caches.match(ziel, { ignoreSearch:true }).then(hit => hit || caches.match('./index.html'))));
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req)));

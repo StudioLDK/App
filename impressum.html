@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Impressum und Kontakt</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+@font-face{font-family:'Archivo';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:62% 125%;
+  src:url(fonts/archivo-latin-wdth-normal.woff2) format('woff2-variations'),url(fonts/archivo-latin-wdth-normal.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Archivo';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:62% 125%;
+  src:url(fonts/archivo-latin-ext-wdth-normal.woff2) format('woff2-variations'),url(fonts/archivo-latin-ext-wdth-normal.woff2) format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+20A0-20AB,U+20AD-20C0,U+2C60-2C7F,U+A720-A7FF}
+:root{--bg:#FFFFFF;--panel:#F4F5F7;--line:#E2E4E8;--line2:#CED2D8;--ink:#1C1F23;--muted:#5C626B;--red:#CC0605;--ok:#1B6B3A}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--panel);color:var(--ink)}
+body{font-family:'Archivo',system-ui,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding:32px 16px 64px}
+.back{display:inline-block;margin-bottom:24px;font-weight:600;font-size:15px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 24px;margin-bottom:20px}
+h1{margin:0 0 20px;font-size:32px;line-height:1.1;font-weight:800;font-stretch:115%;letter-spacing:-.02em}
+h2{margin:0 0 12px;font-size:20px;font-weight:700;font-stretch:110%}
+h3{margin:20px 0 4px;font-size:15px;font-weight:700}
+p{margin:0 0 10px}
+address{font-style:normal}
+.fehlt{background:#FFF3D6;color:#8A5A00;border-radius:4px;padding:0 4px}
+.lead{color:var(--muted)}
+form{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+label{font-weight:600;font-size:14px;display:block;margin-bottom:6px}
+input,textarea{font:inherit;width:100%;border:1px solid var(--line2);border-radius:8px;padding:11px 14px;background:#fff;color:inherit}
+textarea{min-height:140px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(28,31,35,.12)}
+.falle{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+button{font:inherit;height:46px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:600;padding:0 24px;cursor:pointer;align-self:flex-start}
+button:disabled{opacity:.5;cursor:default}
+.hinweis{font-size:13px;color:var(--muted);margin:0}
+.msg{font-size:15px;min-height:1em;color:var(--red)}
+.msg.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">Zurück zur App</a>
+
+  <section class="card" aria-labelledby="imp">
+    <h1 id="imp">Impressum</h1>
+    <h3>Angaben gemäß § 5 DDG</h3>
+    <address id="anbieter"></address>
+    <h3>Kontakt</h3>
+    <p id="kontaktwege"></p>
+    <div id="ustid"></div>
+  </section>
+
+  <section class="card" aria-labelledby="kt">
+    <h2 id="kt">Kontaktformular</h2>
+    <p class="lead">Schreib uns eine Nachricht. Wir antworten per E-Mail, in der Regel innerhalb eines Werktags.</p>
+    <form id="f" novalidate>
+      <div><label for="name">Name und Firma</label><input id="name" name="name" autocomplete="name" maxlength="200"></div>
+      <div><label for="email">E-Mail</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="320"></div>
+      <div><label for="nachricht">Nachricht</label><textarea id="nachricht" name="nachricht" required maxlength="5000"></textarea></div>
+      <div class="falle" aria-hidden="true"><label for="website">Webseite</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+      <p class="hinweis">Wir verwenden deine Angaben nur, um deine Anfrage zu beantworten, und löschen sie, wenn sie nicht mehr gebraucht werden.</p>
+      <button type="submit" id="senden">Nachricht senden</button>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+</div>
+
+<script>
+/* ---------- Hier die Angaben eintragen ---------- */
+const IMPRESSUM = {
+  name: 'Luis Dempf',
+  firma: 'Studio LDK',
+  strasse: '',          // z.B. 'Musterstraße 1'
+  ort: '',              // z.B. '87448 Waltenhofen'
+  land: 'Deutschland',
+  email: 'info@studioldk.de',
+  telefon: '',          // leer lassen, dann gilt das Kontaktformular als zweiter Kontaktweg
+  ustid: ''             // nur eintragen, wenn vorhanden
+};
+const KONTAKT_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co/functions/v1/kontakt';
+/* ------------------------------------------------ */
+
+const $ = id => document.getElementById(id);
+function zeile(wert, platzhalter){
+  const s = document.createElement('span');
+  if (wert) s.textContent = wert; else { s.className = 'fehlt'; s.textContent = platzhalter; }
+  return s;
+}
+function zeilen(el, teile){ teile.forEach((t, i) => { if (i) el.append(document.createElement('br')); el.append(t); }); }
+
+zeilen($('anbieter'), [zeile(IMPRESSUM.name), zeile(IMPRESSUM.firma), zeile(IMPRESSUM.strasse, '[Straße und Hausnummer]'), zeile(IMPRESSUM.ort, '[PLZ und Ort]'), zeile(IMPRESSUM.land)]);
+const mail = document.createElement('a'); mail.href = 'mailto:' + IMPRESSUM.email; mail.textContent = IMPRESSUM.email;
+const wege = [document.createTextNode('E-Mail: '), mail];
+if (IMPRESSUM.telefon){ const tel = document.createElement('a'); tel.href = 'tel:' + IMPRESSUM.telefon.replace(/[^+\d]/g, ''); tel.textContent = IMPRESSUM.telefon; wege.push(document.createElement('br'), document.createTextNode('Telefon: '), tel); }
+else { const k = document.createElement('a'); k.href = '#kt'; k.textContent = 'Kontaktformular auf dieser Seite'; wege.push(document.createElement('br'), k); }
+$('kontaktwege').append(...wege);
+if (IMPRESSUM.ustid){ const h = document.createElement('h3'); h.textContent = 'Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG'; const p = document.createElement('p'); p.textContent = IMPRESSUM.ustid; $('ustid').append(h, p); }
+
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('msg'), btn = $('senden');
+  msg.className = 'msg'; msg.textContent = '';
+  const daten = { name:$('name').value.trim(), email:$('email').value.trim(), nachricht:$('nachricht').value.trim(), website:$('website').value };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(daten.email)){ msg.textContent = 'Bitte gib eine gültige E-Mail-Adresse an.'; $('email').focus(); return; }
+  if (daten.nachricht.length < 3){ msg.textContent = 'Schreib bitte kurz, worum es geht.'; $('nachricht').focus(); return; }
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  try {
+    const r = await fetch(KONTAKT_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(daten) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) throw new Error(j.fehler || 'Senden hat nicht geklappt.');
+    msg.className = 'msg ok'; msg.textContent = 'Danke, deine Nachricht ist angekommen. Wir melden uns per E-Mail.';
+    $('f').reset(); btn.textContent = 'Gesendet';
+  } catch(err){
+    msg.textContent = (err && err.message ? err.message : 'Senden hat nicht geklappt.') + ' Du erreichst uns auch direkt unter ' + IMPRESSUM.email + '.';
+    btn.disabled = false; btn.textContent = 'Nachricht senden';
+  }
+});
+</script>
+</body>
+</html>
