@@ -697,7 +697,7 @@ function saveLocalStatus(){ try { localStorage.setItem('ldk-status-'+S.user.id, 
 async function loadStatus(){
   S.status = {};
   if (S.team){
-    let { data, error } = await S.db.from('tender_status').select('tender_id,status,notiz,zustaendig').eq('team_id', S.team);
+    let { data, error } = S.boot ? { data:S.boot.status || [], error:null } : await S.db.from('tender_status').select('tender_id,status,notiz,zustaendig').eq('team_id', S.team);
     S.feat.zust = !error;
     if (error) ({ data, error } = await S.db.from('tender_status').select('tender_id,status,notiz').eq('team_id', S.team));
     if (!error && data) for (const x of data) S.status[x.tender_id] = { status:x.status, notiz:x.notiz, zustaendig:x.zustaendig || null };
@@ -738,6 +738,7 @@ async function loadTeam(){
     try { sessionStorage.removeItem('ldk-invite'); } catch(e){}
     S.teamMsg = error ? 'Einladung: ' + error.message : 'Du bist dem Team beigetreten.';
   }
+  if (S.boot && S.boot.team){ S.team = S.boot.team; S.members = S.boot.members || []; return; }
   const { data, error } = await S.db.rpc('mein_team');
   if (error){ S.teamErr = error.message; return; }
   S.team = data;
@@ -864,6 +865,10 @@ async function start(user){
   $('userEm').textContent = user.email || '';
   show('app');
   $('loading').classList.remove('hidden'); $('content').classList.add('hidden'); $('errBox').classList.add('hidden'); $('lockedBox').classList.add('hidden');
+  // Ein einziger Aufruf liefert Konto, Einstellungen, Team, Pipeline und Beobachtungen (schont den Server)
+  S.boot = null;
+  let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
+  if (!tok){ const b = await S.db.rpc('app_start').catch(() => ({ error:true })); if (b && !b.error && b.data && b.data.konto !== undefined) S.boot = b.data; }
   try {
     const ok = await checkAccess();
     if (!ok){ $('loading').classList.add('hidden'); await loadPrefs(); await loadTeam().catch(() => {}); route(false); return; }
@@ -882,7 +887,7 @@ async function start(user){
   if (S.teamMsg){ $('trialTxt').textContent = S.teamMsg; $('trialBar').classList.remove('hidden'); }
   route(true);
   if (onbNoetig() && !location.hash) openOnboarding();
-  S.db.rpc('ist_admin').then(r => { if (r && r.data === true){ S.admin = true; $('adminBtn').classList.remove('hidden'); if (location.hash === '#admin') route(false); } }, () => {});
+  (S.boot ? Promise.resolve({ data:S.boot.admin }) : S.db.rpc('ist_admin')).then(r => { if (r && r.data === true){ S.admin = true; $('adminBtn').classList.remove('hidden'); if (location.hash === '#admin') route(false); } }, () => {});
 }
 
 /* ---------- Neu seit dem letzten Besuch ---------- */
@@ -900,7 +905,7 @@ function markNeu(){
 /* ---------- Einstellungen laden und anwenden ---------- */
 const PREF_COLS_NEU = 'firma,beschreibung,suchbegriffe,ausschluss,bundeslaender,cpv,branchen,sitz_nuts,umkreis_km,mail_frequenz,onboarding_am';
 async function loadPrefs(){
-  let { data, error } = await S.db.from('settings').select(PREF_COLS_NEU).eq('user_id', S.user.id).maybeSingle();
+  let { data, error } = S.boot ? { data:S.boot.settings, error:null } : await S.db.from('settings').select(PREF_COLS_NEU).eq('user_id', S.user.id).maybeSingle();
   S.feat.prefs2 = !error;
   if (error && /column|does not exist/i.test(error.message)) ({ data, error } = await S.db.from('settings').select('firma,beschreibung,suchbegriffe,ausschluss,bundeslaender').eq('user_id', S.user.id).maybeSingle());
   if (error){ S.prefsErr = error.message; S.prefs = {...EMPTY_PREFS}; return; }
@@ -978,7 +983,7 @@ function route(first){
 window.addEventListener('hashchange', () => route(false));
 
 async function checkAccess(){
-  const { data, error } = await S.db.from('accounts').select('trial_ends_at,paid_until').eq('user_id', S.user.id).maybeSingle();
+  const { data, error } = S.boot ? { data:S.boot.konto, error:null } : await S.db.from('accounts').select('trial_ends_at,paid_until').eq('user_id', S.user.id).maybeSingle();
   if (error) throw error;
   const bar = $('trialBar');
   bar.classList.add('hidden');
@@ -990,7 +995,7 @@ async function checkAccess(){
   const left = end.getTime() - now;
   S.locked = left <= 0;
   if (left <= 0){
-    const r = await S.db.rpc('hat_zugang').catch(() => ({ data:false }));
+    const r = S.boot ? { data:S.boot.zugang } : await S.db.rpc('hat_zugang').catch(() => ({ data:false }));
     if (r && r.data === true){ S.locked = false; S.zugang = 'Freigeschaltet über dein Team'; document.querySelector('.rail').classList.remove('hidden'); return true; }
   }
   if (left <= 0){ S.zugang = 'Testphase abgelaufen'; $('lockedBox').classList.remove('hidden'); document.querySelector('.rail').classList.add('hidden'); return false; }
@@ -1568,7 +1573,7 @@ function saveLocalWatch(l){ try { localStorage.setItem('ldk-watch-'+S.user.id, J
 async function loadWatch(){
   S.watch = localWatch(); S.feat.watchDb = false;
   if (!S.team) return;
-  const { data, error } = await S.db.from('beobachtet').select('gewinner_key,name,ort,created_at').eq('team_id', S.team).order('created_at', { ascending:false });
+  const { data, error } = S.boot ? { data:S.boot.beobachtet || [], error:null } : await S.db.from('beobachtet').select('gewinner_key,name,ort,created_at').eq('team_id', S.team).order('created_at', { ascending:false });
   if (error) return;
   S.feat.watchDb = true;
   const db = data.map(d => ({ key:d.gewinner_key, name:d.name, ort:d.ort || '' }));
