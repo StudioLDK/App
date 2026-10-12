@@ -1,8 +1,8 @@
 // Hintergrunddienst der App: hält die App-Oberfläche vor, damit sie schnell
 // und auch bei schlechtem Netz startet. Daten von Supabase werden NIE
 // zwischengespeichert, die kommen immer frisch.
-const CACHE = 'ldk-app-v16';
-const SHELL = ['./', './index.html', './impressum.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './nuts_de.json', './vendor/supabase.js', './fonts/archivo-latin-wdth-normal.woff2', './fonts/archivo-latin-ext-wdth-normal.woff2'];
+const CACHE = 'ldk-app-v17';
+const SHELL = ['./', './index.html', './impressum.html', './datenschutz.html', './anbieter.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './nuts_de.json', './vendor/supabase.js', './fonts/archivo-latin-wdth-normal.woff2', './fonts/archivo-latin-ext-wdth-normal.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
