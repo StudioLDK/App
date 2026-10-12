@@ -3,8 +3,8 @@
 window.ANBIETER = {
   name: 'Luis Dempf',
   firma: 'Studio LDK',
-  strasse: '',          // z.B. 'Musterstraße 1'
-  ort: '',              // z.B. '87448 Waltenhofen'
+  strasse: 'Martin-Schweiger-Straße 20',
+  ort: '87448 Waltenhofen',
   land: 'Deutschland',
   email: 'info@studioldk.de',
   telefon: '',          // leer lassen, dann gilt das Kontaktformular als zweiter Kontaktweg
