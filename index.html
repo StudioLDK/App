@@ -1746,9 +1746,35 @@ async function openProfil(x, zurueck){
 }
 
 /* Typische Zuschlagswerte für ähnliche Aufträge (CPV-Gruppe), als Kalkulationshilfe */
+/* Preisniveau und Top-Gewinner je CPV-Gruppe kommen aus einer täglichen Datei */
+let statLaden = null;
+function statistik(){
+  if (!statLaden) statLaden = (async () => {
+    try {
+      if (!window.DecompressionStream || !S.db.storage) return null;
+      const { data:blob, error } = await S.db.storage.from('daten').download('statistik.json.gz');
+      if (error || !blob) return null;
+      const j = JSON.parse(await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text());
+      return j && j.preis && Date.now() - new Date(j.stand).getTime() < 72 * 36e5 ? j : null;
+    } catch(e){ return null; }
+  })();
+  return statLaden;
+}
+async function cpvTop(cpv){
+  const g = String(cpv || '').slice(0, 5);
+  const st = await statistik();
+  if (st && st.top) return (st.top[g] || []).map(([gewinner_key, gewinner, gewinner_ort, anzahl, summe]) => ({ gewinner_key, gewinner, gewinner_ort, anzahl, summe }));
+  const r = await rpcGemerkt('wettbewerb_top', { p_cpv: g, p_tage: 730, p_limit: 5 });
+  return r.error ? [] : r.data || [];
+}
 async function preisniveau(cpv){
   const code = (String(cpv || '').match(/\d{8}/) || [])[0];
   if (!code) return null;
+  const st = await statistik();
+  if (st){
+    for (const len of [5, 4, 3]){ const x = st.preis[code.slice(0, len)]; if (x && x[0] >= 8) return { anzahl:x[0], p25:x[1], median:x[2], p75:x[3], gruppe:code.slice(0, len) }; }
+    return null;
+  }
   for (const len of [5, 4, 3]){
     const { data, error } = await rpcGemerkt('preisniveau', { p_cpv: code.slice(0, len), p_tage: 730 });
     if (error) return null;
@@ -1803,7 +1829,7 @@ async function drawerWettbewerb(r){
   const box = $('drWb'); if (!box) return;
   const jobs = [
     r.auftraggeber ? S.db.from('zuschlaege').select('title,gewinner,gewinner_key,gewinner_ort,wert,zuschlag_am').eq('auftraggeber', r.auftraggeber).order('zuschlag_am', { ascending:false }).limit(6) : null,
-    r.cpv_code ? rpcGemerkt('wettbewerb_top', { p_cpv: String(r.cpv_code).slice(0, 5), p_tage: 730, p_limit: 5 }) : null,
+    r.cpv_code ? cpvTop(r.cpv_code).then(data => ({ data })) : null,
     r.cpv_code ? preisniveau(r.cpv_code) : null
   ];
   const [ag, cpv, pn] = await Promise.all(jobs.map(j => j ? Promise.resolve(j).then(x => x, () => ({ error:true })) : Promise.resolve(null)));
