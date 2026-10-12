@@ -629,7 +629,7 @@ const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später 
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-12d';
+const APP_VERSION = '2026-10-12e';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -914,7 +914,7 @@ async function start(user){
   // Ein einziger Aufruf liefert Konto, Einstellungen, Team, Pipeline und Beobachtungen (schont den Server)
   S.boot = null;
   let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
-  if (!tok){ const b = await S.db.rpc('app_start').catch(() => ({ error:true })); if (b && !b.error && b.data && b.data.konto !== undefined) S.boot = b.data; }
+  if (!tok){ const b = await Promise.resolve(S.db.rpc('app_start')).catch(() => ({ error:true })); if (b && !b.error && b.data && b.data.konto !== undefined) S.boot = b.data; }
   try {
     const ok = await checkAccess();
     if (!ok){ $('loading').classList.add('hidden'); await loadPrefs(); await loadTeam().catch(() => {}); route(false); return; }
@@ -1041,7 +1041,7 @@ async function checkAccess(){
   const left = end.getTime() - now;
   S.locked = left <= 0;
   if (left <= 0){
-    const r = S.boot ? { data:S.boot.zugang } : await S.db.rpc('hat_zugang').catch(() => ({ data:false }));
+    const r = S.boot ? { data:S.boot.zugang } : await Promise.resolve(S.db.rpc('hat_zugang')).catch(() => ({ data:false }));
     if (r && r.data === true){ S.locked = false; S.zugang = 'Freigeschaltet über dein Team'; document.querySelector('.rail').classList.remove('hidden'); return true; }
   }
   if (left <= 0){ S.zugang = 'Testphase abgelaufen'; $('lockedBox').classList.remove('hidden'); document.querySelector('.rail').classList.add('hidden'); return false; }
