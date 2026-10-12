@@ -200,6 +200,9 @@ kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid var(--l
 .layout{max-width:1440px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px}
 .rail{position:sticky;top:63px;align-self:start;max-height:calc(100vh - 63px);overflow:auto;padding:28px 4px 40px 0;display:flex;flex-direction:column;gap:28px}
 .rail h2{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--muted)}
+.wert-ohne{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+.pill.wert{background:#fff;color:var(--ink);border-color:var(--line2)}
+.pill.frage{background:#FFF6E0;color:#7A5200;border-color:#EED9A6}
 .seg{display:flex;flex-direction:column;gap:2px}
 .seg button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:8px 10px;color:var(--ink)}
 .seg button:hover{background:var(--panel)}
@@ -393,6 +396,15 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
         <h2>Frist</h2>
         <div class="seg" id="fristSeg"></div>
       </section>
+      <section id="wertSec" class="hidden">
+        <h2>Auftragswert</h2>
+        <select id="wertSel" aria-label="Mindestens geschätzter Auftragswert" style="width:100%">
+          <option value="0">egal</option><option value="25000">ab 25.000 €</option><option value="50000">ab 50.000 €</option>
+          <option value="100000">ab 100.000 €</option><option value="250000">ab 250.000 €</option><option value="1000000">ab 1 Mio. €</option>
+        </select>
+        <label class="wert-ohne" for="wertOhne"><input type="checkbox" id="wertOhne"> auch ohne Wertangabe ausblenden</label>
+        <span class="hint" id="wertHint"></span>
+      </section>
       <section>
         <details class="bl" id="blDet">
           <summary>Bundesland</summary>
@@ -453,6 +465,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
               <select id="sort">
                 <option value="new">Neueste zuerst</option>
                 <option value="due">Frist zuerst</option>
+                <option value="wert">Höchster Wert zuerst</option>
               </select>
               <button class="btn btn-ghost btn-sm" type="button" id="csvBtn" title="Aktuelle Liste als Excel-Datei (CSV) herunterladen">Export</button>
             </div>
@@ -671,6 +684,24 @@ function dueText(days){
 }
 // Kleinbuchstaben und Umlaute vereinheitlichen, damit "turen" auch "Türen" findet
 const fold = s => String(s).toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss');
+/* Verfahrensart und Rechtsgrundlage lesbar machen */
+const VERFAHREN = { 'open':'Offenes Verfahren', 'de-open':'Öffentliche Ausschreibung', 'restricted':'Nicht offenes Verfahren',
+  'neg-w-call':'Verhandlungsverfahren mit Teilnahmewettbewerb', 'neg-wo-call':'Verhandlungsverfahren ohne Teilnahmewettbewerb',
+  'comp-dial':'Wettbewerblicher Dialog', 'innovation':'Innovationspartnerschaft',
+  'de-restricted-w-call':'Beschränkte Ausschreibung mit Teilnahmewettbewerb', 'de-restricted-wo-call':'Beschränkte Ausschreibung ohne Teilnahmewettbewerb',
+  'de-comp-neg-w-call':'Verhandlungsvergabe mit Teilnahmewettbewerb', 'de-comp-neg-wo-call':'Verhandlungsvergabe ohne Teilnahmewettbewerb',
+  'de-comp-w-call':'Freihändige Vergabe mit Teilnahmewettbewerb', 'de-comp-wo-call':'Freihändige Vergabe ohne Teilnahmewettbewerb' };
+const RECHT = { 'de-uvgo':'UVgO', 'de-vob':'VOB/A', 'de-vgv':'VgV', 'de-sektvo':'SektVO', 'de-konzvgv':'KonzVgV', 'de-vsvgv':'VSVgV', 'de-vol':'VOL/A' };
+function verfahrenText(v){
+  if (!v) return null;
+  const teile = String(v).split(',').map(x => x.trim()).filter(Boolean);
+  const art = teile.map(t => VERFAHREN[t.toLowerCase()] || (/^[a-z-]+$/.test(t) || /^\d/.test(t) ? null : t)).find(Boolean);
+  const recht = teile.map(t => RECHT[t.toLowerCase()]).find(Boolean);
+  return [art, recht ? 'nach ' + recht : null].filter(Boolean).join(', ') || null;
+}
+const eurKurz = n => n >= 1e6 ? (n / 1e6).toLocaleString('de-DE', { maximumFractionDigits:1 }) + ' Mio. €' : n >= 1e3 ? Math.round(n / 1e3).toLocaleString('de-DE') + ' Tsd. €' : Math.round(n) + ' €';
+const fmtD2 = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('de-DE') : '';
+
 function bundeslaender(region){
   if (!region) return [];
   const out = new Set();
@@ -685,7 +716,7 @@ function bundeslaender(region){
    Zustand
    ========================================================================= */
 const EMPTY_PREFS = { firma:'', beschreibung:'', suchbegriffe:[], ausschluss:[], bundeslaender:[], cpv:[], branchen:[], sitz_nuts:null, umkreis_km:null, mail_frequenz:'taeglich', onboarding_am:null };
-const S = { feat:{}, nuts:null, members:[], db:null, user:null, rows:[], react:{}, status:{}, team:null, teamErr:null, prevSeen:null, prefs:{...EMPTY_PREFS}, draft:null, prefsErr:null, zugang:'', view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
+const S = { minWert:0, ohneWertWeg:false, feat:{}, nuts:null, members:[], db:null, user:null, rows:[], react:{}, status:{}, team:null, teamErr:null, prevSeen:null, prefs:{...EMPTY_PREFS}, draft:null, prefsErr:null, zugang:'', view:'open', frist:'all', bl:new Set(), day:null, q:'', sort:'new', sel:-1, shown:PAGE, list:[], drawerRow:null };
 
 function loadReact(){ try { S.react = JSON.parse(localStorage.getItem('ldk-react-'+S.user.id) || '{}'); } catch(e){ S.react = {}; } }
 function saveReact(){ try { localStorage.setItem('ldk-react-'+S.user.id, JSON.stringify(S.react)); } catch(e){} }
@@ -1013,7 +1044,7 @@ async function checkAccess(){
 const COLS_BASE = 'id,title,description,region,deadline,link,created_at,ted_publication_number';
 const COLS_MORE = COLS_BASE + ',source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung';
 // Neue Spalten: Kurzfassung statt voller Beschreibung (spart Datenvolumen), Art, Änderungen
-const COLS_NEU = 'id,title,kurz,region,deadline,link,created_at,ted_publication_number,source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung,art,geaendert_am,aenderung';
+const COLS_NEU = 'id,title,kurz,region,deadline,link,created_at,ted_publication_number,source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung,art,geaendert_am,aenderung,wert_geschaetzt,fragen_bis,ausfuehrung_beginn,ausfuehrung_ende,laufzeit,lose,verfahren';
 /* Die Liste kommt bevorzugt aus der täglichen Datei (eine Datei für alle, schont die Datenbank) */
 async function ausDatei(){
   try {
@@ -1089,6 +1120,7 @@ function passBase(r){
   if (S.view === 'pipe'  && !stOf(r.id)) return false;
   if (S.view === 'hide'  && rx !== 'hide') return false;
   if (S.bl.size && !r.bls.some(b => S.bl.has(b))) return false;
+  if (S.minWert && (r.wert_geschaetzt ? +r.wert_geschaetzt < S.minWert : S.ohneWertWeg)) return false;
   if (S.q){ for (const term of S.q.split(/\s+/)) if (term && !r.fold.includes(fold(term))) return false; }
   return true;
 }
@@ -1104,6 +1136,8 @@ function computeList(){
   if (S.day !== null) list = list.filter(r => r.days === S.day);
   list.sort(S.sort === 'due'
     ? (a,b) => (a.days ?? 99999) - (b.days ?? 99999) || b.created - a.created
+    : S.sort === 'wert'
+    ? (a,b) => (+b.wert_geschaetzt || 0) - (+a.wert_geschaetzt || 0) || b.created - a.created
     : (a,b) => b.created - a.created || (a.days ?? 99999) - (b.days ?? 99999));
   return { base, list };
 }
@@ -1162,6 +1196,10 @@ function renderRail(){
   if (!hasPrefs(S.prefs)) cnt.match = '–';
   $('viewSeg').replaceChildren(...views.map(([k,l]) => h('button',{'aria-pressed':String(S.view===k), onclick:()=>{ S.view=k; S.sel=-1; S.shown=PAGE; render(); }}, l, h('span',{class:'n'},cnt[k]))));
 
+  const mitWert = S.rows.filter(r => r.wert_geschaetzt).length;
+  $('wertSec').classList.toggle('hidden', !mitWert);
+  if (mitWert) $('wertHint').textContent = `Nur ${Math.round(100 * mitWert / Math.max(1, S.rows.length))} % der Bekanntmachungen nennen einen Wert.`;
+  $('wertOhne').closest('label').classList.toggle('hidden', !S.minWert);
   const fr = [['all','Alle'],['7','7 Tage'],['14','14 Tage'],['30','30 Tage'],['none','Ohne Frist']];
   $('fristSeg').replaceChildren(...fr.map(([k,l]) => h('button',{'aria-pressed':String(S.frist===k), onclick:()=>{ S.frist=k; S.day=null; S.sel=-1; S.shown=PAGE; render(); }}, l)));
 
@@ -1212,6 +1250,7 @@ function renderList(){
   if (S.day !== null) chips.push(['Frist ' + fmtShort.format(new Date(today.getTime() + S.day*DAY)), () => { S.day = null; }]);
   if (S.q) chips.push(['„' + S.q + '“', () => { S.q = ''; $('q').value = ''; }]);
   for (const b of S.bl) chips.push([b, () => S.bl.delete(b)]);
+  if (S.minWert) chips.push(['ab ' + eurKurz(S.minWert), () => { S.minWert = 0; $('wertSel').value = '0'; wertMerken(); }]);
   $('activeChips').replaceChildren(...chips.map(([l, off]) => h('span',{class:'chip'}, l, h('button',{'aria-label':l + ' entfernen', onclick:()=>{ off(); S.sel=-1; render(); }}, '×'))));
 
   const rows = $('rows'); rows.replaceChildren();
@@ -1225,7 +1264,7 @@ function renderList(){
     return;
   }
   if (!list.length){
-    const anyFilter = S.q || S.bl.size || S.day !== null || S.frist !== 'all';
+    const anyFilter = S.q || S.bl.size || S.day !== null || S.frist !== 'all' || S.minWert;
     rows.append(h('div',{class:'empty'},
       h('b',{}, S.view === 'pipe' ? 'Noch nichts gemerkt.' : S.view === 'hide' ? 'Nichts ausgeblendet.' : S.view === 'vorinfo' ? 'Gerade keine passenden Vorinformationen.' : 'Keine Ausschreibungen für diese Auswahl.'),
       h('span',{}, S.view === 'pipe' ? 'Klick bei einer Ausschreibung auf den Stern oder drück S.' : S.view === 'vorinfo' ? 'Hier erscheinen Vorhaben, die Auftraggeber vorab ankündigen. So kannst du dich vorbereiten, bevor die Ausschreibung startet.' : anyFilter ? 'Lockere die Filter oder such nach einem anderen Begriff.' : 'Sobald der nächste Abruf neue Ausschreibungen findet, erscheinen sie hier.'),
@@ -1286,11 +1325,11 @@ function icsDownload(list, name){
 function csvExport(list, name){
   if (!list.length){ alert('Die Liste ist leer.'); return; }
   const zelle = v => { const t = v == null ? '' : String(v).replace(/\r?\n/g, ' '); return /[;"]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
-  const kopf = ['Titel','Auftraggeber','Frist','Ort','CPV','Status','Zuständig','Notiz','Eingegangen','Quelle','Link'];
+  const kopf = ['Titel','Auftraggeber','Frist','Fragen bis','Geschätzter Wert','Ort','CPV','Verfahren','Status','Zuständig','Notiz','Eingegangen','Quelle','Link'];
   const zeilen = list.map(r => {
     const st = S.status[r.id] || {};
     const zu = st.zustaendig ? (S.members.find(m => m.user_id === st.zustaendig) || {}).email : '';
-    return [r.title, r.auftraggeber, r.dl ? r.dl.toLocaleDateString('de-DE') : '', r.bls.join(', ') || 'Deutschland', r.cpv_code, STATUS_LABEL[st.status] || '', zu || '', st.notiz || '',
+    return [r.title, r.auftraggeber, r.dl ? r.dl.toLocaleDateString('de-DE') : '', fmtD2(r.fragen_bis), r.wert_geschaetzt ? Math.round(+r.wert_geschaetzt) : '', r.bls.join(', ') || 'Deutschland', r.cpv_code, verfahrenText(r.verfahren) || '', STATUS_LABEL[st.status] || '', zu || '', st.notiz || '',
       r.created.toLocaleDateString('de-DE'), r.source === 'DOE' ? 'Datenservice Öffentlicher Einkauf' : 'TED', safeUrl(r.unterlagen_url) || safeUrl(r.link) || ''].map(zelle).join(';');
   });
   const blob = new Blob(['\ufeff' + [kopf.join(';'), ...zeilen].join('\r\n')], { type:'text/csv;charset=utf-8' });
@@ -1313,6 +1352,7 @@ function mailFor(r){
   return 'mailto:?subject=' + encodeURIComponent('Ausschreibung: ' + (r.title || '').slice(0, 120)) + '&body=' + encodeURIComponent(body);
 }
 
+function fragenBald(r){ if (!r.fragen_bis) return false; const d = Math.round((new Date(r.fragen_bis + 'T00:00:00') - today) / DAY); return d >= 0 && d <= 7; }
 function rowEl(r, i){
   const due = dueText(r.days);
   const rx = S.react[r.id];
@@ -1321,7 +1361,7 @@ function rowEl(r, i){
     h('div',{class:'due ' + due.cls}, h('span',{class:'d'},due.d), h('span',{class:'w'}, r.dl ? fmtDay.format(r.dl) : '')),
     h('div',{}, h('div',{class:'t'}, r.neu ? h('span',{class:'neu'},'neu') : null, r.title || '(ohne Titel)'),
       r.ki_zusammenfassung ? h('div',{class:'sum'}, r.ki_zusammenfassung) : null,
-      h('div',{class:'meta'}, st ? h('span',{class:'pill ' + st}, STATUS_LABEL[st]) : null, r.art === 'vorinfo' ? h('span',{class:'pill vor'}, 'Vorinformation') : null, r.geaendert_am ? h('span',{class:'pill chg', title:r.aenderung || ''}, 'geändert ' + fmtShort.format(new Date(r.geaendert_am))) : null, r.hits && r.hits.length ? h('span',{class:'hit'}, 'passt: ' + r.hits.join(', ')) : null, r.auftraggeber ? h('span',{}, r.auftraggeber) : null, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
+      h('div',{class:'meta'}, st ? h('span',{class:'pill ' + st}, STATUS_LABEL[st]) : null, r.art === 'vorinfo' ? h('span',{class:'pill vor'}, 'Vorinformation') : null, r.geaendert_am ? h('span',{class:'pill chg', title:r.aenderung || ''}, 'geändert ' + fmtShort.format(new Date(r.geaendert_am))) : null, r.wert_geschaetzt ? h('span',{class:'pill wert', title:'geschätzter Auftragswert'}, 'ca. ' + eurKurz(+r.wert_geschaetzt)) : null, fragenBald(r) ? h('span',{class:'pill frage', title:'Frist für Bieterfragen'}, 'Fragen bis ' + fmtShort.format(new Date(r.fragen_bis + 'T12:00:00'))) : null, r.hits && r.hits.length ? h('span',{class:'hit'}, 'passt: ' + r.hits.join(', ')) : null, r.auftraggeber ? h('span',{}, r.auftraggeber) : null, h('span',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'), h('span',{}, 'eingegangen ' + fmtShort.format(r.created)), r.ted_publication_number ? h('span',{}, 'TED ' + r.ted_publication_number) : null)),
     h('div',{class:'acts'},
       h('button',{class:'ic','aria-label':st ? 'In der Pipeline' : 'Merken', 'aria-pressed':String(!!st), title:'Merken (S)', onclick:()=>toggleMerken(r)}, icon(st ? 'starOn' : 'star')),
       h('button',{class:'ic','aria-label':rx === 'hide' ? 'Wieder einblenden' : 'Ausblenden', 'aria-pressed':String(rx === 'hide'), title:'Ausblenden (X)', onclick:()=>setReact(r.id,'hide')}, icon('hide')),
@@ -1332,7 +1372,7 @@ function markSel(){
   document.querySelectorAll('.row').forEach(el => el.classList.toggle('sel', +el.dataset.i === S.sel));
   const cur = document.querySelector('.row.sel'); if (cur) cur.scrollIntoView({ block:'nearest' });
 }
-function resetFilters(){ S.q=''; $('q').value=''; S.bl.clear(); S.day=null; S.frist='all'; S.sel=-1; S.shown=PAGE; render(); }
+function resetFilters(){ S.q=''; $('q').value=''; S.bl.clear(); S.day=null; S.frist='all'; S.minWert=0; $('wertSel').value='0'; wertMerken(); S.sel=-1; S.shown=PAGE; render(); }
 
 /* =========================================================================
    Einstellungen
@@ -2007,6 +2047,11 @@ function openDrawer(r){
       h('dt',{},'Frist'), h('dd',{}, r.dl ? fmtLong.format(r.dl) : 'nicht angegeben'),
       r.auftraggeber ? [h('dt',{},'Auftraggeber'), h('dd',{}, h('button',{class:'linkbtn ag', type:'button', title:'Profil des Auftraggebers', onclick:()=>openAuftraggeber(r.auftraggeber, r)}, r.auftraggeber))] : null,
       h('dt',{},'Ort'), h('dd',{}, r.bls.length ? r.bls.join(', ') : 'Deutschland'),
+      r.wert_geschaetzt ? [h('dt',{},'Geschätzter Wert'), h('dd',{}, eurV.format(+r.wert_geschaetzt))] : null,
+      r.fragen_bis ? [h('dt',{},'Fragen bis'), h('dd',{}, fmtLong.format(new Date(r.fragen_bis + 'T12:00:00')))] : null,
+      (r.ausfuehrung_beginn || r.ausfuehrung_ende || r.laufzeit) ? [h('dt',{},'Ausführung'), h('dd',{}, r.ausfuehrung_beginn || r.ausfuehrung_ende ? [fmtD2(r.ausfuehrung_beginn) || 'offen', fmtD2(r.ausfuehrung_ende) || 'offen'].join(' bis ') : 'Laufzeit ' + r.laufzeit)] : null,
+      +r.lose > 1 ? [h('dt',{},'Lose'), h('dd',{}, String(r.lose))] : null,
+      verfahrenText(r.verfahren) ? [h('dt',{},'Verfahren'), h('dd',{}, verfahrenText(r.verfahren))] : null,
       r.cpv_code ? [h('dt',{},'CPV'), h('dd',{}, r.cpv_code)] : null,
       h('dt',{},'Eingegangen'), h('dd',{}, fmtLong.format(r.created)),
       h('dt',{},'Quelle'), h('dd',{}, r.source === 'DOE' ? 'Datenservice Öffentlicher Einkauf' : 'TED, EU-Amtsblatt'),
@@ -2071,6 +2116,10 @@ $('scrim').addEventListener('click', closeDrawer);
 let qTimer;
 $('q').addEventListener('input', e => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.q = e.target.value.trim().toLowerCase(); S.sel = -1; S.shown = PAGE; render(); }, 120); });
 $('sort').addEventListener('change', e => { S.sort = e.target.value; S.sel = -1; render(); });
+try { const w = JSON.parse(localStorage.getItem('ldk-wert') || 'null'); if (w){ S.minWert = +w.min || 0; S.ohneWertWeg = !!w.ohne; $('wertSel').value = String(S.minWert); $('wertOhne').checked = S.ohneWertWeg; } } catch(e){}
+const wertMerken = () => { try { localStorage.setItem('ldk-wert', JSON.stringify({ min:S.minWert, ohne:S.ohneWertWeg })); } catch(e){} };
+$('wertSel').addEventListener('change', e => { S.minWert = +e.target.value; wertMerken(); S.sel = -1; S.shown = PAGE; render(); });
+$('wertOhne').addEventListener('change', e => { S.ohneWertWeg = e.target.checked; wertMerken(); S.sel = -1; S.shown = PAGE; render(); });
 
 document.addEventListener('keydown', e => {
   if ($('app').classList.contains('hidden')) return;
