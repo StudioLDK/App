@@ -542,7 +542,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
           <h2>Konto</h2>
           <dl class="kv" style="border:0;padding:0"><dt>E-Mail</dt><dd id="sEmail"></dd><dt>Zugang</dt><dd id="sZugang"></dd></dl>
           <div class="row2">
-            <div class="field"><label for="sPw">Neues Passwort</label><input id="sPw" type="password" autocomplete="new-password" minlength="8"></div>
+            <div class="field"><label for="sPw">Neues Passwort</label><input id="sPw" type="password" autocomplete="new-password" minlength="10" placeholder="mindestens 10 Zeichen"></div>
             <button class="btn btn-ghost" type="button" id="pwBtn">Passwort ändern</button>
           </div>
           <div class="msg" id="pwMsg"></div>
@@ -629,7 +629,7 @@ const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später 
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-12c';
+const APP_VERSION = '2026-10-12d';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -847,6 +847,7 @@ $('setupForm').addEventListener('submit', e => {
   init();
 });
 
+const PW_MIN = 10; // muss zur Einstellung in Supabase passen (Authentication, Email, Minimum password length)
 let mode = 'login';
 function setMode(m){
   mode = m;
@@ -854,6 +855,7 @@ function setMode(m){
   $('loginIntro').textContent = reg ? 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.' : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
   $('loginBtn').textContent = reg ? 'Kostenlos testen' : 'Anmelden';
   $('pw').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+  $('pw').placeholder = reg ? 'mindestens ' + PW_MIN + ' Zeichen' : '';
   $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
   $('modeSwitch').replaceChildren(
     reg ? 'Schon ein Konto? ' : 'Noch kein Konto? ',
@@ -873,7 +875,8 @@ function setMode(m){
 function authError(m){
   if (/invalid login/i.test(m)) return 'E-Mail oder Passwort stimmt nicht.';
   if (/already registered|already exists/i.test(m)) return 'Mit dieser E-Mail gibt es schon ein Konto. Melde dich einfach an.';
-  if (/password/i.test(m) && /6|8|short|least/i.test(m)) return 'Das Passwort braucht mindestens 8 Zeichen.';
+  if (/pwned|leak|compromised|breach/i.test(m)) return 'Dieses Passwort ist bei einem Datenleck im Internet aufgetaucht und deshalb nicht sicher. Bitte wähle ein anderes.';
+  if (/password/i.test(m) && /\d|short|least|weak/i.test(m)) return 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.';
   if (/not confirmed/i.test(m)) return 'Bitte bestätige zuerst deine E-Mail-Adresse über den Link in der Mail.';
   if (/signups? not allowed|disabled/i.test(m)) return 'Registrierungen sind gerade nicht möglich.';
   if (/rate limit/i.test(m)) return 'Zu viele Versuche. Bitte warte kurz und versuch es dann noch einmal.';
@@ -884,7 +887,7 @@ $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = $('loginMsg'); msg.textContent = ''; msg.className = 'msg';
   const email = $('em').value.trim(), password = $('pw').value;
-  if (mode === 'register' && password.length < 8){ msg.textContent = 'Das Passwort braucht mindestens 8 Zeichen.'; return; }
+  if (mode === 'register' && password.length < PW_MIN){ msg.textContent = 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.'; return; }
   const label = $('loginBtn').textContent;
   $('loginBtn').disabled = true; $('loginBtn').textContent = mode === 'register' ? 'Lege Konto an …' : 'Melde an …';
   const res = mode === 'register'
@@ -1602,11 +1605,11 @@ $('invBtn').addEventListener('click', async () => {
 
 $('pwBtn').addEventListener('click', async () => {
   const pw = $('sPw').value, msg = $('pwMsg'); msg.className = 'msg';
-  if (pw.length < 8){ msg.textContent = 'Das neue Passwort braucht mindestens 8 Zeichen.'; return; }
+  if (pw.length < PW_MIN){ msg.textContent = 'Das neue Passwort braucht mindestens ' + PW_MIN + ' Zeichen.'; return; }
   $('pwBtn').disabled = true;
   const { error } = await S.db.auth.updateUser({ password: pw });
   $('pwBtn').disabled = false;
-  if (error){ msg.textContent = 'Das hat nicht geklappt: ' + error.message; return; }
+  if (error){ msg.textContent = /different from the old/i.test(error.message) ? 'Das neue Passwort muss sich vom alten unterscheiden.' : authError(error.message); return; }
   $('sPw').value = ''; msg.className = 'msg ok'; msg.textContent = 'Passwort geändert.';
 });
 
