@@ -604,7 +604,7 @@ const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später 
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-12';
+const APP_VERSION = '2026-10-12b';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1009,9 +1009,25 @@ const COLS_BASE = 'id,title,description,region,deadline,link,created_at,ted_publ
 const COLS_MORE = COLS_BASE + ',source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung';
 // Neue Spalten: Kurzfassung statt voller Beschreibung (spart Datenvolumen), Art, Änderungen
 const COLS_NEU = 'id,title,kurz,region,deadline,link,created_at,ted_publication_number,source,cpv_code,auftraggeber,unterlagen_url,ki_zusammenfassung,art,geaendert_am,aenderung';
+/* Die Liste kommt bevorzugt aus der täglichen Datei (eine Datei für alle, schont die Datenbank) */
+async function ausDatei(){
+  try {
+    if (!window.DecompressionStream || !S.db.storage) return null;
+    const { data:blob, error } = await S.db.storage.from('daten').download('offen.json.gz');
+    if (error || !blob) return null;
+    const txt = await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    const j = JSON.parse(txt);
+    if (!j || !Array.isArray(j.rows) || Date.now() - new Date(j.stand).getTime() > 48 * 36e5) return null;
+    S.feat.datei = j.stand;
+    return j.rows;
+  } catch(e){ return null; }
+}
 async function fetchAll(){
   let cols = COLS_NEU;
   const all = []; const step = 1000;
+  const datei = await ausDatei();
+  if (datei) all.push(...datei);
+  else
   for (let from = 0; ; from += step){
     const { data, error } = await S.db.from('tenders')
       .select(cols)
@@ -1620,6 +1636,14 @@ async function renderWatch(){
     h('p',{class:'sub'}, seit ? 'seit deinem letzten Besuch dieser Seite' : 'in den letzten 14 Tagen'), liste));
 }
 
+/* Ergebnisse teurer Abfragen 30 Minuten im Browser merken, die Zahlen ändern sich nur einmal am Tag */
+async function rpcGemerkt(name, params){
+  const key = 'ldk-rpc-' + name + '-' + JSON.stringify(params);
+  try { const c = JSON.parse(sessionStorage.getItem(key) || 'null'); if (c && Date.now() - c.t < 30 * 60000) return { data:c.d, error:null }; } catch(e){}
+  const res = await S.db.rpc(name, params);
+  if (!res.error){ try { sessionStorage.setItem(key, JSON.stringify({ t:Date.now(), d:res.data })); } catch(e){} }
+  return res;
+}
 async function loadWb(){
   const seq = ++WB.seq;
   renderWatch();
@@ -1627,8 +1651,8 @@ async function loadWb(){
   const begriffe = S.prefs.suchbegriffe || [];
   const p = { p_tage: WB.tage, p_limit: 60 };
   if (WB.q){ if (WB.mode === 'firma') p.p_firma = likeEsc(WB.q); else p.p_auftraggeber = likeEsc(WB.q); }
-  else if (WB.scope === 'mine' && begriffe.length) p.p_begriffe = begriffe.map(likeEsc);
-  const { data, error } = await S.db.rpc('wettbewerb_top', p);
+  else if (WB.scope === 'mine' && begriffe.length) p.p_begriffe = begriffe;
+  const { data, error } = await rpcGemerkt('wettbewerb_top', p);
   if (seq !== WB.seq) return;
   const zeitraum = $('wbTage').selectedOptions[0].textContent;
   if (error){
@@ -1726,7 +1750,7 @@ async function preisniveau(cpv){
   const code = (String(cpv || '').match(/\d{8}/) || [])[0];
   if (!code) return null;
   for (const len of [5, 4, 3]){
-    const { data, error } = await S.db.rpc('preisniveau', { p_cpv: code.slice(0, len), p_tage: 730 });
+    const { data, error } = await rpcGemerkt('preisniveau', { p_cpv: code.slice(0, len), p_tage: 730 });
     if (error) return null;
     const x = data && data[0];
     if (x && +x.anzahl >= 8) return { ...x, gruppe: code.slice(0, len) };
@@ -1779,7 +1803,7 @@ async function drawerWettbewerb(r){
   const box = $('drWb'); if (!box) return;
   const jobs = [
     r.auftraggeber ? S.db.from('zuschlaege').select('title,gewinner,gewinner_key,gewinner_ort,wert,zuschlag_am').eq('auftraggeber', r.auftraggeber).order('zuschlag_am', { ascending:false }).limit(6) : null,
-    r.cpv_code ? S.db.rpc('wettbewerb_top', { p_cpv: String(r.cpv_code).slice(0, 5), p_tage: 730, p_limit: 5 }) : null,
+    r.cpv_code ? rpcGemerkt('wettbewerb_top', { p_cpv: String(r.cpv_code).slice(0, 5), p_tage: 730, p_limit: 5 }) : null,
     r.cpv_code ? preisniveau(r.cpv_code) : null
   ];
   const [ag, cpv, pn] = await Promise.all(jobs.map(j => j ? Promise.resolve(j).then(x => x, () => ({ error:true })) : Promise.resolve(null)));
