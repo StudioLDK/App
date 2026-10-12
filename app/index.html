@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ausschreibungsfinder</title>
-<meta name="description" content="Neue öffentliche Ausschreibungen aus der EU-Datenbank TED, gefiltert nach Branche, Region und Frist.">
+<title>Bieterblick</title>
+<meta name="description" content="Öffentliche Ausschreibungen, die zu deinem Betrieb passen, und die Zuschläge deiner Mitbewerber.">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Ausschreibungen">
+<meta name="apple-mobile-web-app-title" content="Bieterblick">
 <link rel="preload" href="fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* Schrift Archivo (SIL Open Font License, siehe fonts/OFL.txt), selbst gehostet: keine Verbindung zu Google */
@@ -52,6 +52,7 @@ a{color:inherit}
 .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
 .msg{font-size:14px;color:var(--red);min-height:1em}
 .mark{display:flex;align-items:center;gap:10px;font-weight:700;font-stretch:112%}
+.mark .dot{display:block;width:12px;height:12px;border-radius:3px;background:var(--red)}
 .msg.ok{color:#1B6B3A}
 .switch{border-top:1px solid var(--line);padding-top:16px;font-size:14px;color:var(--muted)}
 .switch button{background:none;border:0;padding:0;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
@@ -90,7 +91,7 @@ a{color:inherit}
 .invite-link code{font-size:13px;word-break:break-all;flex:1;min-width:220px}
 .btn-sm{height:36px;padding:0 14px;font-size:14px}
 .legal-link{font-size:13px;color:var(--muted);align-self:center}
-.legal{max-width:1440px;margin:0 auto;padding:28px 20px 90px;font-size:13px;color:var(--muted)}
+.legal{grid-column:-2 / -1;padding:28px 0 90px;font-size:13px;color:var(--muted)}
 .help-fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;height:44px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:600;padding:0 18px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 dialog.help{border:0;border-radius:16px;padding:0;width:min(480px,calc(100% - 32px));box-shadow:0 30px 80px rgba(0,0,0,.25)}
 dialog.help::backdrop{background:rgba(10,12,15,.35)}
@@ -370,7 +371,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
 <div id="login" class="gate hidden">
   <form class="gate-card" id="loginForm">
     <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg>Studio LDK</div>
-    <h1 class="appname">Ausschreibungsfinder</h1>
+    <h1 class="appname">Bieterblick</h1>
     <p id="loginIntro">Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
     <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" required></div>
     <div class="field"><label for="pw">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
@@ -386,7 +387,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
   <div class="trial hidden" id="trialBar"><div class="trial-in"><span id="trialTxt"></span><a id="trialLink" href="mailto:info@studioldk.de?subject=Zugang%20freischalten">Zugang freischalten</a></div></div>
   <header class="top">
     <div class="top-in">
-      <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg><span class="appname">Ausschreibungsfinder</span></div>
+      <div class="mark"><i class="dot" aria-hidden="true"></i><span class="appname">Bieterblick</span></div>
       <div class="search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <label for="q" class="hidden">Suchen</label>
@@ -625,11 +626,11 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
 /* =========================================================================
    Konfiguration
    ========================================================================= */
-const APP_NAME     = 'Ausschreibungsfinder';           // Arbeitstitel, später durch den Produktnamen ersetzen
+const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-12e';
+const APP_VERSION = '2026-10-12f';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -695,6 +696,8 @@ function dueText(days){
   return {d:`noch ${days} Tage`, w:'', cls: days <= 7 ? 'r' : days <= 14 ? 'a' : ''};
 }
 // Kleinbuchstaben und Umlaute vereinheitlichen, damit "turen" auch "Türen" findet
+// replaceChildren und append schreiben null sonst als Text "null" in die Seite
+for (const m of ['replaceChildren', 'append']){ const f = Element.prototype[m]; Element.prototype[m] = function(...k){ return f.apply(this, k.filter(x => x != null && x !== false)); }; }
 const fold = s => String(s).toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss');
 /* Verfahrensart und Rechtsgrundlage lesbar machen */
 const VERFAHREN = { 'open':'Offenes Verfahren', 'de-open':'Öffentliche Ausschreibung', 'restricted':'Nicht offenes Verfahren',
@@ -985,9 +988,12 @@ function imUmkreis(r, sitz, km){
   return false;
 }
 const hasPrefs = p => p.suchbegriffe.length > 0 || p.ausschluss.length > 0 || p.bundeslaender.length > 0 || (p.cpv || []).length > 0 || !!(p.sitz_nuts && p.umkreis_km);
+// Manche Begriffe sind Anfang anderer Wörter: "elektro" soll nicht "elektronisch" oder "Elektronik" finden
+const ENGER = { elektro: /elektro(?!n)/ };
+const enthaelt = (text, t) => { const f = fold(t).trim(); return ENGER[f] ? ENGER[f].test(text) : text.includes(f); };
 function matchOf(r, p){
   const cpv = p.cpv || [];
-  const hits = p.suchbegriffe.filter(t => r.fold.includes(fold(t)));
+  const hits = p.suchbegriffe.filter(t => enthaelt(r.fold, t));
   const cpvHits = cpv.filter(c => r.cpvs.some(x => x.startsWith(c)));
   if ((p.suchbegriffe.length || cpv.length) && !hits.length && !cpvHits.length) return null;
   if (p.ausschluss.some(t => r.fold.includes(fold(t)))) return null;
@@ -1095,12 +1101,18 @@ async function fetchAll(){
   // EU-weite Ausschreibungen stehen oft bei TED und beim Datenservice: doppelte zusammenfassen
   const seen = new Map();
   for (const r of all){
-    const key = fold(r.title || '').replace(/[^a-z0-9]/g,'').slice(0,90) + '|' + (r.deadline || '');
+    // TED setzt "Deutschland – <Leistung> – " vor den Titel, beim Datenservice fehlt das: für den Vergleich abschneiden
+    const titel = String(r.title || '').replace(/^deutschland\s+[–-]\s+[^–]+?\s+[–-]\s+/i, '');
+    const key = fold(titel).replace(/[^a-z0-9]/g,'').slice(0,90) + '|' + (r.deadline || '');
     const prev = seen.get(key);
     if (!prev) { seen.set(key, r); continue; }
-    seen.set(key, { ...prev, ...Object.fromEntries(Object.entries(r).filter(([k,v]) => v != null && prev[k] == null)) });
+    const zus = { ...prev, ...Object.fromEntries(Object.entries(r).filter(([k,v]) => v != null && prev[k] == null)) };
+    // den kürzeren Titel ohne TED-Vorspann anzeigen
+    if (r.title && prev.title && r.title.length < prev.title.length) zus.title = r.title;
+    seen.set(key, zus);
   }
   return [...seen.values()].map(r => {
+    if (r.title) r.title = r.title.replace(/^deutschland\s+[–-]\s+/i, '');
     const dl = r.deadline ? new Date(r.deadline + 'T00:00:00') : null;
     if (r.kurz !== undefined && r.description === undefined){ r.description = r.kurz; r.descKurz = true; }
     const text = [r.title, r.description, r.auftraggeber, r.ki_zusammenfassung].filter(Boolean).join(' ');
@@ -1322,7 +1334,7 @@ function icsDownload(list, name){
   if (!list.length){ alert('Keine Ausschreibungen mit Frist dabei.'); return; }
   const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
   const ymd = d => d.toISOString().slice(0,10).replace(/-/g,'');
-  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Studio LDK//Ausschreibungsfinder//DE','CALSCALE:GREGORIAN'];
+  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Studio LDK//Bieterblick//DE','CALSCALE:GREGORIAN'];
   for (const r of list){
     const start = new Date(Date.UTC(r.dl.getFullYear(), r.dl.getMonth(), r.dl.getDate()));
     const end = new Date(start.getTime() + DAY);
@@ -1566,7 +1578,7 @@ async function renderTeam(){
   }
   $('inviteRow').classList.remove('hidden');
   const [tm, mem, inv] = await Promise.all([
-    S.db.from('teams').select('name').eq('id', S.team).maybeSingle(),
+    S.db.from('teams').select('name,max_mitglieder').eq('id', S.team).maybeSingle(),
     S.db.from('team_members').select('user_id,rolle,email').eq('team_id', S.team),
     S.db.from('team_invites').select('token,email').eq('team_id', S.team).is('accepted_at', null)
   ]);
@@ -1583,7 +1595,10 @@ async function renderTeam(){
       h('span',{class:'r'}, 'eingeladen ',
         h('button',{class:'linkbtn', type:'button', onclick: () => $('invOut').replaceChildren(inviteBox(i.token, i.email)) }, 'Link'), ' ',
         h('button',{class:'linkbtn', type:'button', onclick: async () => { await S.db.from('team_invites').delete().eq('token', i.token); renderTeam(); }}, 'Zurückziehen')))));
-  const kids = [h('div',{style:'font-weight:600;margin-bottom:8px'}, (tm.data && tm.data.name) || 'Dein Team'), list];
+  const plaetze = (tm.data && tm.data.max_mitglieder) || 5, belegt = members.length + (inv.data || []).length;
+  $('inviteRow').classList.toggle('hidden', belegt >= plaetze);
+  const kids = [h('div',{style:'display:flex;justify-content:space-between;gap:12px;margin-bottom:8px'}, h('b',{}, (tm.data && tm.data.name) || 'Dein Team'), h('span',{class:'hint', style:'margin:0'}, belegt + ' von ' + plaetze + ' Plätzen belegt')), list];
+  if (belegt >= plaetze) kids.push(h('p',{class:'hint', style:'margin-top:10px'}, 'Alle Plätze sind belegt. Für ein größeres Team schreib uns über ', h('a',{href:'impressum.html#kt'}, 'das Kontaktformular'), '.'));
   if (ich && !owner) kids.push(h('button',{class:'linkbtn', type:'button', style:'margin-top:10px', onclick: async () => {
     if (!confirm('Team wirklich verlassen? Du siehst dann den Bearbeitungsstand des Teams nicht mehr.')) return;
     await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', S.user.id);
@@ -1596,7 +1611,7 @@ $('invBtn').addEventListener('click', async () => {
   $('invBtn').disabled = true;
   const { data, error } = await S.db.from('team_invites').insert({ team_id:S.team, email:em }).select('token').single();
   $('invBtn').disabled = false;
-  if (error){ msg.textContent = 'Einladen hat nicht geklappt: ' + error.message; return; }
+  if (error){ msg.textContent = /Plätze/.test(error.message) ? error.message : 'Einladen hat nicht geklappt: ' + error.message; return; }
   $('invEm').value = '';
   await renderTeam();
   msg.className = 'msg ok'; msg.textContent = 'Einladung erstellt. Schick deinem Kollegen diesen Link:';
@@ -1617,8 +1632,9 @@ $('pwBtn').addEventListener('click', async () => {
    Wettbewerb: wer gewinnt was
    ========================================================================= */
 const WB = { tage:365, mode:'firma', scope:'mine', q:'', seq:0, ready:false };
-const eurK = new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',notation:'compact',maximumFractionDigits:1});
 const eurV = new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+// Die kompakte Schreibweise kürzt im Deutschen erst ab Millionen und zeigt sonst Nachkommastellen: deshalb selbst formatieren
+const eurK = { format: n => n >= 1e6 ? (n / 1e6).toLocaleString('de-DE', { maximumFractionDigits:1 }) + ' Mio. €' : eurV.format(Math.round(n)) };
 const fmtNum = new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
 const zDate = d => d ? fmtNum.format(new Date(d + 'T12:00:00')) : '';
 const likeEsc = t => t.replace(/[\\%_]/g, m => '\\' + m);

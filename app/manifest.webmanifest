@@ -1,7 +1,7 @@
 {
-  "name": "Ausschreibungsfinder",
-  "short_name": "Ausschreibungen",
-  "description": "Neue öffentliche Ausschreibungen aus der EU-Datenbank TED, gefiltert nach Branche, Region und Frist.",
+  "name": "Bieterblick",
+  "short_name": "Bieterblick",
+  "description": "Öffentliche Ausschreibungen finden und sehen, wer gewinnt.",
   "lang": "de",
   "start_url": "./",
   "scope": "./",
