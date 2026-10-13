@@ -851,8 +851,13 @@ $('setupForm').addEventListener('submit', e => {
 });
 
 const PW_MIN = 10; // muss zur Einstellung in Supabase passen (Authentication, Email, Minimum password length)
+// Vor dem Start: freie Registrierung aus. Team-Einladungen funktionieren weiter.
+// Zum Freischalten auf true setzen.
+const OFFENE_REGISTRIERUNG = false;
+function hatEinladung(){ try { return !!sessionStorage.getItem('ldk-invite'); } catch(e){ return false; } }
 let mode = 'login';
 function setMode(m){
+  if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung()) m = 'login';
   mode = m;
   const reg = m === 'register';
   $('loginIntro').textContent = reg ? 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.' : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
@@ -860,6 +865,11 @@ function setMode(m){
   $('pw').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
   $('pw').placeholder = reg ? 'mindestens ' + PW_MIN + ' Zeichen' : '';
   $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
+  if (!reg && !OFFENE_REGISTRIERUNG && !hatEinladung()){
+    $('modeSwitch').replaceChildren('Noch kein Konto? Bieterblick startet in Kürze. ',
+      h('a',{href:'impressum.html#kt'}, 'Jetzt vormerken'));
+    return;
+  }
   $('modeSwitch').replaceChildren(
     reg ? 'Schon ein Konto? ' : 'Noch kein Konto? ',
     h('button',{type:'button', onclick:()=>setMode(reg ? 'login' : 'register')}, reg ? 'Anmelden' : '7 Tage kostenlos testen'));
