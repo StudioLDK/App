@@ -886,18 +886,22 @@ try {
   aboWarten = Date.now() - Number(sessionStorage.getItem('ldk-abo') || 0) < 60000;
 } catch(e){}
 function hatEinladung(){ try { return !!sessionStorage.getItem('ldk-invite'); } catch(e){ return false; } }
+// Tester-Link (?testen=CODE): Registrierung erlaubt, gültiger Code gibt 30 statt 7 Tage (prüft die Datenbank)
+function testerCode(){ try { return sessionStorage.getItem('ldk-tester') || ''; } catch(e){ return ''; } }
 let mode = 'login';
 function setMode(m){
-  if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung()) m = 'login';
+  if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()) m = 'login';
   mode = m;
   const reg = m === 'register';
-  $('loginIntro').textContent = reg ? 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.' : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
+  $('loginIntro').textContent = reg
+    ? (testerCode() ? 'Du bist als Tester eingeladen: 30 Tage kostenlos, ohne Zahlungsdaten. Die Testphase endet automatisch.' : 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.')
+    : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
   $('loginBtn').textContent = reg ? 'Kostenlos testen' : 'Anmelden';
   $('pw').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
   $('pw').placeholder = reg ? 'mindestens ' + PW_MIN + ' Zeichen' : '';
   $('b2bRow').classList.toggle('hidden', !reg);
   $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
-  if (!reg && !OFFENE_REGISTRIERUNG && !hatEinladung()){
+  if (!reg && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()){
     $('modeSwitch').replaceChildren('Noch kein Konto? Bieterblick startet in Kürze. ',
       h('a',{href:'impressum.html#kt'}, 'Jetzt vormerken'));
     return;
@@ -909,12 +913,14 @@ function setMode(m){
 (() => {
   const qs = new URLSearchParams(location.search);
   const tok = qs.get('einladung');
+  const tester = (qs.get('testen') || '').trim().toLowerCase();
+  if (tester){ try { sessionStorage.setItem('ldk-tester', tester); } catch(e){} if (!tok) history.replaceState(null, '', location.pathname + location.hash); }
   if (tok){
     try { sessionStorage.setItem('ldk-invite', tok); } catch(e){}
     history.replaceState(null, '', location.pathname + location.hash);
     setMode('register');
     $('loginIntro').textContent = 'Du wurdest in ein Team eingeladen. Leg ein Konto mit der E-Mail an, an die die Einladung ging, oder melde dich an, falls du schon eins hast.';
-  } else setMode(qs.has('testen') ? 'register' : 'login');
+  } else setMode(qs.has('testen') || testerCode() ? 'register' : 'login');
 })();
 
 function authError(m){
@@ -937,7 +943,7 @@ $('loginForm').addEventListener('submit', async e => {
   const label = $('loginBtn').textContent;
   $('loginBtn').disabled = true; $('loginBtn').textContent = mode === 'register' ? 'Lege Konto an …' : 'Melde an …';
   const res = mode === 'register'
-    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname, data:{ agb_akzeptiert: new Date().toISOString() } } })
+    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname, data:{ agb_akzeptiert: new Date().toISOString(), ...(testerCode() ? { tester: testerCode() } : {}) } } })
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
