@@ -2002,6 +2002,7 @@ async function openAdmin(){
     h('section',{class:'card'}, h('h2',{}, 'Registrierungen, letzte 30 Tage'),
       h('div',{class:'adm-bars', role:'img', 'aria-label':'Registrierungen pro Tag'}, ...reg.map(x => h('span',{title:`${zDate(x.tag)}: ${x.n}`, style:`height:${Math.max(2, Math.round(x.n / maxR * 100))}%`, class: x.n ? '' : 'z'}))),
       h('span',{class:'hint'}, `${a.bestaetigt} von ${a.nutzer} Konten haben ihre E-Mail bestätigt. Treffer-Mail an: ${a.mail_an}.`)),
+    adminKonten(a.konten || []),
     adminVormerkungen(a.vormerkungen || []),
     adminTester(a.tester || []),
     h('section',{class:'card'}, h('h2',{}, 'Daten und Abruf'),
@@ -2027,6 +2028,25 @@ function kopieren(text, knopf){
   const fertig = () => { const alt = knopf.textContent; knopf.textContent = 'Kopiert'; setTimeout(() => { knopf.textContent = alt; }, 1500); };
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(fertig).catch(() => prompt('Zum Kopieren markieren:', text));
   else prompt('Zum Kopieren markieren:', text);
+}
+// Alle Konten: wer testet, wer zahlt, wer ist abgelaufen
+function adminKonten(k){
+  const jetzt = Date.now(), tag = 864e5;
+  const status = x => {
+    if (x.bezahlt_bis && new Date(x.bezahlt_bis) > jetzt) return ['zahlt', 'color:var(--ok, #1B6B3A)'];
+    if (x.testphase_bis && new Date(x.testphase_bis) > jetzt) return [`Testphase, noch ${Math.ceil((new Date(x.testphase_bis) - jetzt) / tag)} Tage`, ''];
+    return ['Testphase abgelaufen', 'color:var(--muted)'];
+  };
+  return h('section',{class:'card'}, h('h2',{}, `Konten (${k.length})`),
+    k.length ? h('div',{class:'zl'}, ...k.map(x => {
+      const [st, farbe] = status(x);
+      const infos = [x.firma, x.suchprofil ? 'mit Suchprofil' : 'ohne Suchprofil', x.team_groesse > 1 ? `Team mit ${x.team_groesse}` : null,
+        x.tester_code ? 'Tester' : null, x.bestaetigt ? null : 'E-Mail noch nicht bestätigt',
+        x.letzter_login ? 'zuletzt da ' + zeit(x.letzter_login) : 'noch nie eingeloggt'].filter(Boolean);
+      return h('div',{},
+        h('span',{class:'d'}, 'seit ' + zeit(x.registriert)), h('span',{class:'t'}, x.email),
+        h('span',{class:'w', style: farbe}, st), h('span',{class:'s'}, infos.join(', ')));
+    })) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch keine Konten.'));
 }
 // Vormerkungen von der Startseite: zum Start allen schreiben
 function adminVormerkungen(v){
