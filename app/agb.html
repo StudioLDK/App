@@ -21,7 +21,7 @@ body{font-family:'Archivo',system-ui,sans-serif;font-size:16px;line-height:1.55;
 a{color:inherit;text-underline-offset:3px}
 :focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .wrap{max-width:680px;margin:0 auto;padding:32px 16px 64px}
-.nav{display:flex;justify-content:space-between;gap:16px;margin-bottom:24px;font-weight:600;font-size:15px}
+.nav{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;margin-bottom:24px;font-weight:600;font-size:15px}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 24px;margin-bottom:20px}
 h1{margin:0 0 20px;font-size:32px;line-height:1.1;font-weight:800;font-stretch:115%;letter-spacing:-.02em}
 h2{margin:28px 0 10px;font-size:19px;font-weight:700;font-stretch:110%}
@@ -29,13 +29,15 @@ h2:first-child{margin-top:0}
 p,li{margin:0 0 10px}
 ol{padding-left:20px;margin:0 0 10px}
 .lead{color:var(--muted)}
+h1{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+@media (max-width:420px){h1{font-size:26px}.card{padding:22px 18px}}
 .hinweis{background:#FFF3D6;color:#8A5A00;border-radius:10px;padding:14px 16px;font-size:14px;margin-bottom:24px}
 .fehlt{background:#FFF3D6;color:#8A5A00;border-radius:4px;padding:0 4px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><a href="./">Zurück zur App</a><a href="impressum.html">Impressum</a></nav>
+  <nav class="nav"><a href="./">Zurück zur App</a><a href="impressum.html">Impressum</a><a href="av-vertrag.html">AV-Vertrag</a></nav>
 
   <div class="hinweis"><b>Entwurf.</b> Diese AGB sind ein erster Vorschlag und noch nicht anwaltlich geprüft. Bitte vor dem ersten zahlenden Kunden von einer Fachperson gegenlesen lassen.</div>
 
@@ -44,44 +46,61 @@ ol{padding-left:20px;margin:0 0 10px}
     <p class="lead">für die Nutzung von Bieterblick, einem Angebot von Studio LDK (Luis Dempf)</p>
 
     <h2>1. Geltungsbereich</h2>
-    <p>Diese Bedingungen gelten für alle Verträge über die Nutzung der Software Bieterblick zwischen Studio LDK (nachfolgend „Anbieter“) und Unternehmen im Sinne von § 14 BGB (nachfolgend „Kunde“). Bieterblick richtet sich ausschließlich an Unternehmer; der Vertragsschluss mit Verbrauchern ist ausgeschlossen.</p>
+    <p>Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge über die Nutzung der Software Bieterblick zwischen Luis Dempf, handelnd unter Studio LDK, Martin-Schweiger-Straße 20, 87448 Waltenhofen (nachfolgend „Anbieter“), und dem Kunden.</p>
+    <p>Das Angebot richtet sich ausschließlich an Unternehmer im Sinne von § 14 BGB, juristische Personen des öffentlichen Rechts und öffentlich-rechtliche Sondervermögen. Verbraucher im Sinne von § 13 BGB sind von der Nutzung ausgeschlossen. Mit der Registrierung bestätigt der Kunde, als Unternehmer zu handeln.</p>
+    <p>Abweichende, entgegenstehende oder ergänzende Geschäftsbedingungen des Kunden werden nicht Vertragsbestandteil, auch wenn der Anbieter ihnen nicht ausdrücklich widerspricht.</p>
 
     <h2>2. Vertragsgegenstand</h2>
-    <p>Bieterblick ist eine webbasierte Software, die öffentlich zugängliche Vergabebekanntmachungen sammelt, nach den vom Kunden hinterlegten Kriterien filtert und Informationen zu früheren Zuschlägen bereitstellt. Der Anbieter stellt die Software während der Vertragslaufzeit über das Internet zur Nutzung bereit (Software as a Service).</p>
-    <p>Die in Bieterblick angezeigten Daten stammen aus öffentlich zugänglichen Quellen (z. B. TED, Vergabeplattformen des Bundes und der Länder). Der Anbieter bereitet diese Daten auf, erstellt sie aber nicht selbst und kann für ihre Richtigkeit, Vollständigkeit oder Aktualität keine Gewähr übernehmen.</p>
+    <p>Der Anbieter stellt dem Kunden die webbasierte Software Bieterblick als Software as a Service über das Internet zur Verfügung. Bieterblick sucht öffentliche Ausschreibungen und Zuschläge aus öffentlich zugänglichen Quellen, gleicht sie mit den Suchprofilen des Kunden ab und benachrichtigt den Kunden auf Wunsch per E-Mail über Treffer. Der Funktionsumfang ergibt sich aus der Leistungsbeschreibung auf der Website zum Zeitpunkt des Vertragsschlusses.</p>
+    <p>Die Ausschreibungs- und Zuschlagsdaten stammen aus Quellen Dritter, insbesondere dem Amtsblatt der EU (TED) und dem Datenservice Öffentlicher Einkauf. Der Anbieter bereitet diese Daten auf, erstellt sie aber nicht selbst und übernimmt keine Gewähr für ihre Vollständigkeit, Richtigkeit und Aktualität. Maßgeblich sind allein die Originalbekanntmachungen der Vergabestellen. Insbesondere schuldet der Anbieter nicht, dass der Kunde jede für ihn passende Ausschreibung oder Frist erhält. Auswertungen wie Ranglisten und Preisniveaus beruhen auf diesen Daten und dienen nur der Orientierung.</p>
 
-    <h2>3. Vertragsschluss und Testphase</h2>
-    <p>Der Vertrag kommt zustande, wenn sich der Kunde über die Website registriert und der Anbieter den Zugang freischaltet. Sofern eine kostenlose Testphase angeboten wird, gelten für deren Dauer die Nutzungsbedingungen dieser AGB; eine Zahlungspflicht entsteht erst mit Ablauf der Testphase, sofern der Kunde nicht vorher kündigt.</p>
+    <h2>3. Registrierung, Testphase und Vertragsschluss</h2>
+    <p>Für die Nutzung ist eine Registrierung mit einer gültigen E-Mail-Adresse erforderlich. Die Darstellung auf der Website ist kein bindendes Angebot. Ein Anspruch auf Abschluss eines Vertrags besteht nicht.</p>
+    <p>Mit der Registrierung beginnt eine kostenlose Testphase. Sie dauert 7 Tage, bei Registrierung über eine Einladung des Anbieters auch länger, und endet automatisch, ohne dass es einer Kündigung bedarf. Während der Testphase entstehen keine Kosten.</p>
+    <p>Ein kostenpflichtiger Vertrag entsteht nur, wenn der Kunde ausdrücklich ein Abonnement abschließt, indem er im Bestellvorgang die Schaltfläche zum zahlungspflichtigen Abschluss betätigt und die Zahlung über den Zahlungsdienstleister freigibt.</p>
+    <p>Die Angaben bei der Registrierung müssen wahr und vollständig sein. Änderungen, insbesondere der Rechnungsanschrift, teilt der Kunde unverzüglich mit.</p>
 
-    <h2>4. Preise und Zahlung</h2>
-    <p>Es gelten die zum Zeitpunkt der Registrierung auf der Website angegebenen Preise. Der Anbieter ist Kleinunternehmer im Sinne von § 19 UStG; die Preise enthalten daher keine Umsatzsteuer. Die Zahlung erfolgt monatlich im Voraus per Lastschrift oder Kreditkarte über den vom Anbieter eingesetzten Zahlungsdienstleister.</p>
-    <p>Der Anbieter kann die Preise mit Wirkung für die Zukunft anpassen. Über Preisänderungen wird der Kunde mindestens 30 Tage vorher per E-Mail informiert. Widerspricht der Kunde nicht bis zum Wirksamwerden der Änderung, gilt die Änderung als angenommen; der Kunde ist in diesem Fall auf sein Sonderkündigungsrecht hinzuweisen.</p>
+    <h2>4. Team und Zugangsdaten</h2>
+    <p>Ein Abonnement umfasst ein Team mit bis zu fünf Nutzern desselben Kunden. Der Kunde lädt die Nutzer über die Team-Funktion ein und kann sie jederzeit entfernen. Jeder Nutzer erhält eigene Zugangsdaten; die gemeinsame Nutzung eines Zugangs durch mehrere Personen ist nicht gestattet.</p>
+    <p>Der Kunde hält die Zugangsdaten geheim und informiert den Anbieter unverzüglich, wenn er einen Missbrauch vermutet. Er ist für Handlungen seiner Nutzer verantwortlich wie für eigene.</p>
 
-    <h2>5. Laufzeit und Kündigung</h2>
-    <p>Der Vertrag läuft auf unbestimmte Zeit und ist monatlich zum Ende des jeweiligen Abrechnungszeitraums kündbar. Die Kündigung kann in Textform (z. B. per E-Mail) oder, sofern verfügbar, über die Kontoeinstellungen in der App erfolgen. Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.</p>
+    <h2>5. Preise und Zahlung</h2>
+    <p>Es gelten die bei Abschluss des Abonnements auf der Website angegebenen Preise. Der reguläre Preis beträgt 79 € pro Monat und Team. Die ersten zwanzig zahlenden Kunden erhalten einen Einführungspreis von 49 € pro Monat und Team, der für die gesamte Laufzeit ihres Abonnements gilt, auch nach einer Kündigung und erneutem Abschluss.</p>
+    <p>Der Anbieter ist Kleinunternehmer im Sinne von § 19 UStG. Es wird daher keine Umsatzsteuer berechnet und ausgewiesen.</p>
+    <p>Die Vergütung ist monatlich im Voraus fällig. Die Zahlung erfolgt über den Zahlungsdienstleister Stripe per Kreditkarte, SEPA-Lastschrift oder einer anderen dort angebotenen Zahlungsart. Der Kunde erhält eine Rechnung per E-Mail und kann seine Rechnungen jederzeit im Kundenportal abrufen.</p>
+    <p>Schlägt eine Zahlung fehl, kann der Anbieter den Zugang nach Ablauf einer kurzen Kulanzfrist bis zum Zahlungseingang sperren. Der Vergütungsanspruch bleibt bestehen.</p>
 
-    <h2>6. Pflichten des Kunden</h2>
-    <p>Der Kunde ist für die Richtigkeit der bei der Registrierung angegebenen Daten verantwortlich und hat seine Zugangsdaten vertraulich zu behandeln. Der Zugang ist für die Nutzung durch die vereinbarte Anzahl an Personen im Unternehmen des Kunden bestimmt; eine Weitergabe an Dritte außerhalb des eigenen Unternehmens ist nicht gestattet.</p>
+    <h2>6. Laufzeit, Kündigung und Kontolöschung</h2>
+    <p>Das Abonnement läuft auf unbestimmte Zeit. Beide Seiten können es jederzeit zum Ende des laufenden Abrechnungsmonats kündigen. Die Kündigung ist im Kundenportal (in der App unter Einstellungen) oder in Textform, z. B. per E-Mail an info@studioldk.de, möglich. Bereits gezahlte Beträge für den laufenden Monat werden nicht anteilig erstattet; der Zugang bleibt bis zum Ende des bezahlten Zeitraums bestehen.</p>
+    <p>Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt. Ein wichtiger Grund für den Anbieter liegt insbesondere vor, wenn der Kunde trotz Abmahnung gegen Ziffer 8 verstößt oder mit zwei Monatsbeiträgen in Verzug ist.</p>
+    <p>Der Kunde kann sein Konto jederzeit selbst in der App löschen. Nach Vertragsende löscht der Anbieter die Daten des Kunden (Suchprofile, Einstellungen, Merklisten) innerhalb von 30 Tagen, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
 
-    <h2>7. Verfügbarkeit</h2>
-    <p>Der Anbieter bemüht sich um eine hohe Verfügbarkeit der Software, kann diese aber nicht garantieren. Wartungsarbeiten, Störungen bei vorgelagerten Diensten (z. B. Hosting- oder Datenquellen-Anbietern) sowie höhere Gewalt können zu vorübergehenden Einschränkungen führen.</p>
+    <h2>7. Verfügbarkeit und Weiterentwicklung</h2>
+    <p>Der Anbieter bemüht sich um eine möglichst unterbrechungsfreie Verfügbarkeit, schuldet aber keine bestimmte Verfügbarkeitsquote. Die Daten werden in der Regel einmal täglich aktualisiert. Vorübergehende Einschränkungen wegen Wartung, Sicherheitsupdates oder Störungen bei Dritten (z. B. Hosting-Dienstleister, Datenquellen) sind möglich.</p>
+    <p>Der Anbieter darf die Software weiterentwickeln und Funktionen ändern, soweit der Kernzweck nach Ziffer 2 erhalten bleibt und die Änderung für den Kunden zumutbar ist.</p>
 
-    <h2>8. Haftung</h2>
-    <p>Der Anbieter haftet unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie nach Maßgabe des Produkthaftungsgesetzes. Bei der Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) haftet der Anbieter auch bei einfacher Fahrlässigkeit, jedoch der Höhe nach begrenzt auf den bei Vertragsschluss vorhersehbaren, vertragstypischen Schaden. Im Übrigen ist die Haftung für einfache Fahrlässigkeit ausgeschlossen.</p>
-    <p>Eine Haftung für Entscheidungen, die der Kunde auf Grundlage der in Bieterblick angezeigten Daten trifft (z. B. die Teilnahme an einer Ausschreibung), ist ausgeschlossen, soweit sie auf der Unvollständigkeit oder Unrichtigkeit der zugrunde liegenden öffentlichen Quellen beruht.</p>
+    <h2>8. Pflichten des Kunden</h2>
+    <p>Der Kunde darf Bieterblick nur für eigene geschäftliche Zwecke nutzen. Insbesondere ist es nicht gestattet, Inhalte oder Auswertungen systematisch auszulesen (z. B. durch Skripte), sie an Dritte weiterzugeben oder weiterzuverkaufen, den Zugang Personen außerhalb seines Unternehmens zu überlassen oder die Software durch übermäßige Abfragen zu belasten oder Sicherheitsmechanismen zu umgehen.</p>
 
-    <h2>9. Datenschutz</h2>
-    <p>Für die Verarbeitung personenbezogener Daten gilt die <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+    <h2>9. Rechte an Software und Daten</h2>
+    <p>Der Kunde erhält für die Vertragslaufzeit ein einfaches, nicht übertragbares Recht, Bieterblick im Rahmen dieser AGB zu nutzen. Alle sonstigen Rechte an der Software bleiben beim Anbieter. Die vom Kunden angelegten Daten (Suchprofile, Notizen, Merklisten) bleiben Daten des Kunden; der Anbieter nutzt sie nur, um die vertraglichen Leistungen zu erbringen.</p>
 
-    <h2>10. Änderung dieser AGB</h2>
-    <p>Der Anbieter kann diese AGB mit Wirkung für die Zukunft ändern, soweit dies zur Anpassung an geänderte Rechtslage, Rechtsprechung oder zur Abbildung neuer Funktionen erforderlich ist. Der Kunde wird mindestens 30 Tage vorher per E-Mail informiert und kann der Änderung widersprechen; im Fall des Widerspruchs gilt Ziffer 4 Satz 3 entsprechend.</p>
+    <h2>10. Haftung</h2>
+    <p>Der Anbieter haftet unbeschränkt bei Vorsatz und grober Fahrlässigkeit, bei Verletzung von Leben, Körper oder Gesundheit, nach dem Produkthaftungsgesetz und im Umfang einer übernommenen Garantie.</p>
+    <p>Bei leicht fahrlässiger Verletzung einer wesentlichen Vertragspflicht ist die Haftung auf den vertragstypischen, vorhersehbaren Schaden begrenzt. Wesentlich sind Pflichten, deren Erfüllung die ordnungsgemäße Durchführung des Vertrags erst ermöglicht und auf deren Einhaltung der Kunde regelmäßig vertrauen darf. Im Übrigen ist die Haftung für leichte Fahrlässigkeit ausgeschlossen. Das gilt insbesondere für Schäden, die dadurch entstehen, dass eine Ausschreibung nicht, verspätet oder fehlerhaft angezeigt wird, etwa ein entgangener Auftrag.</p>
+    <p>Die verschuldensunabhängige Haftung für bereits bei Vertragsschluss vorhandene Mängel (§ 536a Abs. 1 BGB) ist ausgeschlossen. Die Haftungsbeschränkungen gelten auch zugunsten von Erfüllungsgehilfen des Anbieters.</p>
 
-    <h2>11. Schlussbestimmungen</h2>
-    <p>Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Ist der Kunde Kaufmann, ist Gerichtsstand für alle Streitigkeiten aus diesem Vertrag der Sitz des Anbieters. Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.</p>
+    <h2>11. Datenschutz und Auftragsverarbeitung</h2>
+    <p>Für die Verarbeitung personenbezogener Daten gilt die <a href="datenschutz.html">Datenschutzerklärung</a>. Soweit der Anbieter im Auftrag des Kunden personenbezogene Daten verarbeitet, insbesondere Namen und E-Mail-Adressen der Team-Mitglieder, gilt der <a href="av-vertrag.html">Vertrag zur Auftragsverarbeitung</a>. Er wird mit der Registrierung Vertragsbestandteil.</p>
 
-    <p class="lead">Stand: <span id="stand"></span></p>
+    <h2>12. Änderungen der AGB und Preise</h2>
+    <p>Der Anbieter kann diese AGB und die Preise mit Wirkung für die Zukunft ändern. Änderungen teilt er dem Kunden mindestens sechs Wochen vor ihrem Inkrafttreten in Textform mit. Ist der Kunde nicht einverstanden, kann er bis zum Inkrafttreten fristlos kündigen. Widerspricht er nicht und kündigt er nicht, gelten die Änderungen als angenommen. Auf diese Folge weist der Anbieter in der Mitteilung gesondert hin.</p>
+
+    <h2>13. Schlussbestimmungen</h2>
+    <p>Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Ist der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen, ist Gerichtsstand für alle Streitigkeiten aus diesem Vertrag Kempten (Allgäu). Sollte eine Bestimmung dieser AGB unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.</p>
+
+    <p class="lead">Stand: Oktober 2026</p>
   </section>
 </div>
-<script>document.getElementById('stand').textContent = new Date().toLocaleDateString('de-DE', { year:'numeric', month:'long' });</script>
 </body>
 </html>
