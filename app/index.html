@@ -2002,6 +2002,8 @@ async function openAdmin(){
     h('section',{class:'card'}, h('h2',{}, 'Registrierungen, letzte 30 Tage'),
       h('div',{class:'adm-bars', role:'img', 'aria-label':'Registrierungen pro Tag'}, ...reg.map(x => h('span',{title:`${zDate(x.tag)}: ${x.n}`, style:`height:${Math.max(2, Math.round(x.n / maxR * 100))}%`, class: x.n ? '' : 'z'}))),
       h('span',{class:'hint'}, `${a.bestaetigt} von ${a.nutzer} Konten haben ihre E-Mail bestätigt. Treffer-Mail an: ${a.mail_an}.`)),
+    adminVormerkungen(a.vormerkungen || []),
+    adminTester(a.tester || []),
     h('section',{class:'card'}, h('h2',{}, 'Daten und Abruf'),
       h('dl',{class:'kv', style:'border:0;padding:0'},
         h('dt',{},'Letzter Eingang'), h('dd',{style: altStd > 30 ? 'color:var(--red)' : ''}, a.letzter_abruf ? zeit(a.letzter_abruf) + (altStd > 30 ? ', länger als einen Tag her' : '') : 'noch nie'),
@@ -2020,6 +2022,38 @@ async function openAdmin(){
         h('span',{class:'d'}, zeit(f.created_at)), h('span',{class:'t', style: f.erledigt ? 'color:var(--faint);text-decoration:line-through' : ''}, f.nachricht),
         h('span',{class:'w'}, h('button',{class:'linkbtn', type:'button', onclick: async () => { await S.db.rpc('admin_feedback_erledigt', { p_id:f.id, p_erledigt:!f.erledigt }); openAdmin(); }}, f.erledigt ? 'wieder öffnen' : 'erledigt')),
         h('span',{class:'s'}, [f.art, f.email].filter(Boolean).join(', '), f.email ? [' ', h('a',{href:'mailto:' + encodeURIComponent(f.email) + '?subject=' + encodeURIComponent('Deine Nachricht')}, 'antworten')] : null)))) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch kein Feedback.')));
+}
+function kopieren(text, knopf){
+  const fertig = () => { const alt = knopf.textContent; knopf.textContent = 'Kopiert'; setTimeout(() => { knopf.textContent = alt; }, 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(fertig).catch(() => prompt('Zum Kopieren markieren:', text));
+  else prompt('Zum Kopieren markieren:', text);
+}
+// Vormerkungen von der Startseite: zum Start allen schreiben
+function adminVormerkungen(v){
+  const offen = v.filter(x => !x.hat_konto);
+  return h('section',{class:'card'}, h('h2',{}, `Vormerkungen (${v.length})`),
+    v.length ? [
+      h('div',{class:'zl'}, ...v.map(x => h('div',{},
+        h('span',{class:'d'}, zeit(x.erstmals)), h('span',{class:'t'}, x.email), h('span',{class:'w'}, ''),
+        h('span',{class:'s'}, x.hat_konto ? 'hat schon ein Konto' : 'noch kein Konto')))),
+      h('p',{style:'margin:14px 0 0;display:flex;gap:16px;flex-wrap:wrap'},
+        h('button',{class:'linkbtn', type:'button', onclick: e => kopieren(v.map(x => x.email).join(', '), e.currentTarget)}, 'Alle Adressen kopieren'),
+        offen.length && offen.length !== v.length ? h('button',{class:'linkbtn', type:'button', onclick: e => kopieren(offen.map(x => x.email).join(', '), e.currentTarget)}, `Nur ohne Konto kopieren (${offen.length})`) : null),
+      h('span',{class:'hint'}, 'Beim Anschreiben die Adressen ins BCC-Feld setzen, damit niemand die anderen sieht.')
+    ] : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch niemand hat sich auf der Startseite vorgemerkt.'));
+}
+// Tester-Links: wer sich darüber registriert, bekommt eine längere Testphase
+function adminTester(t){
+  const basis = location.origin + location.pathname + '?testen=';
+  return h('section',{class:'card'}, h('h2',{}, 'Tester-Links'),
+    t.length ? h('div',{class:'zl'}, ...t.map(x => {
+      const aktiv = new Date(x.gueltig_bis) > new Date() && x.genutzt < x.max_nutzungen;
+      return h('div',{},
+        h('span',{class:'d'}, `${x.genutzt} von ${x.max_nutzungen}`),
+        h('span',{class:'t', style: aktiv ? '' : 'color:var(--faint)'}, basis + x.code),
+        h('span',{class:'w'}, h('button',{class:'linkbtn', type:'button', onclick: e => kopieren(basis + x.code, e.currentTarget)}, 'kopieren')),
+        h('span',{class:'s'}, `${x.tage} Tage Testphase, gültig bis ${new Date(x.gueltig_bis).toLocaleDateString('de-DE')}` + (x.notiz ? `, ${x.notiz}` : '') + (aktiv ? '' : ', nicht mehr gültig')));
+    })) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch keine Tester-Links.'));
 }
 $('admReload').addEventListener('click', openAdmin);
 
