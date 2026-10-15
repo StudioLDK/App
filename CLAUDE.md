@@ -11,3 +11,4 @@
 - Startseite: Effekte nur mit der Klasse `fx` (JavaScript an, keine "Weniger Bewegung"), ohne sie muss alles sichtbar bleiben. Vor dem Einspielen im Browser auf Computer- und Handybreite (390 und 320 Pixel) prüfen.
 - Zahlen auf der Startseite nur so, wie sie in der Datenbank stimmen.
 - `<meta name="robots" content="noindex, nofollow">` erst zum offiziellen Start entfernen. Nach dem Umzug auf eine eigene Domain `og:image` in `index.html` anpassen.
+- Bezahlen über Stripe ist eingebaut, aber mit `ZAHLUNG_AKTIV = false` in `app/index.html` ausgeschaltet. Einschalten erst nach `STRIPE_ANLEITUNG.md` im Repo Ausschreibungsfinder.

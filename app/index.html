@@ -445,7 +445,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
       <div id="lockedBox" class="locked hidden">
         <h2>Deine Testphase ist vorbei.</h2>
         <p id="lockedTxt">Die 7 kostenlosen Tage sind abgelaufen. Schalte deinen Zugang frei, um weiter jeden Morgen die neuen Ausschreibungen zu sehen.</p>
-        <a class="btn" style="display:inline-flex;align-items:center;text-decoration:none" href="mailto:info@studioldk.de?subject=Zugang%20freischalten">Zugang freischalten</a>
+        <a class="btn" id="lockedBtn" style="display:inline-flex;align-items:center;text-decoration:none" href="mailto:info@studioldk.de?subject=Zugang%20freischalten">Zugang freischalten</a>
       </div>
 
       <div id="content" class="hidden">
@@ -546,6 +546,7 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
         <section class="card">
           <h2>Konto</h2>
           <dl class="kv" style="border:0;padding:0"><dt>E-Mail</dt><dd id="sEmail"></dd><dt>Zugang</dt><dd id="sZugang"></dd></dl>
+          <p id="sAboZeile" class="hidden" style="margin:4px 0 0"><a href="#" id="sAbo">Abo, Zahlungsart und Rechnungen verwalten</a></p>
           <div class="row2">
             <div class="field"><label for="sPw">Neues Passwort</label><input id="sPw" type="password" autocomplete="new-password" minlength="10" placeholder="mindestens 10 Zeichen"></div>
             <button class="btn btn-ghost" type="button" id="pwBtn">Passwort ändern</button>
@@ -858,6 +859,32 @@ const PW_MIN = 10; // muss zur Einstellung in Supabase passen (Authentication, E
 // Vor dem Start: freie Registrierung aus. Team-Einladungen funktionieren weiter.
 // Zum Freischalten auf true setzen.
 const OFFENE_REGISTRIERUNG = false;
+// Bezahlen über Stripe. Erst auf true setzen, wenn Stripe eingerichtet ist
+// (Anleitung: STRIPE_ANLEITUNG.md im Repo Ausschreibungsfinder). Bis dahin öffnen die Knöpfe eine Mail an uns.
+const ZAHLUNG_AKTIV = false;
+async function abo(aktion, knopf){
+  const text = knopf ? knopf.textContent : '';
+  if (knopf){ knopf.textContent = 'Einen Moment …'; knopf.style.pointerEvents = 'none'; }
+  try {
+    const { data, error } = await S.db.functions.invoke('abo', { body:{ aktion } });
+    if (error){ let m = ''; try { m = (await error.context.json()).fehler || ''; } catch(e){} throw new Error(m || 'Das hat nicht geklappt.'); }
+    if (!data || !data.url) throw new Error('Das hat nicht geklappt.');
+    location.href = data.url;
+  } catch(e){
+    alert((e && e.message ? e.message : 'Das hat nicht geklappt.') + ' Du erreichst uns auch unter info@studioldk.de.');
+    if (knopf){ knopf.textContent = text; knopf.style.pointerEvents = ''; }
+  }
+}
+if (ZAHLUNG_AKTIV){
+  ['lockedBtn', 'trialLink'].forEach(id => $(id).addEventListener('click', e => { e.preventDefault(); abo('kaufen', e.currentTarget); }));
+  $('sAbo').addEventListener('click', e => { e.preventDefault(); abo('verwalten', e.currentTarget); });
+}
+// Zurück von der Bezahlseite: kurz warten, bis Stripe die Zahlung gemeldet hat
+let aboWarten = false;
+try {
+  if (new URLSearchParams(location.search).get('abo') === 'danke'){ sessionStorage.setItem('ldk-abo', String(Date.now())); history.replaceState(null, '', location.pathname + location.hash); }
+  aboWarten = Date.now() - Number(sessionStorage.getItem('ldk-abo') || 0) < 60000;
+} catch(e){}
 function hatEinladung(){ try { return !!sessionStorage.getItem('ldk-invite'); } catch(e){ return false; } }
 let mode = 'login';
 function setMode(m){
@@ -1058,7 +1085,7 @@ async function checkAccess(){
   if (!data) throw new Error('Zu diesem Login gibt es noch kein Konto in tender.accounts.');
   const now = Date.now();
   const paid = data.paid_until && new Date(data.paid_until).getTime() > now;
-  if (paid){ S.zugang = 'Freigeschaltet bis ' + fmtLong.format(new Date(data.paid_until)); return true; }
+  if (paid){ try { sessionStorage.removeItem('ldk-abo'); } catch(e){} S.zugang = 'Freigeschaltet bis ' + fmtLong.format(new Date(data.paid_until)); return true; }
   const end = new Date(data.trial_ends_at);
   const left = end.getTime() - now;
   S.locked = left <= 0;
@@ -1066,7 +1093,16 @@ async function checkAccess(){
     const r = S.boot ? { data:S.boot.zugang } : await Promise.resolve(S.db.rpc('hat_zugang')).catch(() => ({ data:false }));
     if (r && r.data === true){ S.locked = false; S.zugang = 'Freigeschaltet über dein Team'; document.querySelector('.rail').classList.remove('hidden'); return true; }
   }
-  if (left <= 0){ S.zugang = 'Testphase abgelaufen'; $('lockedBox').classList.remove('hidden'); document.querySelector('.rail').classList.add('hidden'); return false; }
+  if (left <= 0){
+    S.zugang = 'Testphase abgelaufen'; $('lockedBox').classList.remove('hidden'); document.querySelector('.rail').classList.add('hidden');
+    if (aboWarten){
+      $('lockedBox').querySelector('h2').textContent = 'Danke für deine Zahlung!';
+      $('lockedTxt').textContent = 'Wir schalten deinen Zugang gerade frei. Das dauert nur ein paar Sekunden.';
+      $('lockedBtn').classList.add('hidden');
+      setTimeout(() => location.reload(), 4000);
+    }
+    return false;
+  }
   document.querySelector('.rail').classList.remove('hidden');
   const days = Math.ceil(left / DAY);
   S.zugang = `Testphase bis ${fmtLong.format(end)}`;
@@ -1467,6 +1503,7 @@ async function openSettings(){
   });
   $('sFirma').value = p.firma || ''; $('sBesch').value = p.beschreibung || '';
   $('sEmail').textContent = S.user.email || ''; $('sZugang').textContent = S.zugang || '';
+  $('sAboZeile').classList.toggle('hidden', !(ZAHLUNG_AKTIV && S.boot && S.boot.konto && S.boot.konto.abo));
   $('setMsg').textContent = ''; $('setMsg').className = 'msg';
   $('pwMsg').textContent = ''; $('sPw').value = '';
   if (S.prefsErr){ $('setMsg').textContent = 'Einstellungen konnten nicht geladen werden: ' + S.prefsErr; }
