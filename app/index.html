@@ -91,6 +91,9 @@ a{color:inherit}
 .invite-link code{font-size:13px;word-break:break-all;flex:1;min-width:220px}
 .btn-sm{height:36px;padding:0 14px;font-size:14px}
 .legal-link{font-size:13px;color:var(--muted);align-self:center}
+.b2b{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;color:var(--muted);cursor:pointer}
+.b2b input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--red)}
+.b2b a{text-decoration:underline}
 .legal{grid-column:-2 / -1;padding:28px 0 90px;font-size:13px;color:var(--muted)}
 .help-fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:30;height:44px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:600;padding:0 18px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 dialog.help{border:0;border-radius:16px;padding:0;width:min(480px,calc(100% - 32px));box-shadow:0 30px 80px rgba(0,0,0,.25)}
@@ -375,10 +378,11 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
     <p id="loginIntro">Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
     <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" required></div>
     <div class="field"><label for="pw">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <label class="b2b hidden" id="b2bRow"><input type="checkbox" id="b2b"><span>Ich nutze Bieterblick für mein Unternehmen und akzeptiere die <a href="agb.html" target="_blank" rel="noopener">AGB</a>.</span></label>
     <button class="btn" type="submit" id="loginBtn">Anmelden</button>
     <div class="msg" id="loginMsg" role="alert"></div>
     <div class="switch" id="modeSwitch"></div>
-    <div class="legal-link"><a href="impressum.html">Impressum und Kontakt</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="datenschutz.html">Datenschutz</a></div>
+    <div class="legal-link"><a href="impressum.html">Impressum und Kontakt</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="datenschutz.html">Datenschutz</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="agb.html">AGB</a></div>
   </form>
 </div>
 
@@ -864,6 +868,7 @@ function setMode(m){
   $('loginBtn').textContent = reg ? 'Kostenlos testen' : 'Anmelden';
   $('pw').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
   $('pw').placeholder = reg ? 'mindestens ' + PW_MIN + ' Zeichen' : '';
+  $('b2bRow').classList.toggle('hidden', !reg);
   $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
   if (!reg && !OFFENE_REGISTRIERUNG && !hatEinladung()){
     $('modeSwitch').replaceChildren('Noch kein Konto? Bieterblick startet in Kürze. ',
@@ -901,10 +906,11 @@ $('loginForm').addEventListener('submit', async e => {
   const msg = $('loginMsg'); msg.textContent = ''; msg.className = 'msg';
   const email = $('em').value.trim(), password = $('pw').value;
   if (mode === 'register' && password.length < PW_MIN){ msg.textContent = 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.'; return; }
+  if (mode === 'register' && !$('b2b').checked){ msg.textContent = 'Bieterblick ist nur für Unternehmen. Bitte bestätige das und die AGB mit dem Häkchen.'; return; }
   const label = $('loginBtn').textContent;
   $('loginBtn').disabled = true; $('loginBtn').textContent = mode === 'register' ? 'Lege Konto an …' : 'Melde an …';
   const res = mode === 'register'
-    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname } })
+    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname, data:{ agb_akzeptiert: new Date().toISOString() } } })
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
