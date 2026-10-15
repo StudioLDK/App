@@ -12,3 +12,4 @@
 - Zahlen auf der Startseite nur so, wie sie in der Datenbank stimmen.
 - `<meta name="robots" content="noindex, nofollow">` erst zum offiziellen Start entfernen. Nach dem Umzug auf eine eigene Domain `og:image` in `index.html` anpassen.
 - Bezahlen über Stripe ist eingebaut, aber mit `ZAHLUNG_AKTIV = false` in `app/index.html` ausgeschaltet. Einschalten erst nach `STRIPE_ANLEITUNG.md` im Repo Ausschreibungsfinder.
+- Microsoft Store: App ist als PWA vorbereitet (Manifest mit id, Screenshots, Schnellzugriffen). Paket mit PWABuilder erst nach dem Umzug auf die eigene Adresse bauen, weil das Paket an die Adresse gebunden ist.
