@@ -118,6 +118,33 @@ h1 .zeile>span{display:block}
 /* ---------- Abschnitte ---------- */
 section{padding:120px 0;scroll-margin-top:68px}
 .k{font-size:clamp(34px,4.6vw,58px);line-height:1;font-weight:850;font-stretch:120%;letter-spacing:-.035em;margin:0;max-width:16ch}
+/* ---------- Live-Vorschau: Was gibt es bei dir? ---------- */
+.probier{padding:96px 0 40px}
+.probe{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 150px auto;gap:10px;align-items:end;background:var(--plan);border:1px solid var(--linie);border-radius:22px;padding:18px}
+.probe label{display:block;font-size:14px;font-weight:600;margin:0 0 6px 4px;color:var(--graphit)}
+.probe input,.probe select{width:100%;height:52px;border:1px solid var(--linie2);border-radius:14px;background:#fff;padding:0 16px;font:inherit;font-size:17px;color:var(--tusche)}
+.probe input:focus,.probe select:focus{outline:none;border-color:var(--tusche);box-shadow:0 0 0 4px rgba(28,31,35,.08)}
+.probe .btn{height:52px}
+.probe-msg{margin:12px 4px 0;font-size:15px;font-weight:600;color:var(--rot-tief);min-height:1em}
+.probe-erg{margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.probe-erg[hidden]{display:none}
+.probe-zahl{border-left:3px solid var(--rot);padding:2px 0 2px 20px}
+.probe-zahl b{display:block;font-size:clamp(44px,6vw,72px);line-height:1;font-weight:850;font-stretch:118%;letter-spacing:-.03em}
+.probe-zahl p{margin:10px 0 0;font-size:18px;color:var(--graphit)}
+.probe-zahl p strong{color:var(--tusche)}
+.probe-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.probe-liste li{background:#fff;border:1px solid var(--linie);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(22,25,29,.05)}
+.probe-liste b{display:block;font-size:16px;line-height:1.35}
+.probe-liste span{display:block;font-size:14px;color:var(--graphit);margin-top:4px}
+.probe-cta{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px}
+.probe-cta p{margin:0;font-size:15px;color:var(--graphit)}
+@media (max-width:900px){
+  .probe{grid-template-columns:1fr 1fr}
+  .probe .p-was{grid-column:1 / -1}
+  .probe .btn{grid-column:1 / -1}
+  .probe-erg{grid-template-columns:1fr}
+}
+@media (max-width:420px){ .probe{grid-template-columns:1fr} .probier{padding-top:72px} }
 .k-lead{margin:20px 0 0;font-size:20px;color:var(--graphit);max-width:36em}
 .kopf2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:end;margin-bottom:56px}
 .kopf2 .k-lead{margin:0}
@@ -433,6 +460,29 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
       <p class="quelle">Jeden Morgen frisch aus dem Amtsblatt der EU (TED) und dem Datenservice öffentlicher Einkauf. Die Ansichten auf dieser Seite zeigen echte Ausschreibungen vom 12. Oktober 2026, die Namen der Mitbewerber sind für diese Seite geändert.</p>
     </div>
   </div>
+
+  <section class="probier" id="probier" hidden>
+    <div class="in">
+      <div class="kopf2">
+        <h2 class="k">Was gibt es bei dir?</h2>
+        <p class="k-lead">Sag uns in ein paar Worten, was ihr macht und wo ihr sitzt. Wir zeigen dir sofort, was gerade offen ist und was letztes Jahr in deiner Gegend vergeben wurde.</p>
+      </div>
+      <form class="probe" id="probe" novalidate>
+        <div class="p-was"><label for="p-was">Was macht ihr?</label><input id="p-was" placeholder="z.B. Fliesenleger, Elektro, Gebäudereinigung" maxlength="120" autocomplete="off"></div>
+        <div><label for="p-wo">Firmensitz</label><input id="p-wo" list="p-orte" placeholder="Landkreis oder Stadt" autocomplete="off"><datalist id="p-orte"></datalist></div>
+        <div><label for="p-km">Umkreis</label><select id="p-km"><option value="30">30 km</option><option value="50" selected>50 km</option><option value="100">100 km</option><option value="150">150 km</option></select></div>
+        <button class="btn" type="submit">Zeigen</button>
+      </form>
+      <p class="probe-msg" id="probe-msg" role="alert"></p>
+      <div class="probe-erg" id="probe-erg" aria-live="polite" hidden>
+        <div class="probe-zahl"><b id="probe-n">0</b><p id="probe-text"></p><p id="probe-jahr"></p></div>
+        <div>
+          <ul class="probe-liste" id="probe-liste"></ul>
+          <div class="probe-cta"><a class="btn" href="#vormerken">Jeden Morgen bekommen</a><p>Trag dich ein, wir sagen dir Bescheid, wenn es losgeht.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="ansichten">
     <div class="in">
@@ -759,6 +809,71 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
         });
     });
   });
+  // Live-Vorschau: zählt auf dem Server, gibt nur Anzahl und drei Beispiele heraus
+  (function(){
+    var sek = document.getElementById('probier'), form = document.getElementById('probe');
+    if (!sek || !window.fetch) return;
+    sek.hidden = false;
+    var REST = 'https://spsmxuvywjdympvzcqbv.supabase.co/rest/v1/rpc/vorschau';
+    var KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk';
+    var orte = null, msg = document.getElementById('probe-msg'), erg = document.getElementById('probe-erg');
+    var wo = document.getElementById('p-wo'), was = document.getElementById('p-was'), km = document.getElementById('p-km');
+    var klein = function(t){ return String(t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').trim(); };
+    function ladeOrte(){
+      if (orte) return Promise.resolve(orte);
+      return fetch('app/nuts_de.json', { cache:'force-cache' }).then(function(r){ return r.json(); }).then(function(j){
+        orte = Object.keys(j).filter(function(k){ return k.length === 5; }).map(function(k){ return [k, j[k][0]]; })
+          .sort(function(a, b){ return a[1].localeCompare(b[1], 'de'); });
+        var dl = document.getElementById('p-orte');
+        orte.forEach(function(o){ var op = document.createElement('option'); op.value = o[1]; dl.appendChild(op); });
+        return orte;
+      });
+    }
+    wo.addEventListener('focus', function(){ ladeOrte().catch(function(){}); }, { once:true });
+    function finde(t){
+      var k = klein(t); if (!k || !orte) return null;
+      var genau = orte.filter(function(o){ return klein(o[1]) === k; })[0]; if (genau) return genau;
+      var start = orte.filter(function(o){ return klein(o[1]).indexOf(k) === 0; });
+      // "Augsburg" passt auf Stadt und Landkreis: die Stadt nehmen
+      return start.filter(function(o){ return /Kreisfreie Stadt|Stadtkreis/.test(o[1]); })[0] || start[0] || null;
+    }
+    var datum = function(d){ var x = String(d).split('-'); return x[2] + '.' + x[1] + '.'; };
+    var mio = function(w){ w = +w || 0; return w >= 1e6 ? (w / 1e6).toFixed(1).replace('.', ',') + ' Mio. €' : Math.round(w / 1000).toLocaleString('de-DE') + ' Tsd. €'; };
+    var ortKurz = function(n){ return String(n || '').replace(/, (Kreisfreie Stadt|Stadtkreis|Landkreis)$/, ''); };
+    form.addEventListener('submit', function(e){
+      e.preventDefault(); msg.textContent = '';
+      if (was.value.trim().length < 3){ msg.textContent = 'Schreib kurz, was ihr macht, zum Beispiel „Maler“ oder „Elektro“.'; was.focus(); return; }
+      var btn = form.querySelector('button'); btn.disabled = true; btn.textContent = 'Suche …';
+      ladeOrte().then(function(){
+        var o = finde(wo.value);
+        if (!o){ throw new Error(wo.value.trim() ? '„' + wo.value.trim() + '“ kennen wir so nicht. Gib bitte deinen Landkreis oder die nächste kreisfreie Stadt ein, zum Beispiel „Oberallgäu“ statt „Sonthofen“.' : 'Gib bitte deinen Landkreis oder deine Stadt ein.'); }
+        wo.value = o[1];
+        return fetch(REST, { method:'POST', headers:{ 'Content-Type':'application/json', 'apikey':KEY, 'Content-Profile':'tender' },
+          body: JSON.stringify({ p_text: was.value.trim(), p_nuts: o[0], p_km: +km.value }) })
+          .then(function(r){ if (!r.ok) throw new Error('Das hat gerade nicht geklappt. Versuch es gleich noch einmal.'); return r.json(); })
+          .then(function(d){ zeige(d, o); });
+      }).catch(function(err){ msg.textContent = err.message || 'Das hat gerade nicht geklappt.'; })
+        .then(function(){ btn.disabled = false; btn.textContent = 'Zeigen'; });
+    });
+    function zeige(d, o){
+      var n = d.anzahl || 0, ort = ortKurz(d.ort || o[1]);
+      document.getElementById('probe-n').textContent = n.toLocaleString('de-DE');
+      var t = document.getElementById('probe-text');
+      if (!d.deutschland){ t.textContent = 'Dazu finden wir gerade keine offene Ausschreibung. Probier ein anderes Wort, zum Beispiel dein Gewerk.'; }
+      else if (n > 0){ t.innerHTML = ''; t.append(n === 1 ? 'offene Ausschreibung' : 'offene Ausschreibungen', ' im Umkreis von ' + d.km + ' km um ' + ort + '. Deutschlandweit sind es ', Object.assign(document.createElement('strong'), { textContent: d.deutschland.toLocaleString('de-DE') }), '.'); }
+      else { t.textContent = 'Gerade keine offene im Umkreis von ' + d.km + ' km um ' + ort + '. ' + (d.anzahl_200 ? 'Im Umkreis von 200 km sind es ' + d.anzahl_200 + ', deutschlandweit ' + d.deutschland.toLocaleString('de-DE') + '.' : 'Deutschlandweit sind es ' + d.deutschland.toLocaleString('de-DE') + '.'); }
+      var j = document.getElementById('probe-jahr');
+      j.textContent = d.vergeben_jahr ? 'Im letzten Jahr wurden in deiner Gegend ' + d.vergeben_jahr + (d.vergeben_jahr === 1 ? ' solcher Auftrag' : ' solche Aufträge') + ' vergeben' + (d.vergeben_wert ? ', zusammen rund ' + mio(d.vergeben_wert) : '') + '.' : '';
+      var ul = document.getElementById('probe-liste'); ul.innerHTML = '';
+      (d.beispiele || []).forEach(function(b){
+        var li = document.createElement('li'), bb = document.createElement('b'), sp = document.createElement('span');
+        bb.textContent = b.titel; sp.textContent = ortKurz(b.ort) + ', Frist ' + datum(b.frist);
+        li.append(bb, sp); ul.appendChild(li);
+      });
+      erg.hidden = false;
+    }
+  })();
+
   // Knöpfe "Vormerken": hinscrollen und gleich ins Feld springen
   $$('a[href^="#vormerken"]').forEach(function(a){
     a.addEventListener('click', function(){
