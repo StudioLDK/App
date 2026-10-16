@@ -1,0 +1,92 @@
+{
+  "name": "Bieterblick",
+  "short_name": "Bieterblick",
+  "id": "./",
+  "description": "Öffentliche Ausschreibungen finden und sehen, wer gewinnt.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../img/app-uebersicht.webp",
+      "sizes": "2400x1500",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Startseite mit passenden Ausschreibungen und Fristen"
+    },
+    {
+      "src": "../img/treffer.webp",
+      "sizes": "1800x951",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Trefferliste mit Fristen und Auftraggebern"
+    },
+    {
+      "src": "../img/handy.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Bieterblick auf dem Handy"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Neue Ausschreibungen",
+      "url": "./",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Wettbewerb",
+      "url": "./#wettbewerb",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Einstellungen",
+      "url": "./#einstellungen",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

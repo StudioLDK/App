@@ -1,7 +1,11 @@
 # Hinweise für Claude
 
 ## Arbeitsweise (von Luis festgelegt)
-- Kleinere Änderungen testen und direkt auf `main` einspielen bzw. Pull Requests selbst mergen, ohne vorher zu fragen.
+- Kleine Korrekturen (Tippfehler, abgeschnittene Knöpfe, Fehler, über die Kunden stolpern) testen und direkt auf `main` einspielen.
+- Größere Änderungen (neue Funktionen, sichtbare Änderungen an Aussehen oder Abläufen) erst in die Vorschau: `./vorschau.sh` ausführen, nur `vorschau/` einspielen, Luis den Link https://studioldk.github.io/App/vorschau/ geben. Live erst nach seinem „passt, freigeben“.
+- Alles mit Geld, Mails an Kunden oder Löschen von Daten: immer erst Luis fragen, Mails vorher als Testmail an ihn.
+- Die Vorschau nutzt dieselbe Datenbank wie die echte Seite. Datenbank-Änderungen deshalb so bauen, dass alte und neue App-Version beide funktionieren.
+- Jede Änderung lässt sich mit `git revert` zurücknehmen, dann ist in 1 bis 2 Minuten wieder der alte Stand live.
 - Bei größeren Sachen vorher Bescheid geben: wenn etwas gelöscht wird, sich an der Datenbank etwas Grundlegendes ändert, etwas Geld kostet oder etwas an Kunden rausgeht.
 - Luis ist kein Vollzeit-Entwickler: Dinge einfach und auf Deutsch erklären, Schritte für ihn klickgenau beschreiben, nicht zu viel auf einmal.
 
