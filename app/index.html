@@ -178,6 +178,18 @@ dialog.help.onb{width:min(640px,calc(100% - 32px));max-height:calc(100vh - 32px)
 #onbLead{margin:-4px 0 0}
 .onb-skip{align-self:center;color:var(--muted);font-weight:500;font-size:14px}
 .onb-count{font-size:15px;color:var(--muted)}
+.onb-text{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.onb-text textarea{width:100%;min-height:74px;resize:vertical;border:1px solid var(--line2);border-radius:8px;padding:10px 14px;font:inherit;font-size:15px;background:#fff}
+.onb-text textarea:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(28,31,35,.12)}
+.onb-text .btn{align-self:flex-start}
+.vorschlag{display:flex;flex-direction:column;gap:8px;margin:0 0 18px}
+.vorschlag label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px;line-height:1.4}
+.vorschlag label:has(input:checked){border-color:var(--ink);background:var(--panel)}
+.vorschlag input{margin-top:3px;flex:0 0 auto;width:17px;height:17px;accent-color:var(--ink)}
+.vorschlag b{display:block;font-weight:600;color:var(--ink)}
+.vorschlag small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.onb-oder{font-size:14px;font-weight:600;margin:4px 0 8px}
 .onb-count b{color:var(--ink);font-size:22px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line2);border-radius:8px;padding:7px 8px;min-height:46px;cursor:text}
 .tags:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(28,31,35,.12)}
@@ -637,7 +649,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-16b';
+const APP_VERSION = '2026-10-16c';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -2137,7 +2149,7 @@ const ONB = { step:0, d:null };
 function onbNoetig(){ return S.feat.prefs2 && !S.locked && !S.prefs.onboarding_am && !hasPrefs(S.prefs) && !S.prefsErr; }
 async function openOnboarding(){
   ONB.step = 0;
-  ONB.d = { branchen:[], suchbegriffe:[], cpv:[], sitz_nuts:null, umkreis_km:100, mail_frequenz:'taeglich' };
+  ONB.d = { branchen:[], suchbegriffe:[], cpv:[], sitz_nuts:null, umkreis_km:100, mail_frequenz:'taeglich', text:'', vorschlag:null, gewaehlt:[] };
   loadNuts();
   renderOnb();
   try { $('onbDlg').showModal(); } catch(e){ $('onbDlg').setAttribute('open',''); }
@@ -2155,12 +2167,17 @@ function renderOnb(){
   const body = $('onbBody');
   if (st === 0){
     $('onbTitle').textContent = 'Was macht deine Firma?';
-    $('onbLead').textContent = 'Wähl eine oder mehrere Branchen. Wir legen passende Suchbegriffe und CPV-Gruppen an, die du später jederzeit ändern kannst.';
+    $('onbLead').textContent = 'Beschreib in ein paar Worten, was ihr macht. Wir suchen in über 200.000 vergebenen Aufträgen, was dazu passt. Fachbegriffe oder CPV-Codes brauchst du nicht.';
     const own = h('input',{id:'onbOwn', placeholder:'Eigene Suchbegriffe, mit Komma getrennt', autocomplete:'off', value:d.suchbegriffe.filter(w => !BRANCHEN.some(b => b[2].includes(w))).join(', ')});
     own.addEventListener('change', () => onbOwn(own.value));
-    body.replaceChildren(h('div',{class:'chipgrid'}, ...BRANCHEN.map(([k, l, worte, cpv]) => h('button',{type:'button','aria-pressed':String(d.branchen.includes(k)), onclick:()=>{
+    const txt = h('textarea',{id:'onbText', placeholder:'z.B. Wir sind Fliesenleger und machen auch Estrich und Abdichtungen', maxlength:'500'});
+    txt.value = d.text;
+    const los = h('button',{class:'btn btn-ghost', type:'button', id:'onbFinden', onclick:onbVorschlag}, d.vorschlag ? 'Neu suchen' : 'Passende Aufträge finden');
+    body.replaceChildren(h('div',{class:'onb-text'}, h('label',{for:'onbText', class:'sr-only'}, 'Was macht ihr?'), txt, los), onbVorschlagListe(),
+      h('p',{class:'onb-oder'}, d.vorschlag ? 'Zusätzlich Branchen auswählen' : 'Oder Branchen auswählen'),
+      h('div',{class:'chipgrid'}, ...BRANCHEN.map(([k, l, worte, cpv]) => h('button',{type:'button','aria-pressed':String(d.branchen.includes(k)), onclick:()=>{
       if (d.branchen.includes(k)) d.branchen.splice(d.branchen.indexOf(k), 1); else d.branchen.push(k);
-      onbOwn($('onbOwn').value); renderOnb(); }}, l))),
+      d.text = $('onbText').value; onbOwn($('onbOwn').value); renderOnb(); }}, l))),
       h('div',{class:'field', style:'margin-top:14px'}, h('label',{for:'onbOwn'}, 'Fehlt etwas?'), own));
   } else if (st === 1){
     $('onbTitle').textContent = 'Wo seid ihr unterwegs?';
@@ -2181,10 +2198,45 @@ function renderOnb(){
       h('p',{class:'onb-count', style:'margin-top:16px'}, 'Mit deiner Auswahl passen gerade ', h('b',{}, onbTreffer()), ' offene Ausschreibungen.'));
   }
 }
+// Beschreibung in eigenen Worten: passende CPV-Gruppen aus den Titeln echter Zuschläge vorschlagen
+async function onbVorschlag(){
+  const d = ONB.d, msg = $('onbMsg');
+  d.text = $('onbText').value.trim(); msg.textContent = '';
+  if (d.text.length < 3){ msg.textContent = 'Schreib kurz, was ihr macht, zum Beispiel „Maler und Bodenbeläge“.'; $('onbText').focus(); return; }
+  const knopf = $('onbFinden'); knopf.disabled = true; knopf.textContent = 'Suche passende Aufträge …';
+  const { data, error } = await S.db.rpc('profil_vorschlag', { p_text: d.text });
+  if (ONB.step !== 0) return;
+  knopf.disabled = false;
+  if (error){ renderOnb(); $('onbMsg').textContent = 'Das hat gerade nicht geklappt. Wähl unten Branchen aus oder versuch es gleich noch einmal.'; return; }
+  d.vorschlag = (data && data.gruppen) || [];
+  d.gewaehlt = d.vorschlag.filter(g => g.empfohlen).map(g => g.cpv);
+  onbOwn($('onbOwn') ? $('onbOwn').value : '');
+  renderOnb();
+  if (!d.vorschlag.length) $('onbMsg').textContent = 'Dazu haben wir nichts gefunden. Probier andere Wörter oder wähl unten Branchen aus.';
+}
+function onbVorschlagListe(){
+  const d = ONB.d;
+  if (!d.vorschlag || !d.vorschlag.length) return null;
+  const zahl = n => Number(n || 0).toLocaleString('de-DE');
+  return h('div',{class:'vorschlag', role:'group', 'aria-label':'Passende Bereiche'},
+    h('p',{class:'sub', style:'margin:0'}, 'Das haben wir gefunden. Angehakt ist, was am besten passt:'),
+    ...d.vorschlag.map(g => {
+      const cb = h('input',{type:'checkbox'}); cb.checked = d.gewaehlt.includes(g.cpv);
+      cb.addEventListener('change', () => {
+        d.gewaehlt = cb.checked ? [...new Set([...d.gewaehlt, g.cpv])] : d.gewaehlt.filter(c => c !== g.cpv);
+        onbOwn($('onbOwn').value);
+      });
+      const bsp = (g.beispiele || []).map(t => '„' + t.trim() + '“').join(', ');
+      return h('label',{}, cb, h('span',{},
+        h('b',{}, bsp ? 'z.B. ' + bsp : 'CPV ' + g.cpv),
+        h('small',{}, `${zahl(g.anzahl)} vergebene Aufträge in 2 Jahren, ${zahl(g.offen)} gerade offen` + (g.allgemein ? '. Eher allgemein, bringt auch Unpassendes' : '') + ` (CPV ${g.cpv})`)));
+    }));
+}
 function onbOwn(txt){
   const d = ONB.d;
   const worte = [], cpv = [];
   for (const b of BRANCHEN) if (d.branchen.includes(b[0])){ worte.push(...b[2]); cpv.push(...b[3]); }
+  for (const g of (d.vorschlag || [])) if (d.gewaehlt.includes(g.cpv)){ cpv.push(g.cpv); for (const w of g.woerter || []) worte.push(norm(w)); }
   for (const w of String(txt || '').split(',')){ const t = norm(w); if (t.length >= 2) worte.push(t); }
   d.suchbegriffe = [...new Set(worte)]; d.cpv = [...new Set(cpv)];
 }
@@ -2192,7 +2244,7 @@ async function onbSpeichern(fertig){
   const d = ONB.d;
   const row = { user_id:S.user.id, updated_at:new Date().toISOString(), onboarding_am:new Date().toISOString() };
   if (fertig) Object.assign(row, { suchbegriffe:d.suchbegriffe, cpv:d.cpv, branchen:d.branchen, sitz_nuts:d.sitz_nuts, umkreis_km:d.sitz_nuts ? d.umkreis_km : null, mail_frequenz:d.mail_frequenz,
-    ausschluss:S.prefs.ausschluss, bundeslaender:S.prefs.bundeslaender, firma:S.prefs.firma || null, beschreibung:S.prefs.beschreibung || null });
+    ausschluss:S.prefs.ausschluss, bundeslaender:S.prefs.bundeslaender, firma:S.prefs.firma || null, beschreibung:(d.text || '').trim() || S.prefs.beschreibung || null });
   $('onbNext').disabled = true;
   const { error } = await S.db.from('settings').upsert(row, { onConflict:'user_id' });
   $('onbNext').disabled = false;
@@ -2203,7 +2255,7 @@ async function onbSpeichern(fertig){
   return true;
 }
 $('onbNext').addEventListener('click', async () => {
-  if (ONB.step === 0){ onbOwn($('onbOwn').value); if (!ONB.d.suchbegriffe.length){ $('onbMsg').textContent = 'Wähl mindestens eine Branche oder gib einen Suchbegriff ein.'; return; } }
+  if (ONB.step === 0){ ONB.d.text = $('onbText').value.trim(); onbOwn($('onbOwn').value); if (!ONB.d.suchbegriffe.length){ if (ONB.d.text.length >= 3 && !ONB.d.vorschlag){ await onbVorschlag(); return; } $('onbMsg').textContent = 'Beschreib kurz, was ihr macht, oder wähl eine Branche aus.'; return; } }
   if (ONB.step < 2){ ONB.step++; renderOnb(); return; }
   if (await onbSpeichern(true)){ $('onbDlg').close(); S.sel = -1; S.shown = PAGE; render(false); }
 });
