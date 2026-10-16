@@ -635,7 +635,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-12f';
+const APP_VERSION = '2026-10-16a';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1909,7 +1909,7 @@ async function preisniveau(cpv){
   if (!code) return null;
   const st = await statistik();
   if (st){
-    for (const len of [5, 4, 3]){ const x = st.preis[code.slice(0, len)]; if (x && x[0] >= 8) return { anzahl:x[0], p25:x[1], median:x[2], p75:x[3], gruppe:code.slice(0, len) }; }
+    for (const len of [5, 4, 3]){ const x = st.preis[code.slice(0, len)]; if (x && x[0] >= 8) return { anzahl:x[0], p25:x[1], median:x[2], p75:x[3], bieter_n:x[4], bieter_median:x[5], bieter_eins:x[6], gruppe:code.slice(0, len) }; }
     return null;
   }
   for (const len of [5, 4, 3]){
@@ -1926,7 +1926,17 @@ function preisBox(pn){
     h('div',{class:'pn'},
       h('div',{}, h('b',{}, eurK.format(pn.p25)), h('span',{}, 'unteres Viertel')),
       h('div',{}, h('b',{}, eurK.format(pn.median)), h('span',{}, 'Mitte (Median)')),
-      h('div',{}, h('b',{}, eurK.format(pn.p75)), h('span',{}, 'oberes Viertel'))));
+      h('div',{}, h('b',{}, eurK.format(pn.p75)), h('span',{}, 'oberes Viertel'))),
+    bieterZeile(pn));
+}
+// Wie viele Angebote bei ähnlichen Vergaben eingegangen sind (aus der Statistikdatei, erst ab 8 Vergaben)
+function bieterZeile(pn){
+  const n = +pn.bieter_n, med = +pn.bieter_median;
+  if (!(n >= 8) || !(med >= 1)) return null;
+  const eins = Math.round(100 * (+pn.bieter_eins || 0) / n);
+  const mitte = med === 1 ? 'meist nur 1 Angebot' : 'im Mittel ' + String(Math.round(med * 10) / 10).replace('.', ',') + ' Angebote';
+  return h('p',{class:'sub', style:'margin:10px 0 0'}, h('b',{style:'color:var(--ink)'}, 'Wettbewerbsdruck: '),
+    `${mitte} je Vergabe` + (eins >= 1 && med > 1 ? `, bei ${eins}\u00a0% nur eines` : '') + ` (aus ${n} Vergaben)`);
 }
 
 async function openAuftraggeber(name, zurueck){
