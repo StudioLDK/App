@@ -649,7 +649,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-16c';
+const APP_VERSION = '2026-10-16d';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -2100,7 +2100,7 @@ function kopieren(text, knopf){
 function adminKonten(k){
   const jetzt = Date.now(), tag = 864e5;
   const status = x => {
-    if (x.bezahlt_bis && new Date(x.bezahlt_bis) > jetzt) return ['zahlt', 'color:var(--ok, #1B6B3A)'];
+    if (x.bezahlt_bis && new Date(x.bezahlt_bis) > jetzt) return ['freigeschaltet bis ' + new Date(new Date(x.bezahlt_bis) - 1).toLocaleDateString('de-DE'), 'color:var(--ok, #1B6B3A)'];
     if (x.testphase_bis && new Date(x.testphase_bis) > jetzt) return [`Testphase, noch ${Math.ceil((new Date(x.testphase_bis) - jetzt) / tag)} Tage`, ''];
     return ['Testphase abgelaufen', 'color:var(--muted)'];
   };
@@ -2110,10 +2110,33 @@ function adminKonten(k){
       const infos = [x.firma, x.suchprofil ? 'mit Suchprofil' : 'ohne Suchprofil', x.team_groesse > 1 ? `Team mit ${x.team_groesse}` : null,
         x.tester_code ? 'Tester' : null, x.bestaetigt ? null : 'E-Mail noch nicht bestätigt',
         x.letzter_login ? 'zuletzt da ' + zeit(x.letzter_login) : 'noch nie eingeloggt'].filter(Boolean);
+      const bezahlt = x.bezahlt_bis && new Date(x.bezahlt_bis) > jetzt;
       return h('div',{},
         h('span',{class:'d'}, 'seit ' + zeit(x.registriert)), h('span',{class:'t'}, x.email),
-        h('span',{class:'w', style: farbe}, st), h('span',{class:'s'}, infos.join(', ')));
-    })) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch keine Konten.'));
+        h('span',{class:'w', style: farbe}, st), h('span',{class:'s'}, infos.join(', ')),
+        h('span',{class:'s'},
+          h('button',{class:'linkbtn', type:'button', onclick: () => adminFreischalten(x)}, bezahlt ? 'Verlängern' : 'Freischalten'),
+          bezahlt ? [' · ', h('button',{class:'linkbtn', type:'button', onclick: () => adminFreischalten(x, true)}, 'Freischaltung beenden')] : null));
+    })) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch keine Konten.'),
+    h('span',{class:'hint'}, 'Freischalten gilt für das ganze Team des Kontos, bis zum Ende des gewählten Tages. Für Kunden, die per Rechnung zahlen.'));
+}
+// Zugang von Hand freischalten (Rechnung und Überweisung, solange Stripe fehlt)
+async function adminFreischalten(x, beenden){
+  let bis = null;
+  if (beenden){
+    if (!confirm(`Freischaltung für ${x.email} beenden? Ohne laufende Testphase ist die App dann sofort gesperrt.`)) return;
+  } else {
+    const basis = x.bezahlt_bis && new Date(x.bezahlt_bis) > new Date() ? new Date(new Date(x.bezahlt_bis) - 1) : new Date();
+    const vorschlag = new Date(basis); vorschlag.setMonth(vorschlag.getMonth() + 1);
+    const ein = prompt(`${x.email} freischalten bis (TT.MM.JJJJ)?\nVorschlag: ein Monat ab ${x.bezahlt_bis ? 'bisherigem Ende' : 'heute'}.`, vorschlag.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' }));
+    if (!ein) return;
+    const m = ein.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (!m){ alert('Bitte das Datum so eingeben: 31.12.2026'); return; }
+    bis = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  }
+  const { error } = await S.db.rpc('admin_freischalten', { p_email: x.email, p_bis: bis });
+  if (error){ alert('Hat nicht geklappt: ' + error.message); return; }
+  openAdmin();
 }
 // Vormerkungen von der Startseite: zum Start allen schreiben
 function adminVormerkungen(v){
