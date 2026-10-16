@@ -55,6 +55,7 @@ a{color:inherit}
 .mark .dot{display:block;width:12px;height:12px;border-radius:3px;background:var(--red)}
 .msg.ok{color:#1B6B3A}
 .switch{border-top:1px solid var(--line);padding-top:16px;font-size:14px;color:var(--muted)}
+.vergessen{align-self:flex-start;margin-top:-6px;background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .switch button{background:none;border:0;padding:0;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .trial{background:var(--ink);color:#fff;font-size:14px}
 .trial-in{max-width:1440px;margin:0 auto;padding:8px 20px;display:flex;justify-content:center;align-items:center;gap:8px 18px;flex-wrap:wrap}
@@ -377,7 +378,8 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
     <h1 class="appname">Bieterblick</h1>
     <p id="loginIntro">Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
     <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" required></div>
-    <div class="field"><label for="pw">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="pw" id="pwLabel">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <button class="vergessen" type="button" id="pwVergessen">Passwort vergessen?</button>
     <label class="b2b hidden" id="b2bRow"><input type="checkbox" id="b2b"><span>Ich nutze Bieterblick für mein Unternehmen und akzeptiere die <a href="agb.html" target="_blank" rel="noopener">AGB</a>.</span></label>
     <button class="btn" type="submit" id="loginBtn">Anmelden</button>
     <div class="msg" id="loginMsg" role="alert"></div>
@@ -635,7 +637,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-16a';
+const APP_VERSION = '2026-10-16b';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -836,15 +838,23 @@ function show(which){ ['setup','login','app'].forEach(id => $(id).classList.togg
 
 function getKey(){ if (SUPABASE_KEY) return SUPABASE_KEY; try { return localStorage.getItem('ldk-sb-key') || ''; } catch(e){ return ''; } }
 
+// Link aus der Mail "Passwort zurücksetzen": Supabase meldet PASSWORD_RECOVERY, dann neues Passwort abfragen
+let pwNeu = /type=recovery/.test(location.hash);
+const linkFehler = (() => { try { const q = new URLSearchParams(location.hash.slice(1)); return q.get('error_code') || q.get('error') || ''; } catch(e){ return ''; } })();
 async function init(){
   if (!window.supabase){ show('login'); $('loginMsg').textContent = 'Die Verbindungsbibliothek konnte nicht geladen werden. Bist du online?'; return; }
   const key = getKey();
   if (!key){ show('setup'); $('keyIn').focus(); return; }
   S.db = window.supabase.createClient(SUPABASE_URL, key, { db:{ schema:'tender' } });
   fehlerAufzeichnen();
-  S.db.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { show('login'); } });
+  S.db.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { show('login'); } if (ev === 'PASSWORD_RECOVERY') pwNeu = true; });
   const { data } = await S.db.auth.getSession();
-  if (data && data.session) start(data.session.user); else { show('login'); $('em').focus(); }
+  if (data && data.session && pwNeu){ show('login'); setMode('neu'); $('pw').focus(); return; }
+  if (data && data.session) start(data.session.user);
+  else {
+    show('login'); $('em').focus();
+    if (linkFehler){ history.replaceState(null, '', location.pathname); $('loginMsg').textContent = /expired/i.test(linkFehler) ? 'Der Link ist abgelaufen oder wurde schon benutzt. Fordere einfach einen neuen an.' : 'Der Link hat nicht funktioniert. Fordere einfach einen neuen an.'; }
+  }
 }
 
 $('setupForm').addEventListener('submit', e => {
@@ -892,7 +902,19 @@ let mode = 'login';
 function setMode(m){
   if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()) m = 'login';
   mode = m;
-  const reg = m === 'register';
+  const reg = m === 'register', neu = m === 'neu';
+  $('em').closest('.field').classList.toggle('hidden', neu); $('em').required = !neu;
+  $('pwLabel').textContent = neu ? 'Neues Passwort' : 'Passwort';
+  $('pwVergessen').classList.toggle('hidden', m !== 'login');
+  $('modeSwitch').classList.toggle('hidden', neu);
+  if (neu){
+    $('loginIntro').textContent = 'Leg ein neues Passwort fest. Danach bist du direkt angemeldet.';
+    $('loginBtn').textContent = 'Passwort speichern';
+    $('pw').setAttribute('autocomplete', 'new-password'); $('pw').placeholder = 'mindestens ' + PW_MIN + ' Zeichen'; $('pw').value = '';
+    $('b2bRow').classList.add('hidden'); $('modeSwitch').replaceChildren();
+    $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
+    return;
+  }
   $('loginIntro').textContent = reg
     ? (testerCode() ? 'Du bist als Tester eingeladen: 30 Tage kostenlos, ohne Zahlungsdaten. Die Testphase endet automatisch.' : 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.')
     : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
@@ -938,6 +960,16 @@ $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = $('loginMsg'); msg.textContent = ''; msg.className = 'msg';
   const email = $('em').value.trim(), password = $('pw').value;
+  if (mode === 'neu'){
+    if (password.length < PW_MIN){ msg.textContent = 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.'; return; }
+    $('loginBtn').disabled = true;
+    const { data, error } = await S.db.auth.updateUser({ password });
+    $('loginBtn').disabled = false;
+    if (error){ msg.textContent = /different from the old/i.test(error.message) ? 'Das neue Passwort muss sich vom alten unterscheiden.' : authError(error.message); return; }
+    pwNeu = false; $('pw').value = ''; setMode('login');
+    start(data.user);
+    return;
+  }
   if (mode === 'register' && password.length < PW_MIN){ msg.textContent = 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.'; return; }
   if (mode === 'register' && !$('b2b').checked){ msg.textContent = 'Bieterblick ist nur für Unternehmen. Bitte bestätige das und die AGB mit dem Häkchen.'; return; }
   const label = $('loginBtn').textContent;
@@ -957,6 +989,19 @@ $('loginForm').addEventListener('submit', async e => {
 });
 
 $('logout').addEventListener('click', async () => { await S.db.auth.signOut(); show('login'); });
+
+$('pwVergessen').addEventListener('click', async () => {
+  const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = '';
+  const email = $('em').value.trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent = 'Gib oben deine E-Mail-Adresse ein, dann schicken wir dir einen Link.'; $('em').focus(); return; }
+  $('pwVergessen').disabled = true;
+  const { error } = await S.db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  $('pwVergessen').disabled = false;
+  if (error && /rate limit/i.test(error.message)){ msg.textContent = authError(error.message); return; }
+  // Immer dieselbe Antwort, damit niemand herausfinden kann, welche Adressen ein Konto haben
+  msg.className = 'msg ok';
+  msg.textContent = 'Falls es zu dieser Adresse ein Konto gibt, haben wir dir einen Link geschickt. Schau auch im Spam-Ordner nach.';
+});
 
 async function start(user){
   S.user = user; loadReact();
