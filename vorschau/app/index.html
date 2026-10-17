@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17c';
+const APP_VERSION = '2026-10-17d';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -797,7 +797,7 @@ function toggleMerken(r){
 
 /* ---------- Team ---------- */
 async function loadTeam(){
-  S.team = null; S.teamErr = null; S.teamMsg = null;
+  S.team = null; S.teamErr = null;
   let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
   if (tok){
     const { error } = await S.db.rpc('einladung_annehmen', { p_token: tok });
@@ -1023,8 +1023,20 @@ async function start(user){
   show('app');
   $('loading').classList.remove('hidden'); $('content').classList.add('hidden'); $('errBox').classList.add('hidden'); $('lockedBox').classList.add('hidden');
   // Ein einziger Aufruf liefert Konto, Einstellungen, Team, Pipeline und Beobachtungen (schont den Server)
-  S.boot = null;
+  S.boot = null; S.teamMsg = null;
   let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
+  // Einladungs-Link geöffnet, aber noch mit einem anderen Konto angemeldet: abmelden und zur Registrierung
+  if (tok){
+    const { error } = await S.db.rpc('einladung_annehmen', { p_token: tok });
+    if (error && /andere E-Mail/i.test(error.message)){
+      await S.db.auth.signOut(); show('login'); setMode('register');
+      $('loginIntro').textContent = `Du warst noch mit ${user.email} angemeldet, die Einladung gilt aber für eine andere Adresse. Leg jetzt ein Konto mit der Adresse an, an die die Einladung ging.`;
+      $('em').focus(); return;
+    }
+    try { sessionStorage.removeItem('ldk-invite'); } catch(e){}
+    S.teamMsg = error ? 'Einladung: ' + error.message : 'Du bist dem Team beigetreten.';
+    tok = null;
+  }
   if (!tok){ const b = await Promise.resolve(S.db.rpc('app_start')).catch(() => ({ error:true })); if (b && !b.error && b.data && b.data.konto !== undefined) S.boot = b.data; }
   try {
     const ok = await checkAccess();
