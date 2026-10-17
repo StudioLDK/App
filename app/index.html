@@ -651,7 +651,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17k';
+const APP_VERSION = '2026-10-17l';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1019,6 +1019,8 @@ $('loginForm').addEventListener('submit', async e => {
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
+  // Neue Registrierung an uns melden (die Funktion prüft selbst, ob das Konto wirklich neu ist)
+  if (mode === 'register' && res.data && res.data.user) fetch(SUPABASE_URL + '/functions/v1/kontakt', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ neues_konto:res.data.user.id }) }).catch(() => {});
   if (mode === 'register' && !res.data.session){
     setMode('login');
     msg.className = 'msg ok';
