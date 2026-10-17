@@ -386,11 +386,11 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
 
 <!-- Login -->
 <div id="login" class="gate hidden">
-  <form class="gate-card" id="loginForm">
+  <form class="gate-card" id="loginForm" novalidate>
     <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg>Studio LDK</div>
     <h1 class="appname">Bieterblick</h1>
     <p id="loginIntro">Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
-    <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" required></div>
+    <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
     <div class="field"><label for="pw" id="pwLabel">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
     <button class="vergessen" type="button" id="pwVergessen">Passwort vergessen?</button>
     <label class="b2b hidden" id="b2bRow"><input type="checkbox" id="b2b"><span>Ich nutze Bieterblick für mein Unternehmen und akzeptiere die <a href="agb.html" target="_blank" rel="noopener">AGB</a>.</span></label>
@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17b';
+const APP_VERSION = '2026-10-17e';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -972,7 +972,11 @@ function authError(m){
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = $('loginMsg'); msg.textContent = ''; msg.className = 'msg';
-  const email = $('em').value.trim(), password = $('pw').value;
+  // Leerzeichen gehören nie in eine Mail-Adresse (kommen am Handy oft durch Autokorrektur oder Spracheingabe)
+  const email = $('em').value.replace(/\s+/g, '').toLowerCase(), password = $('pw').value;
+  $('em').value = email;
+  if (mode !== 'neu' && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)){ msg.textContent = email ? 'Die E-Mail-Adresse sieht nicht vollständig aus. Bitte prüf sie noch einmal, zum Beispiel ob das @ und die Endung wie .de stimmen.' : 'Bitte gib deine E-Mail-Adresse ein.'; $('em').focus(); return; }
+  if (mode !== 'neu' && !password){ msg.textContent = 'Bitte gib dein Passwort ein.'; $('pw').focus(); return; }
   if (mode === 'neu'){
     if (password.length < PW_MIN){ msg.textContent = 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.'; return; }
     $('loginBtn').disabled = true;
@@ -1005,7 +1009,7 @@ $('logout').addEventListener('click', async () => { await S.db.auth.signOut(); s
 
 $('pwVergessen').addEventListener('click', async () => {
   const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = '';
-  const email = $('em').value.trim();
+  const email = $('em').value.replace(/\s+/g, '').toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent = 'Gib oben deine E-Mail-Adresse ein, dann schicken wir dir einen Link.'; $('em').focus(); return; }
   $('pwVergessen').disabled = true;
   const { error } = await S.db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
