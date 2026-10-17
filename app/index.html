@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17i';
+const APP_VERSION = '2026-10-17j';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1034,7 +1034,9 @@ $('pwVergessen').addEventListener('click', async () => {
   const email = $('em').value.replace(/\s+/g, '').toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent = 'Gib oben deine E-Mail-Adresse ein, dann schicken wir dir einen Link.'; $('em').focus(); return; }
   $('pwVergessen').disabled = true;
-  const { error } = await S.db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  // Bieterblick schickt die Mail selbst (Link wird erst per Knopf eingelöst). Klappt das nicht, schickt Supabase sie.
+  const f = await S.db.functions.invoke('passwort', { body:{ email, basis:location.origin + location.pathname } }).catch(e => ({ error:e }));
+  const { error } = f && !f.error ? {} : await S.db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
   $('pwVergessen').disabled = false;
   if (error && /rate limit/i.test(error.message)){ msg.textContent = authError(error.message); return; }
   // Immer dieselbe Antwort, damit niemand herausfinden kann, welche Adressen ein Konto haben
