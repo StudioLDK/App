@@ -2,7 +2,7 @@
 
 ## Arbeitsweise (von Luis festgelegt)
 - Kleine Korrekturen (Tippfehler, abgeschnittene Knöpfe, Fehler, über die Kunden stolpern) testen und direkt auf `main` einspielen.
-- Größere Änderungen (neue Funktionen, sichtbare Änderungen an Aussehen oder Abläufen) erst in die Vorschau: `./vorschau.sh` ausführen, nur `vorschau/` einspielen, Luis den Link https://studioldk.github.io/App/vorschau/ geben. Live erst nach seinem „passt, freigeben“.
+- Größere Änderungen (neue Funktionen, sichtbare Änderungen an Aussehen oder Abläufen) erst in die Vorschau: `./vorschau.sh` ausführen, nur `vorschau/` einspielen, Luis den Link https://bieterblick.studioldk.de/vorschau/ geben. Live erst nach seinem „passt, freigeben“.
 - Alles mit Geld, Mails an Kunden oder Löschen von Daten: immer erst Luis fragen, Mails vorher als Testmail an ihn.
 - Die Vorschau nutzt dieselbe Datenbank wie die echte Seite. Datenbank-Änderungen deshalb so bauen, dass alte und neue App-Version beide funktionieren.
 - Jede Änderung lässt sich mit `git revert` zurücknehmen, dann ist in 1 bis 2 Minuten wieder der alte Stand live.
@@ -14,6 +14,7 @@
 - Alles, was auf `main` landet, ist nach ein bis zwei Minuten live.
 - Startseite: Effekte nur mit der Klasse `fx` (JavaScript an, keine "Weniger Bewegung"), ohne sie muss alles sichtbar bleiben. Vor dem Einspielen im Browser auf Computer- und Handybreite (390 und 320 Pixel) prüfen.
 - Zahlen auf der Startseite nur so, wie sie in der Datenbank stimmen.
-- `<meta name="robots" content="noindex, nofollow">` erst zum offiziellen Start entfernen. Nach dem Umzug auf eine eigene Domain `og:image` in `index.html` anpassen.
+- `<meta name="robots" content="noindex, nofollow">` erst zum offiziellen Start entfernen.
+- Adresse seit 17.10.2026: https://bieterblick.studioldk.de (Datei `CNAME`, INWX-Eintrag CNAME `bieterblick` → `studioldk.github.io`). Die alte Adresse studioldk.github.io/App leitet automatisch weiter.
 - Bezahlen über Stripe ist eingebaut, aber mit `ZAHLUNG_AKTIV = false` in `app/index.html` ausgeschaltet. Einschalten erst nach `STRIPE_ANLEITUNG.md` im Repo Ausschreibungsfinder.
 - Microsoft Store: App ist als PWA vorbereitet (Manifest mit id, Screenshots, Schnellzugriffen). Paket mit PWABuilder erst nach dem Umzug auf die eigene Adresse bauen, weil das Paket an die Adresse gebunden ist.
