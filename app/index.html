@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17e';
+const APP_VERSION = '2026-10-17h';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -797,7 +797,7 @@ function toggleMerken(r){
 
 /* ---------- Team ---------- */
 async function loadTeam(){
-  S.team = null; S.teamErr = null; S.teamMsg = null;
+  S.team = null; S.teamErr = null;
   let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
   if (tok){
     const { error } = await S.db.rpc('einladung_annehmen', { p_token: tok });
@@ -908,7 +908,8 @@ try {
   if (new URLSearchParams(location.search).get('abo') === 'danke'){ sessionStorage.setItem('ldk-abo', String(Date.now())); history.replaceState(null, '', location.pathname + location.hash); }
   aboWarten = Date.now() - Number(sessionStorage.getItem('ldk-abo') || 0) < 60000;
 } catch(e){}
-function hatEinladung(){ try { return !!sessionStorage.getItem('ldk-invite'); } catch(e){ return false; } }
+function einladungsToken(){ try { return sessionStorage.getItem('ldk-invite') || ''; } catch(e){ return ''; } }
+function hatEinladung(){ return !!einladungsToken(); }
 // Tester-Link (?testen=CODE): Registrierung erlaubt, gültiger Code gibt 30 statt 7 Tage (prüft die Datenbank)
 function testerCode(){ try { return sessionStorage.getItem('ldk-tester') || ''; } catch(e){ return ''; } }
 let mode = 'login';
@@ -992,7 +993,7 @@ $('loginForm').addEventListener('submit', async e => {
   const label = $('loginBtn').textContent;
   $('loginBtn').disabled = true; $('loginBtn').textContent = mode === 'register' ? 'Lege Konto an …' : 'Melde an …';
   const res = mode === 'register'
-    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname, data:{ agb_akzeptiert: new Date().toISOString(), ...(testerCode() ? { tester: testerCode() } : {}) } } })
+    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname + (einladungsToken() ? '?einladung=' + encodeURIComponent(einladungsToken()) : ''), data:{ agb_akzeptiert: new Date().toISOString(), ...(testerCode() ? { tester: testerCode() } : {}) } } })
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
@@ -1026,8 +1027,20 @@ async function start(user){
   show('app');
   $('loading').classList.remove('hidden'); $('content').classList.add('hidden'); $('errBox').classList.add('hidden'); $('lockedBox').classList.add('hidden');
   // Ein einziger Aufruf liefert Konto, Einstellungen, Team, Pipeline und Beobachtungen (schont den Server)
-  S.boot = null;
+  S.boot = null; S.teamMsg = null;
   let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
+  // Einladungs-Link geöffnet, aber noch mit einem anderen Konto angemeldet: abmelden und zur Registrierung
+  if (tok){
+    const { error } = await S.db.rpc('einladung_annehmen', { p_token: tok });
+    if (error && /andere E-Mail/i.test(error.message)){
+      await S.db.auth.signOut({ scope:'local' }); show('login'); setMode('register');
+      $('loginIntro').textContent = `Du warst noch mit ${user.email} angemeldet, die Einladung gilt aber für eine andere Adresse. Leg jetzt ein Konto mit der Adresse an, an die die Einladung ging.`;
+      $('em').focus(); return;
+    }
+    try { sessionStorage.removeItem('ldk-invite'); } catch(e){}
+    S.teamMsg = error ? 'Einladung: ' + error.message : 'Du bist dem Team beigetreten.';
+    tok = null;
+  }
   if (!tok){ const b = await Promise.resolve(S.db.rpc('app_start')).catch(() => ({ error:true })); if (b && !b.error && b.data && b.data.konto !== undefined) S.boot = b.data; }
   try {
     const ok = await checkAccess();
@@ -1735,7 +1748,11 @@ $('invBtn').addEventListener('click', async () => {
   if (error){ msg.textContent = /Plätze/.test(error.message) ? error.message : 'Einladen hat nicht geklappt: ' + error.message; return; }
   $('invEm').value = '';
   await renderTeam();
-  msg.className = 'msg ok'; msg.textContent = 'Einladung erstellt. Schick deinem Kollegen diesen Link:';
+  msg.className = 'msg ok'; msg.textContent = 'Einladung wird verschickt …';
+  // Bieterblick schickt die Einladung per Mail. Der Link bleibt als Notlösung sichtbar.
+  const r = await S.db.functions.invoke('einladung', { body:{ token:data.token, basis:location.origin + location.pathname } }).catch(e => ({ error:e }));
+  msg.textContent = r && !r.error ? `Wir haben ${em} eine Einladung per Mail geschickt. Falls sie nicht ankommt (auch im Spam schauen), kannst du diesen Link selbst schicken:`
+    : 'Einladung erstellt, die Mail konnte aber nicht verschickt werden. Schick deinem Kollegen bitte diesen Link:';
   $('invOut').replaceChildren(inviteBox(data.token, em));
 });
 
