@@ -14,7 +14,7 @@
 - Alles, was auf `main` landet, ist nach ein bis zwei Minuten live.
 - Startseite: Effekte nur mit der Klasse `fx` (JavaScript an, keine "Weniger Bewegung"), ohne sie muss alles sichtbar bleiben. Vor dem Einspielen im Browser auf Computer- und Handybreite (390 und 320 Pixel) prüfen.
 - Zahlen auf der Startseite nur so, wie sie in der Datenbank stimmen.
-- `<meta name="robots" content="noindex, nofollow">` erst zum offiziellen Start entfernen.
+- Startseite ist seit 17.10.2026 für Suchmaschinen offen (kein `noindex` mehr, `robots.txt` und `sitemap.xml` im Hauptordner). App, Rechtstexte unter `app/` und die Vorschau bleiben auf `noindex`. Zum offiziellen Start die Beschreibung (`meta description`) wieder um „7 Tage kostenlos testen“ ergänzen.
 - Adresse seit 17.10.2026: https://bieterblick.studioldk.de (Datei `CNAME`, INWX-Eintrag CNAME `bieterblick` → `studioldk.github.io`). Die alte Adresse studioldk.github.io/App leitet automatisch weiter.
 - Bezahlen über Stripe ist eingebaut, aber mit `ZAHLUNG_AKTIV = false` in `app/index.html` ausgeschaltet. Einschalten erst nach `STRIPE_ANLEITUNG.md` im Repo Ausschreibungsfinder.
 - Microsoft Store: App ist als PWA vorbereitet (Manifest mit id, Screenshots, Schnellzugriffen). Paket mit PWABuilder erst nach dem Umzug auf die eigene Adresse bauen, weil das Paket an die Adresse gebunden ist.
