@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-16d';
+const APP_VERSION = '2026-10-17a';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -963,7 +963,7 @@ function authError(m){
   if (/already registered|already exists/i.test(m)) return 'Mit dieser E-Mail gibt es schon ein Konto. Melde dich einfach an.';
   if (/pwned|leak|compromised|breach/i.test(m)) return 'Dieses Passwort ist bei einem Datenleck im Internet aufgetaucht und deshalb nicht sicher. Bitte wähle ein anderes.';
   if (/password/i.test(m) && /\d|short|least|weak/i.test(m)) return 'Das Passwort braucht mindestens ' + PW_MIN + ' Zeichen.';
-  if (/not confirmed/i.test(m)) return 'Bitte bestätige zuerst deine E-Mail-Adresse über den Link in der Mail.';
+  if (/not confirmed/i.test(m)) return 'Bitte bestätige zuerst deine E-Mail-Adresse über den Link in der Mail. Keine Mail da? Schau auch im Spam nach, bei web.de und GMX im Ordner „Unbekannt“.';
   if (/signups? not allowed|disabled/i.test(m)) return 'Registrierungen sind gerade nicht möglich.';
   if (/rate limit/i.test(m)) return 'Zu viele Versuche. Bitte warte kurz und versuch es dann noch einmal.';
   return 'Das hat nicht geklappt: ' + m;
@@ -995,7 +995,7 @@ $('loginForm').addEventListener('submit', async e => {
   if (mode === 'register' && !res.data.session){
     setMode('login');
     msg.className = 'msg ok';
-    msg.textContent = 'Fast geschafft. Wir haben dir eine Mail geschickt, bestätige darin deine Adresse und melde dich dann hier an.';
+    msg.textContent = 'Fast geschafft. Wir haben dir eine Mail geschickt, bestätige darin deine Adresse und melde dich dann hier an. Keine Mail da? Schau bitte auch im Spam nach, bei web.de und GMX auch im Ordner „Unbekannt“.';
     return;
   }
   start(res.data.user);
