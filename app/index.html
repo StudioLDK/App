@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17f';
+const APP_VERSION = '2026-10-17g';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1033,7 +1033,7 @@ async function start(user){
   if (tok){
     const { error } = await S.db.rpc('einladung_annehmen', { p_token: tok });
     if (error && /andere E-Mail/i.test(error.message)){
-      await S.db.auth.signOut(); show('login'); setMode('register');
+      await S.db.auth.signOut({ scope:'local' }); show('login'); setMode('register');
       $('loginIntro').textContent = `Du warst noch mit ${user.email} angemeldet, die Einladung gilt aber für eine andere Adresse. Leg jetzt ein Konto mit der Adresse an, an die die Einladung ging.`;
       $('em').focus(); return;
     }
