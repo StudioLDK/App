@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17a';
+const APP_VERSION = '2026-10-17b';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1885,11 +1885,13 @@ async function loadWb(){
         h('div',{class:'num last'}, zDate(r.letzter))))));
 }
 
+// Manche Auftraggeber melden 0,01 € oder ähnliche Platzhalter statt des echten Werts. Unter 500 € gilt wie bei der Preisstatistik als nicht genannt.
+const echterWert = w => +w >= 500 ? +w : 0;
 function zuschlagListe(rows, ohneGewinner){
   return h('div',{class:'zl'}, ...rows.map(z => h('div',{},
     h('span',{class:'d'}, zDate(z.zuschlag_am)),
     h('span',{class:'t'}, z.title),
-    h('span',{class:'w'}, z.wert ? eurK.format(z.wert) : ''),
+    h('span',{class:'w'}, echterWert(z.wert) ? eurK.format(echterWert(z.wert)) : ''),
     h('span',{class:'s'}, ...(ohneGewinner ? [z.auftraggeber || ''] :
       [h('button',{class:'linkbtn', type:'button', onclick:()=>openProfil(z, S.drawerRow)}, z.gewinner), z.gewinner_ort ? ', ' + z.gewinner_ort : '']))))) ;
 }
@@ -1912,8 +1914,8 @@ async function openProfil(x, zurueck){
     .eq('gewinner_key', x.gewinner_key).order('zuschlag_am', { ascending:false }).limit(400);
   if (S.drawerRow !== me) return;
   const rows = data || [];
-  const mitWert = rows.filter(z => z.wert);
-  const summe = mitWert.reduce((a, z) => a + Number(z.wert), 0);
+  const mitWert = rows.filter(z => echterWert(z.wert));
+  const summe = mitWert.reduce((a, z) => a + echterWert(z.wert), 0);
   const ag = {};
   for (const z of rows) if (z.auftraggeber) ag[z.auftraggeber] = (ag[z.auftraggeber] || 0) + 1;
   const topAg = Object.entries(ag).sort((a, b) => b[1] - a[1]).slice(0, 6);
@@ -2011,7 +2013,7 @@ async function openAuftraggeber(name, zurueck){
   if (S.drawerRow !== me) return;
   const rows = (z && z.data) || [];
   const offen = S.rows.filter(r => r.auftraggeber === name && (isOpen(r) || isVorinfo(r)));
-  const mitWert = rows.filter(x => x.wert).map(x => Number(x.wert)).sort((a, b) => a - b);
+  const mitWert = rows.map(x => echterWert(x.wert)).filter(Boolean).sort((a, b) => a - b);
   const median = mitWert.length ? mitWert[Math.floor(mitWert.length / 2)] : null;
   const proJahr = {};
   for (const x of rows) if (x.zuschlag_am) proJahr[x.zuschlag_am.slice(0, 4)] = (proJahr[x.zuschlag_am.slice(0, 4)] || 0) + 1;
