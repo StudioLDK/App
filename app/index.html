@@ -650,7 +650,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17h';
+const APP_VERSION = '2026-10-17i';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -853,6 +853,9 @@ function getKey(){ if (SUPABASE_KEY) return SUPABASE_KEY; try { return localStor
 
 // Link aus der Mail "Passwort zurücksetzen": Supabase meldet PASSWORD_RECOVERY, dann neues Passwort abfragen
 let pwNeu = /type=recovery/.test(location.hash);
+// Neue Mail-Links (?token_hash=…&type=…) werden erst eingelöst, wenn man auf den Knopf tippt.
+// So verbrauchen Mail-Programme und Firmen-Filter, die Links vorab öffnen, den Link nicht.
+const MAIL_LINK = (() => { try { const q = new URLSearchParams(location.search); const t = q.get('type'); return q.get('token_hash') && /^(recovery|signup|email|invite|magiclink|email_change)$/.test(t || '') ? { hash:q.get('token_hash'), typ:t } : null; } catch(e){ return null; } })();
 const linkFehler = (() => { try { const q = new URLSearchParams(location.hash.slice(1)); return q.get('error_code') || q.get('error') || ''; } catch(e){ return ''; } })();
 async function init(){
   if (!window.supabase){ show('login'); $('loginMsg').textContent = 'Die Verbindungsbibliothek konnte nicht geladen werden. Bist du online?'; return; }
@@ -861,6 +864,7 @@ async function init(){
   S.db = window.supabase.createClient(SUPABASE_URL, key, { db:{ schema:'tender' } });
   fehlerAufzeichnen();
   S.db.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { show('login'); } if (ev === 'PASSWORD_RECOVERY') pwNeu = true; });
+  if (MAIL_LINK){ show('login'); setMode('link'); return; }
   const { data } = await S.db.auth.getSession();
   if (data && data.session && pwNeu){ show('login'); setMode('neu'); $('pw').focus(); return; }
   if (data && data.session) start(data.session.user);
@@ -916,11 +920,19 @@ let mode = 'login';
 function setMode(m){
   if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()) m = 'login';
   mode = m;
-  const reg = m === 'register', neu = m === 'neu';
-  $('em').closest('.field').classList.toggle('hidden', neu); $('em').required = !neu;
+  const reg = m === 'register', neu = m === 'neu', link = m === 'link';
+  $('em').closest('.field').classList.toggle('hidden', neu || link); $('em').required = !neu && !link;
+  $('pw').closest('.field').classList.toggle('hidden', link);
   $('pwLabel').textContent = neu ? 'Neues Passwort' : 'Passwort';
   $('pwVergessen').classList.toggle('hidden', m !== 'login');
-  $('modeSwitch').classList.toggle('hidden', neu);
+  $('modeSwitch').classList.toggle('hidden', neu || link);
+  if (link){
+    $('loginIntro').textContent = MAIL_LINK.typ === 'recovery' ? 'Tipp auf den Knopf, dann kannst du ein neues Passwort festlegen.' : 'Tipp auf den Knopf, um deine E-Mail-Adresse zu bestätigen.';
+    $('loginBtn').textContent = MAIL_LINK.typ === 'recovery' ? 'Neues Passwort festlegen' : 'E-Mail bestätigen';
+    $('b2bRow').classList.add('hidden'); $('modeSwitch').replaceChildren();
+    $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
+    return;
+  }
   if (neu){
     $('loginIntro').textContent = 'Leg ein neues Passwort fest. Danach bist du direkt angemeldet.';
     $('loginBtn').textContent = 'Passwort speichern';
@@ -973,6 +985,15 @@ function authError(m){
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = $('loginMsg'); msg.textContent = ''; msg.className = 'msg';
+  if (mode === 'link'){
+    $('loginBtn').disabled = true;
+    const { data, error } = await S.db.auth.verifyOtp({ token_hash:MAIL_LINK.hash, type:MAIL_LINK.typ });
+    $('loginBtn').disabled = false;
+    history.replaceState(null, '', location.pathname);
+    if (error || !data || !data.user){ setMode('login'); msg.textContent = 'Der Link ist abgelaufen oder wurde schon benutzt. Fordere einfach einen neuen an.'; return; }
+    if (MAIL_LINK.typ === 'recovery'){ pwNeu = true; setMode('neu'); $('pw').focus(); return; }
+    start(data.user); return;
+  }
   // Leerzeichen gehören nie in eine Mail-Adresse (kommen am Handy oft durch Autokorrektur oder Spracheingabe)
   const email = $('em').value.replace(/\s+/g, '').toLowerCase(), password = $('pw').value;
   $('em').value = email;
