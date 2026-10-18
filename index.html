@@ -848,8 +848,10 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
         var o = finde(wo.value);
         if (!o){ throw new Error(wo.value.trim() ? '„' + wo.value.trim() + '“ kennen wir so nicht. Gib bitte deinen Landkreis oder die nächste kreisfreie Stadt ein, zum Beispiel „Oberallgäu“ statt „Sonthofen“.' : 'Gib bitte deinen Landkreis oder deine Stadt ein.'); }
         wo.value = o[1];
-        return fetch(REST, { method:'POST', headers:{ 'Content-Type':'application/json', 'apikey':KEY, 'Content-Profile':'tender' },
-          body: JSON.stringify({ p_text: was.value.trim(), p_nuts: o[0], p_km: +km.value }) })
+        var frage = function(){ return fetch(REST, { method:'POST', headers:{ 'Content-Type':'application/json', 'apikey':KEY, 'Content-Profile':'tender' },
+          body: JSON.stringify({ p_text: was.value.trim(), p_nuts: o[0], p_km: +km.value }) }); };
+        // Ein neues Suchwort braucht beim ersten Mal länger. Dann einmal kurz warten und nochmal fragen.
+        return frage().then(function(r){ return r.ok ? r : new Promise(function(ok){ setTimeout(ok, 800); }).then(frage); })
           .then(function(r){ if (!r.ok) throw new Error('Das hat gerade nicht geklappt. Versuch es gleich noch einmal.'); return r.json(); })
           .then(function(d){ zeige(d, o); });
       }).catch(function(err){ msg.textContent = err.message || 'Das hat gerade nicht geklappt.'; })
