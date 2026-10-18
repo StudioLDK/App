@@ -9,5 +9,5 @@ window.ANBIETER = {
   email: 'info@studioldk.de',
   telefon: '',          // leer lassen, dann gilt das Kontaktformular als zweiter Kontaktweg
   ustid: '',            // nur eintragen, wenn vorhanden
-  entwurf: true         // auf false setzen, wenn Adresse, AV-Verträge und Resend stehen
+  entwurf: false        // true zeigt in der Datenschutzerklärung einen Entwurfs-Hinweis
 };
