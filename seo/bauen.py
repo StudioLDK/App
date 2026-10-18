@@ -2,7 +2,7 @@
 """Baut die öffentlichen Gewerk-Seiten (auftraege/*.html) aus einer Zahlen-Datei.
 
 Aufruf: python3 seo/bauen.py daten.json ZIELORDNER [--vorschau]
-Die Zahlen kommen aus den Tabellen zuschlaege und tenders (Abfrage siehe seo/LIESMICH.md).
+Die Zahlen kommen aus seo.json, erzeugt von seo_daten.py im Repo Ausschreibungsfinder (täglich im Abruf).
 Mit --vorschau bekommen die Seiten noindex und den roten Balken.
 """
 import html
@@ -14,10 +14,24 @@ from pathlib import Path
 
 BASIS = "https://bieterblick.studioldk.de"
 TESTEN = BASIS + "/?testen=bb-handwerk"
-MIN_VERGABEN = 30  # darunter keine Seite, zu wenig Daten
+MIN_VERGABEN = 25  # darunter keine Seite, zu wenig Daten
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
 
-REGION = {"kurz": "bayern", "name": "Bayern", "berater": "das Auftragsberatungszentrum Bayern"}
+BERATER = "die Auftragsberatungsstelle in deinem Bundesland oder deine Handwerkskammer"
+LAENDER = {
+    "DE1": ("Baden-Württemberg", "baden-wuerttemberg"), "DE2": ("Bayern", "bayern"), "DE3": ("Berlin", "berlin"),
+    "DE4": ("Brandenburg", "brandenburg"), "DE5": ("Bremen", "bremen"), "DE6": ("Hamburg", "hamburg"),
+    "DE7": ("Hessen", "hessen"), "DE8": ("Mecklenburg-Vorpommern", "mecklenburg-vorpommern"), "DE9": ("Niedersachsen", "niedersachsen"),
+    "DEA": ("Nordrhein-Westfalen", "nordrhein-westfalen"), "DEB": ("Rheinland-Pfalz", "rheinland-pfalz"), "DEC": ("Saarland", "saarland"),
+    "DED": ("Sachsen", "sachsen"), "DEE": ("Sachsen-Anhalt", "sachsen-anhalt"), "DEF": ("Schleswig-Holstein", "schleswig-holstein"),
+    "DEG": ("Thüringen", "thueringen"),
+}
+
+
+def region(code):
+    name, kurz = LAENDER[code]
+    return {"code": code, "name": name, "kurz": kurz,
+            "berater": "das Auftragsberatungszentrum Bayern" if code == "DE2" else BERATER}
 
 # Reihenfolge = Reihenfolge auf der Übersicht. pf: CPV-Anfänge, nur zur Dokumentation (die Abfrage nutzt dieselben).
 GEWERKE = {
@@ -33,15 +47,30 @@ GEWERKE = {
         text="Typisch sind Sanitärräume und Duschen in Schulen, Sporthallen und Kliniken, häufig als ein Los einer größeren Sanierung. Fliesenleger ist seit 2020 wieder ein zulassungspflichtiges Handwerk, die Eintragung in die Handwerksrolle wird deshalb in der Regel geprüft."),
     "tischlerarbeiten": dict(pf=["45421"], name="Tischler- und Fensterbau", wer="Tischler-, Schreiner-, Fenster- und Türarbeiten",
         text="Ausgeschrieben werden Innentüren, Fenster, Trennwände und Einbaumöbel, oft als eigene Lose bei Schulbauten. Bei Brandschutz- und Rauchschutztüren musst du die Zulassung der Produkte nachweisen, bei Fenstern häufig die Wärmedämmwerte. Lies die Produktvorgaben genau, oft sind gleichwertige Produkte erlaubt, wenn du das belegen kannst."),
+    "winterdienst": dict(pf=["90620", "90630"], name="Winterdienst", wer="Winterdienst und Schneeräumung",
+        text="Winterdienst wird meist im Sommer und Herbst für eine oder mehrere Saisons ausgeschrieben, oft getrennt nach Gebieten oder Objekten. Bezahlt wird häufig eine Pauschale für die Bereitschaft und zusätzlich jeder Einsatz. Wichtig sind kurze Reaktionszeiten und eine lückenlose Dokumentation jedes Einsatzes."),
+    "sicherheitsdienst": dict(pf=["7971"], name="Sicherheitsdienst", wer="Bewachungs- und Sicherheitsdienste",
+        text="Ausgeschrieben werden Objektschutz, Empfangs- und Pfortendienste sowie Sicherheitsdienste für Veranstaltungen und Unterkünfte, meist als Vertrag über mehrere Jahre. Du brauchst die Erlaubnis nach § 34a Gewerbeordnung, und die eingesetzten Mitarbeiter müssen die vorgeschriebene Unterrichtung oder Sachkundeprüfung haben."),
     "gebaeudereinigung": dict(pf=["9091"], name="Gebäudereinigung", wer="Unterhalts-, Glas- und Grundreinigung",
         text="Reinigung wird meist als Rahmenvertrag über zwei bis vier Jahre vergeben und nach Fläche und Reinigungshäufigkeit kalkuliert. Nutze die Besichtigung der Objekte vor der Kalkulation, wenn sie angeboten wird. Viele Auftraggeber prüfen ungewöhnlich niedrige Preise genauer und achten auf die Einhaltung des Branchenmindestlohns."),
     "garten-landschaftsbau": dict(pf=["451127", "7731"], name="Garten- und Landschaftsbau", wer="Außenanlagen, Pflanz- und Pflegearbeiten",
         text="Neben Außenanlagen bei Neubauten schreiben Städte und Bauämter regelmäßig Pflanzungen und Grünpflege aus, oft als Jahresvertrag. Bei Pflanzarbeiten wird die Fertigstellungs- und Entwicklungspflege über ein bis zwei Jahre häufig gleich mit vergeben. Das bringt planbare Folgeaufträge."),
     "strassenbau": dict(pf=["45233"], name="Straßenbau", wer="Straßen-, Wege- und Tiefbauarbeiten",
         text="Viele Aufträge kommen von der Autobahn GmbH, den Staatlichen Bauämtern und den Landkreisen. Die Lose sind oft groß, es gibt aber auch kleinere Aufträge wie Markierungen, Gehwege oder Reparaturen, die gut zu regionalen Betrieben passen. Achte auf die Vorgaben zur Verkehrssicherung, sie sind ein großer Kostenpunkt."),
+    "zimmerer": dict(pf=["45422"], name="Zimmerer- und Holzbau", wer="Zimmerer- und Holzbauarbeiten",
+        text="Öffentliche Auftraggeber bauen zunehmend mit Holz, etwa Kitas, Schulerweiterungen und Aufstockungen. Ausgeschrieben werden Dachstühle, Holzrahmenbau und Fassaden aus Holz. Verlangt werden oft Nachweise zum Brandschutz und zur Qualität der Bauteile, plane dafür genug Zeit ein."),
+    "bodenbelag": dict(pf=["45432"], name="Bodenbelagsarbeiten", wer="Bodenbelags- und Parkettarbeiten",
+        text="Ausgeschrieben werden Linoleum-, PVC- und Teppichbeläge, Parkett und Sportböden, oft in Schulen, Kitas und Verwaltungsgebäuden. Bei Sanierungen gehören die Vorbereitung des Untergrunds und das Entfernen alter Beläge meist dazu. Diese Positionen solltest du besonders sorgfältig kalkulieren."),
+    "geruestbau": dict(pf=["452621"], name="Gerüstbau", wer="Gerüstbauarbeiten",
+        text="Gerüste werden oft als eigenes Los bei Sanierungen und Neubauten ausgeschrieben, manchmal auch als Rahmenvertrag über mehrere Jahre. Kalkuliert wird meist nach Fläche und Standzeit. Achte deshalb genau auf die vorgesehene Vorhaltezeit und auf die Preise für jede weitere Woche."),
+    "abbruch": dict(pf=["451111"], name="Abbrucharbeiten", wer="Abbruch-, Rückbau- und Entkernungsarbeiten",
+        text="Häufig geht es um Rückbau vor einem Neubau oder um Entkernungen vor einer Sanierung. Wichtig sind die Vorgaben zur Trennung und Entsorgung der Abfälle und zu Schadstoffen wie Asbest, für die eine eigene Sachkunde nötig ist. Die Entsorgung ist oft der größte Posten in der Kalkulation."),
     "trockenbau": dict(pf=["45324"], name="Trockenbau", wer="Trockenbau- und Gipskartonarbeiten",
         text="Häufig geht es um Ständerwände, abgehängte Decken und Brandschutzbekleidungen in Schulen, Kliniken und Verwaltungsbauten. Für Brandschutzkonstruktionen musst du geprüfte Systeme verwenden und das nachweisen können. Große Vorhaben sind oft in Bauabschnitte geteilt, das macht auch Teilleistungen für kleinere Betriebe möglich."),
 }
+REIHENFOLGE = ["malerarbeiten", "elektroinstallation", "sanitaer-heizung", "dachdeckerarbeiten", "zimmerer", "tischlerarbeiten", "fliesenarbeiten",
+               "bodenbelag", "trockenbau", "geruestbau", "abbruch", "strassenbau", "garten-landschaftsbau", "gebaeudereinigung", "winterdienst", "sicherheitsdienst"]
+GEWERKE = {k: GEWERKE[k] for k in REIHENFOLGE}
 
 e = html.escape
 
@@ -197,15 +226,16 @@ def zeitraum(stand):
     return f"{MONATE[d.month - 1]} {d.year - 2} bis {MONATE[d.month - 1]} {d.year}"
 
 
-def seite(slug, g, z, stand, vorschau, alle):
-    r = REGION
+def seite(slug, z, stand, vorschau, r, im_land, in_laendern):
+    g = GEWERKE[slug]
     pfad = f"auftraege/{slug}-{r['kurz']}.html"
     titel = f"Öffentliche Aufträge für {g['name']} in {r['name']}: Preise, Konkurrenz, offene Ausschreibungen"
     beschr = (f"Was zahlen Städte und Gemeinden in {r['name']} für {g['wer']}? Typischer Auftrag {euro(z['median'])}, "
               f"im Mittel {zahl(z['bieter_median'])} Angebote. Aktuelle Ausschreibungen und wer die Aufträge gewinnt, täglich aktualisiert.")
-    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"), (f"{g['name']} in {r['name']}", pfad)])]
+    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"),
+                                              (r["name"], f"auftraege/{r['kurz']}.html"), (g["name"], pfad)])]
     t.append(f"""
-<p class="pfad"><a href="./">Öffentliche Aufträge in {r['name']}</a> › {e(g['name'])}</p>
+<p class="pfad"><a href="./">Öffentliche Aufträge</a> › <a href="{r['kurz']}.html">{r['name']}</a> › {e(g['name'])}</p>
 <h1>Öffentliche Aufträge für {e(g['name'])} in {r['name']}</h1>
 <p class="lead">Was zahlen Städte, Gemeinden und Landesbehörden in {r['name']} für {e(g['wer'])}, wie viele Betriebe bieten mit, und welche Aufträge sind gerade offen? Alle Zahlen stammen aus echten Zuschlägen der letzten zwei Jahre.</p>
 """)
@@ -285,39 +315,99 @@ def seite(slug, g, z, stand, vorschau, alle):
 <h2>Weitere Gewerke in {r['name']}</h2>
 <ul class="mehr">
 """)
-    t.append("".join(f'  <li><a href="{s}-{r["kurz"]}.html">{e(GEWERKE[s]["name"])}</a></li>\n' for s in alle if s != slug))
-    t.append(f'  <li><a href="./">Alle Gewerke</a></li>\n</ul>\n')
+    t.append("".join(f'  <li><a href="{s}-{r["kurz"]}.html">{e(GEWERKE[s]["name"])}</a></li>\n' for s in im_land if s != slug))
+    t.append(f'  <li><a href="{r["kurz"]}.html">Alle Gewerke in {r["name"]}</a></li>\n</ul>\n')
+    andere = [c for c in in_laendern if c != r["code"]]
+    if andere:
+        t.append(f'<h2>{e(g["name"])} in anderen Bundesländern</h2>\n<ul class="mehr">\n')
+        t.append("".join(f'  <li><a href="{slug}-{LAENDER[c][1]}.html">{LAENDER[c][0]}</a></li>\n' for c in andere))
+        t.append(f'  <li><a href="{slug}.html">Vergleich aller Bundesländer</a></li>\n</ul>\n')
     t.append(fuss(stand))
     return pfad, "".join(t)
 
 
-def uebersicht(daten, stand, vorschau, alle):
-    r = REGION
-    pfad = "auftraege/"
-    titel = f"Öffentliche Aufträge in {r['name']} nach Gewerk: Preise und offene Ausschreibungen"
-    beschr = f"Was Städte, Gemeinden und Behörden in {r['name']} für Handwerksleistungen zahlen, wie viel Konkurrenz es gibt und welche Ausschreibungen gerade offen sind. Aus echten Zuschlägen."
-    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", pfad)])]
-    t.append(f"""
-<p class="pfad">Öffentliche Aufträge</p>
-<h1>Öffentliche Aufträge in {r['name']} nach Gewerk</h1>
-<p class="lead">Wie viel zahlen öffentliche Auftraggeber in {r['name']} für typische Handwerksleistungen, wie viele Betriebe bieten mit, und was ist gerade offen? Wähl dein Gewerk.</p>
-<div class="kacheln gewerke">
-""")
-    for s in alle:
-        z = daten[s]
-        t.append(f'  <a class="kachel" href="{s}-{r["kurz"]}.html"><b>{e(GEWERKE[s]["name"])}</b>'
-                 f'<span>typisch {euro(z["median"])} · {zahl(z["vergaben_1j"])} Vergaben im Jahr</span></a>\n')
-    t.append(f"""</div>
-<p class="hinweis">Typisch heißt: der mittlere Auftragswert (Median) aus Zuschlägen der letzten zwei Jahre.</p>
-
+BOX = f"""
 <div class="box">
   <h2>Keine Ausschreibung mehr verpassen</h2>
   <p>Bieterblick durchsucht jeden Tag alle öffentlichen Ausschreibungen in Deutschland und schickt dir morgens die passenden für deinen Betrieb und deinen Umkreis.</p>
   <a class="btn" href="{TESTEN}">30 Tage kostenlos testen</a>
   <p class="hinweis" style="margin:12px 0 0">Ohne Zahlungsdaten, endet automatisch.</p>
 </div>
+"""
+
+
+def land_seite(r, gw, stand, vorschau, im_land, seiten_land):
+    pfad = f"auftraege/{r['kurz']}.html"
+    titel = f"Öffentliche Aufträge in {r['name']} nach Gewerk: Preise und offene Ausschreibungen"
+    beschr = f"Was Städte, Gemeinden und Behörden in {r['name']} für Handwerk und Dienstleistungen zahlen, wie viel Konkurrenz es gibt und welche Ausschreibungen gerade offen sind. Aus echten Zuschlägen."
+    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"), (r["name"], pfad)])]
+    offen = sum(gw[s].get("offen_n") or 0 for s in im_land)
+    t.append(f"""
+<p class="pfad"><a href="./">Öffentliche Aufträge</a> › {r['name']}</p>
+<h1>Öffentliche Aufträge in {r['name']} nach Gewerk</h1>
+<p class="lead">Wie viel zahlen öffentliche Auftraggeber in {r['name']} für typische Leistungen, wie viele Betriebe bieten mit, und was ist gerade offen? Wähl dein Gewerk.</p>
+<div class="kacheln gewerke">
+""")
+    for s in im_land:
+        z = gw[s]
+        t.append(f'  <a class="kachel" href="{s}-{r["kurz"]}.html"><b>{e(GEWERKE[s]["name"])}</b>'
+                 f'<span>typisch {euro(z["median"])} · {zahl(z["vergaben_1j"])} Vergaben im Jahr · {zahl(z.get("offen_n") or 0)} offen</span></a>\n')
+    t.append(f"""</div>
+<p class="hinweis">Typisch heißt: der mittlere Auftragswert (Median) aus Zuschlägen der letzten zwei Jahre. Offen: Ausschreibungen mit laufender Frist, Stand {datum(stand)}, zusammen {zahl(offen)}.</p>
+{BOX}
+<h2>Andere Bundesländer</h2>
+<ul class="mehr">
+""")
+    t.append("".join(f'  <li><a href="{k}.html">{n}</a></li>\n' for c, (n, k) in LAENDER.items() if c != r["code"] and c in seiten_land))
+    t.append("</ul>\n" + fuss(stand))
+    return pfad, "".join(t)
+
+
+def gewerk_seite(slug, laender, stand, vorschau, in_laendern):
+    g = GEWERKE[slug]
+    pfad = f"auftraege/{slug}.html"
+    titel = f"Öffentliche Aufträge für {g['name']}: Preise und Konkurrenz in allen Bundesländern"
+    beschr = f"Was zahlen öffentliche Auftraggeber für {g['wer']}? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen im Vergleich der Bundesländer."
+    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"), (g["name"], pfad)])]
+    t.append(f"""
+<p class="pfad"><a href="./">Öffentliche Aufträge</a> › {e(g['name'])}</p>
+<h1>Öffentliche Aufträge für {e(g['name'])} in Deutschland</h1>
+<p class="lead">So viel zahlen Städte, Gemeinden und Behörden für {e(g['wer'])}, und so viel Konkurrenz gibt es, aufgeteilt nach Bundesland. Wähl dein Bundesland für Details, offene Ausschreibungen und die wichtigsten Auftraggeber.</p>
+<ul class="liste">
+""")
+    for c in sorted(in_laendern, key=lambda c: -laender[c][slug]["vergaben_1j"]):
+        z = laender[c][slug]
+        t.append(f'  <li><div><b><a href="{slug}-{LAENDER[c][1]}.html" style="color:inherit">{LAENDER[c][0]}</a></b>'
+                 f'<small>{zahl(z["vergaben_1j"])} Vergaben im Jahr · im Mittel {zahl(z["bieter_median"] or 0)} Angebote · {zahl(z.get("offen_n") or 0)} offen</small></div>'
+                 f'<span>typisch {euro(z["median"])}</span></li>\n')
+    t.append(f"""</ul>
+<p class="hinweis">Sortiert nach der Zahl der Vergaben in den letzten 12 Monaten. Bundesländer mit zu wenigen Zuschlägen für eine verlässliche Aussage fehlen.</p>
+<section class="ratgeber">
+  <h2>Was ist bei {e(g['name'])} typisch?</h2>
+  <p>{e(g['text'])}</p>
+</section>
+{BOX}
 """)
     t.append(fuss(stand))
+    return pfad, "".join(t)
+
+
+def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk):
+    pfad = "auftraege/"
+    titel = "Öffentliche Aufträge für Handwerk und Dienstleister: Preise, Konkurrenz, offene Ausschreibungen"
+    beschr = "Was zahlen Städte, Gemeinden und Behörden für Handwerk und Dienstleistungen? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen nach Bundesland und Gewerk."
+    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", pfad)])]
+    t.append("""
+<p class="pfad">Öffentliche Aufträge</p>
+<h1>Öffentliche Aufträge nach Bundesland und Gewerk</h1>
+<p class="lead">Wie viel zahlen öffentliche Auftraggeber für Handwerk und Dienstleistungen, wie viele Betriebe bieten mit, und was ist gerade offen? Alle Zahlen stammen aus echten Zuschlägen der letzten zwei Jahre.</p>
+<h2>Nach Bundesland</h2>
+<ul class="mehr">
+""")
+    t.append("".join(f'  <li><a href="{LAENDER[c][1]}.html">{LAENDER[c][0]}</a></li>\n' for c in seiten_land))
+    t.append('</ul>\n<h2>Nach Gewerk</h2>\n<ul class="mehr">\n')
+    t.append("".join(f'  <li><a href="{s}.html">{e(GEWERKE[s]["name"])}</a></li>\n' for s in seiten_gewerk))
+    t.append("</ul>\n" + BOX + fuss(stand))
     return pfad + "index.html", "".join(t)
 
 
@@ -325,20 +415,32 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     vorschau = "--vorschau" in sys.argv
     daten = json.loads(Path(args[0]).read_text(encoding="utf-8"))
-    ziel = Path(args[1])
-    stand, gw = daten["stand"], daten["gewerke"]
-    alle = [s for s in GEWERKE if s in gw and (gw[s].get("vergaben_2j") or 0) >= MIN_VERGABEN and gw[s].get("median")]
-    (ziel / "auftraege").mkdir(parents=True, exist_ok=True)
+    ziel = Path(args[1]) / "auftraege"
+    stand, laender = daten["stand"], daten["laender"]
+    ok = lambda z: (z.get("vergaben_2j") or 0) >= MIN_VERGABEN and z.get("median")
+    im_land = {c: [s for s in GEWERKE if s in laender.get(c, {}) and ok(laender[c][s])] for c in LAENDER}
+    in_laendern = {s: [c for c in LAENDER if s in im_land[c]] for s in GEWERKE}
+    seiten_land = [c for c in LAENDER if im_land[c]]
+    seiten_gewerk = [s for s in GEWERKE if len(in_laendern[s]) >= 2]
+    ziel.mkdir(parents=True, exist_ok=True)
+    for alt in ziel.glob("*.html"):
+        alt.unlink()
     pfade = []
-    for s in alle:
-        pfad, inhalt = seite(s, GEWERKE[s], gw[s], stand, vorschau, alle)
-        (ziel / pfad).write_text(inhalt, encoding="utf-8")
+
+    def schreib(pfad, inhalt):
+        (ziel.parent / (pfad + "index.html" if pfad.endswith("/") else pfad)).write_text(inhalt, encoding="utf-8")
         pfade.append(pfad)
-    pfad, inhalt = uebersicht(gw, stand, vorschau, alle)
-    (ziel / pfad).write_text(inhalt, encoding="utf-8")
-    print(f"{len(alle)} Gewerk-Seiten und Übersicht in {ziel / 'auftraege'}")
-    # für die Sitemap
-    (ziel / "auftraege" / "seiten.txt").write_text("\n".join(["auftraege/"] + pfade) + "\n", encoding="utf-8")
+
+    for c in seiten_land:
+        r = region(c)
+        for s in im_land[c]:
+            schreib(*seite(s, laender[c][s], stand, vorschau, r, im_land[c], in_laendern[s]))
+        schreib(*land_seite(r, laender[c], stand, vorschau, im_land[c], seiten_land))
+    for s in seiten_gewerk:
+        schreib(*gewerk_seite(s, laender, stand, vorschau, in_laendern[s]))
+    schreib(*haupt_seite(stand, vorschau, seiten_land, seiten_gewerk))
+    print(f"{len(pfade)} Seiten in {ziel}")
+    (ziel / "seiten.txt").write_text("\n".join(pfade) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
