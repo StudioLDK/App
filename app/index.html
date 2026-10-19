@@ -687,6 +687,26 @@ const BRANCHEN = [
   ['buero',    'Büro und Druck',          ['büromaterial','druck','papier','büromöbel'], ['301','798','3912']]
 ];
 
+/* Gewerke der öffentlichen Seiten (auftraege/, seo/bauen.py): Testen-Links bringen ?gewerk=... mit, die Einrichtung übernimmt das */
+const GEWERKE = {
+  'malerarbeiten':        ['Malerarbeiten', ['malerarbeiten','anstrich','lackier'], ['45442']],
+  'elektroinstallation':  ['Elektroarbeiten', ['elektro','elektroinstallation','beleuchtung','blitzschutz','photovoltaik'], ['45311','45312','45314','45315','45316','45317']],
+  'sanitaer-heizung':     ['Sanitär, Heizung, Lüftung', ['heizung','lüftung','sanitär','raumlufttechnik','wärmepumpe'], ['4533']],
+  'dachdeckerarbeiten':   ['Dachdeckerarbeiten', ['dachdecker','dachsanierung','dachabdichtung','klempner'], ['45261']],
+  'zimmerer':             ['Zimmerer- und Holzbau', ['zimmerer','holzbau','dachstuhl'], ['45422']],
+  'tischlerarbeiten':     ['Tischler- und Fensterbau', ['tischler','schreiner','fenster','innentüren'], ['45421']],
+  'fliesenarbeiten':      ['Fliesenarbeiten', ['fliesen'], ['45431']],
+  'bodenbelag':           ['Bodenbelagsarbeiten', ['bodenbelag','parkett','linoleum'], ['45432']],
+  'trockenbau':           ['Trockenbau', ['trockenbau','gipskarton','ständerwand'], ['45324']],
+  'geruestbau':           ['Gerüstbau', ['gerüst'], ['452621']],
+  'abbruch':              ['Abbrucharbeiten', ['abbruch','rückbau','entkernung'], ['451111']],
+  'strassenbau':          ['Straßenbau', ['straßenbau','tiefbau','asphalt'], ['45233']],
+  'garten-landschaftsbau':['Garten- und Landschaftsbau', ['landschaftsbau','grünpflege','außenanlagen'], ['451127','7731']],
+  'gebaeudereinigung':    ['Gebäudereinigung', ['reinigung','unterhaltsreinigung','glasreinigung'], ['9091']],
+  'winterdienst':         ['Winterdienst', ['winterdienst','schneeräumung'], ['90620','90630']],
+  'sicherheitsdienst':    ['Sicherheitsdienst', ['bewachung','sicherheitsdienst','objektschutz'], ['7971']]
+};
+
 /* NUTS-1-Codes der Bundesländer */
 const BL = {DE1:'Baden-Württemberg',DE2:'Bayern',DE3:'Berlin',DE4:'Brandenburg',DE5:'Bremen',DE6:'Hamburg',DE7:'Hessen',DE8:'Mecklenburg-Vorpommern',DE9:'Niedersachsen',DEA:'Nordrhein-Westfalen',DEB:'Rheinland-Pfalz',DEC:'Saarland',DED:'Sachsen',DEE:'Sachsen-Anhalt',DEF:'Schleswig-Holstein',DEG:'Thüringen'};
 
@@ -930,6 +950,12 @@ function einladungsToken(){ try { return sessionStorage.getItem('ldk-invite') ||
 function hatEinladung(){ return !!einladungsToken(); }
 // Tester-Link (?testen=CODE): Registrierung erlaubt, gültiger Code gibt 30 statt 7 Tage (prüft die Datenbank)
 function testerCode(){ try { return sessionStorage.getItem('ldk-tester') || ''; } catch(e){ return ''; } }
+// Von einer Gewerk- oder Stadt-Seite (&gewerk=malerarbeiten&land=DE2 oder &ort=DE271): merken, die Einrichtung füllt damit vor
+function vorauswahl(){
+  try { const v = JSON.parse(localStorage.getItem('ldk-vorauswahl') || 'null'); if (v && Date.now() - v.t < 30 * 86400000) return v; } catch(e){}
+  const m = S.user && S.user.user_metadata && S.user.user_metadata.vorauswahl;
+  return m && typeof m === 'object' ? m : null;
+}
 let mode = 'login';
 function setMode(m){
   if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()) m = 'login';
@@ -981,6 +1007,10 @@ function setMode(m){
   const qs = new URLSearchParams(location.search);
   const tok = qs.get('einladung');
   const tester = (qs.get('testen') || '').trim().toLowerCase();
+  const gewerk = qs.get('gewerk'), region = (qs.get('ort') || qs.get('land') || '').toUpperCase();
+  if (GEWERKE[gewerk] || /^DE[0-9A-G]([0-9A-Z]{2})?$/.test(region)){
+    try { localStorage.setItem('ldk-vorauswahl', JSON.stringify({ gewerk:GEWERKE[gewerk] ? gewerk : null, region:/^DE[0-9A-G]([0-9A-Z]{2})?$/.test(region) ? region : null, t:Date.now() })); } catch(e){}
+  }
   if (tester){ try { sessionStorage.setItem('ldk-tester', tester); } catch(e){} if (!tok) history.replaceState(null, '', location.pathname + location.hash); }
   if (tok){
     try { sessionStorage.setItem('ldk-invite', tok); } catch(e){}
@@ -1033,7 +1063,7 @@ $('loginForm').addEventListener('submit', async e => {
   const label = $('loginBtn').textContent;
   $('loginBtn').disabled = true; $('loginBtn').textContent = mode === 'register' ? 'Lege Konto an …' : 'Melde an …';
   const res = mode === 'register'
-    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname + (einladungsToken() ? '?einladung=' + encodeURIComponent(einladungsToken()) : ''), data:{ agb_akzeptiert: new Date().toISOString(), ...(testerCode() ? { tester: testerCode() } : {}) } } })
+    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname + (einladungsToken() ? '?einladung=' + encodeURIComponent(einladungsToken()) : ''), data:{ agb_akzeptiert: new Date().toISOString(), ...(testerCode() ? { tester: testerCode() } : {}), ...(vorauswahl() ? { vorauswahl: { gewerk:vorauswahl().gewerk, region:vorauswahl().region } } : {}) } } })
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
@@ -2253,17 +2283,24 @@ function adminTester(t){
 $('admReload').addEventListener('click', openAdmin);
 
 /* ---------- Einrichtung beim ersten Login ---------- */
-const ONB = { step:0, d:null };
+const ONB = { step:0, d:null, gewerk:null };
 function onbNoetig(){ return S.feat.prefs2 && !S.locked && !S.prefs.onboarding_am && !hasPrefs(S.prefs) && !S.prefsErr; }
 async function openOnboarding(){
   ONB.step = 0;
-  ONB.d = { branchen:[], suchbegriffe:[], cpv:[], sitz_nuts:null, umkreis_km:100, mail_frequenz:'taeglich', text:'', vorschlag:null, gewaehlt:[] };
+  ONB.d = { branchen:[], suchbegriffe:[], cpv:[], sitz_nuts:null, umkreis_km:100, mail_frequenz:'taeglich', text:'', vorschlag:null, gewaehlt:[], gewerk:null, bundeslaender:[] };
+  const v = vorauswahl();
+  ONB.gewerk = null;
+  if (v){
+    if (GEWERKE[v.gewerk]){ ONB.gewerk = ONB.d.gewerk = v.gewerk; onbOwn(''); }
+    if (BL[v.region]) ONB.d.bundeslaender = [BL[v.region]];
+    else if (v.region && BL[String(v.region).slice(0, 3)]) await loadNuts().then(() => { if (S.nuts && S.nuts[v.region]) ONB.d.sitz_nuts = v.region; }, () => {});
+  }
   loadNuts();
   renderOnb();
   try { $('onbDlg').showModal(); } catch(e){ $('onbDlg').setAttribute('open',''); }
 }
 function onbTreffer(){
-  const p = { ...EMPTY_PREFS, suchbegriffe:ONB.d.suchbegriffe, cpv:ONB.d.cpv, sitz_nuts:ONB.d.sitz_nuts, umkreis_km:ONB.d.sitz_nuts ? ONB.d.umkreis_km : null };
+  const p = { ...EMPTY_PREFS, suchbegriffe:ONB.d.suchbegriffe, cpv:ONB.d.cpv, bundeslaender:ONB.d.bundeslaender, sitz_nuts:ONB.d.sitz_nuts, umkreis_km:ONB.d.sitz_nuts ? ONB.d.umkreis_km : null };
   return S.rows.filter(r => isOpen(r) && matchOf(r, p)).length;
 }
 function renderOnb(){
@@ -2276,14 +2313,15 @@ function renderOnb(){
   if (st === 0){
     $('onbTitle').textContent = 'Was macht deine Firma?';
     $('onbLead').textContent = 'Beschreib in ein paar Worten, was ihr macht. Wir suchen in über 200.000 vergebenen Aufträgen, was dazu passt. Fachbegriffe oder CPV-Codes brauchst du nicht.';
-    const own = h('input',{id:'onbOwn', placeholder:'Eigene Suchbegriffe, mit Komma getrennt', autocomplete:'off', value:d.suchbegriffe.filter(w => !BRANCHEN.some(b => b[2].includes(w))).join(', ')});
+    const own = h('input',{id:'onbOwn', placeholder:'Eigene Suchbegriffe, mit Komma getrennt', autocomplete:'off', value:d.suchbegriffe.filter(w => !BRANCHEN.some(b => b[2].includes(w)) && !(d.gewerk && GEWERKE[d.gewerk][1].includes(w))).join(', ')});
     own.addEventListener('change', () => onbOwn(own.value));
     const txt = h('textarea',{id:'onbText', placeholder:'z.B. Wir sind Fliesenleger und machen auch Estrich und Abdichtungen', maxlength:'500'});
     txt.value = d.text;
     const los = h('button',{class:'btn btn-ghost', type:'button', id:'onbFinden', onclick:onbVorschlag}, d.vorschlag ? 'Neu suchen' : 'Passende Aufträge finden');
     body.replaceChildren(h('div',{class:'onb-text'}, h('label',{for:'onbText', class:'sr-only'}, 'Was macht ihr?'), txt, los), onbVorschlagListe(),
       h('p',{class:'onb-oder'}, d.vorschlag ? 'Zusätzlich Branchen auswählen' : 'Oder Branchen auswählen'),
-      h('div',{class:'chipgrid'}, ...BRANCHEN.map(([k, l, worte, cpv]) => h('button',{type:'button','aria-pressed':String(d.branchen.includes(k)), onclick:()=>{
+      h('div',{class:'chipgrid'}, ...(ONB.gewerk ? [h('button',{type:'button','aria-pressed':String(d.gewerk === ONB.gewerk), onclick:()=>{
+      d.gewerk = d.gewerk ? null : ONB.gewerk; d.text = $('onbText').value; onbOwn($('onbOwn').value); renderOnb(); }}, GEWERKE[ONB.gewerk][0])] : []), ...BRANCHEN.map(([k, l, worte, cpv]) => h('button',{type:'button','aria-pressed':String(d.branchen.includes(k)), onclick:()=>{
       if (d.branchen.includes(k)) d.branchen.splice(d.branchen.indexOf(k), 1); else d.branchen.push(k);
       d.text = $('onbText').value; onbOwn($('onbOwn').value); renderOnb(); }}, l))),
       h('div',{class:'field', style:'margin-top:14px'}, h('label',{for:'onbOwn'}, 'Fehlt etwas?'), own));
@@ -2294,9 +2332,11 @@ function renderOnb(){
     const dl = h('datalist',{id:'nutsList2'}, ...(S.nuts ? Object.entries(S.nuts).filter(([k]) => k.length === 5).sort((a, b) => a[1][0].localeCompare(b[1][0], 'de')).map(([k, x]) => h('option',{value:x[0]})) : []));
     const km = h('select',{id:'onbKm'}, ...[['30','30 km'],['50','50 km'],['100','100 km'],['150','150 km'],['200','200 km'],['300','300 km'],['','ganz Deutschland']].map(([v, l]) => h('option',{value:v, selected:String(d.umkreis_km || '') === v}, l)));
     const info = h('p',{class:'onb-count'});
-    const upd = () => { d.sitz_nuts = sitzAusText(inp.value); d.umkreis_km = +km.value || null; info.replaceChildren(...(d.sitz_nuts && d.umkreis_km ? ['Gerade passend: ', h('b',{}, onbTreffer()), ' offene Ausschreibungen.'] : inp.value && !d.sitz_nuts ? ['Wähl einen Eintrag aus der Liste.'] : ['Gerade passend in ganz Deutschland: ', h('b',{}, onbTreffer())])); };
+    const upd = () => { d.sitz_nuts = sitzAusText(inp.value); d.umkreis_km = +km.value || null; info.replaceChildren(...(d.sitz_nuts && d.umkreis_km ? ['Gerade passend: ', h('b',{}, onbTreffer()), ' offene Ausschreibungen.'] : inp.value && !d.sitz_nuts ? ['Wähl einen Eintrag aus der Liste.'] : ['Gerade passend in ' + (d.bundeslaender.join(', ') || 'ganz Deutschland') + ': ', h('b',{}, onbTreffer())])); };
     inp.addEventListener('input', upd); km.addEventListener('change', upd);
-    body.replaceChildren(h('div',{class:'row2'}, h('div',{class:'field'}, h('label',{for:'onbSitz'}, 'Firmensitz'), inp, dl), h('div',{class:'field', style:'flex:0 0 180px;min-width:0'}, h('label',{for:'onbKm'}, 'Umkreis'), km)), info);
+    const bl = d.bundeslaender.length ? h('p',{class:'onb-count'}, 'Von der Seite übernommen: nur Ausschreibungen in ' + d.bundeslaender.join(', ') + '. ',
+      h('button',{type:'button', class:'linkbtn ag', onclick:()=>{ d.bundeslaender = []; renderOnb(); }}, 'Ganz Deutschland zeigen')) : null;
+    body.replaceChildren(h('div',{class:'row2'}, h('div',{class:'field'}, h('label',{for:'onbSitz'}, 'Firmensitz'), inp, dl), h('div',{class:'field', style:'flex:0 0 180px;min-width:0'}, h('label',{for:'onbKm'}, 'Umkreis'), km)), bl, info);
     if (!S.nuts) loadNuts().then(() => { if (ONB.step === 1) renderOnb(); });
     upd();
   } else {
@@ -2343,6 +2383,7 @@ function onbVorschlagListe(){
 function onbOwn(txt){
   const d = ONB.d;
   const worte = [], cpv = [];
+  if (d.gewerk){ worte.push(...GEWERKE[d.gewerk][1]); cpv.push(...GEWERKE[d.gewerk][2]); }
   for (const b of BRANCHEN) if (d.branchen.includes(b[0])){ worte.push(...b[2]); cpv.push(...b[3]); }
   for (const g of (d.vorschlag || [])) if (d.gewaehlt.includes(g.cpv)){ cpv.push(g.cpv); for (const w of g.woerter || []) worte.push(norm(w)); }
   for (const w of String(txt || '').split(',')){ const t = norm(w); if (t.length >= 2) worte.push(t); }
@@ -2352,12 +2393,13 @@ async function onbSpeichern(fertig){
   const d = ONB.d;
   const row = { user_id:S.user.id, updated_at:new Date().toISOString(), onboarding_am:new Date().toISOString() };
   if (fertig) Object.assign(row, { suchbegriffe:d.suchbegriffe, cpv:d.cpv, branchen:d.branchen, sitz_nuts:d.sitz_nuts, umkreis_km:d.sitz_nuts ? d.umkreis_km : null, mail_frequenz:d.mail_frequenz,
-    ausschluss:S.prefs.ausschluss, bundeslaender:S.prefs.bundeslaender, firma:S.prefs.firma || null, beschreibung:(d.text || '').trim() || S.prefs.beschreibung || null });
+    ausschluss:S.prefs.ausschluss, bundeslaender:d.bundeslaender.length ? d.bundeslaender : S.prefs.bundeslaender, firma:S.prefs.firma || null, beschreibung:(d.text || '').trim() || S.prefs.beschreibung || null });
   $('onbNext').disabled = true;
   const { error } = await S.db.from('settings').upsert(row, { onConflict:'user_id' });
   $('onbNext').disabled = false;
   if (error){ $('onbMsg').textContent = 'Speichern hat nicht geklappt: ' + error.message; return false; }
   S.prefs = { ...S.prefs, ...row };
+  try { localStorage.removeItem('ldk-vorauswahl'); } catch(e){}
   applyPrefs(S.prefs);
   if (hasPrefs(S.prefs)) S.view = 'match';
   return true;

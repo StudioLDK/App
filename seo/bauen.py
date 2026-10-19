@@ -14,6 +14,15 @@ from pathlib import Path
 
 BASIS = "https://bieterblick.studioldk.de"
 TESTEN = BASIS + "/?testen=bb-handwerk"
+# Ziel der Testen-Knöpfe auf der Seite, die gerade gebaut wird. Gewerk und Ort hängen mit dran,
+# die App füllt damit nach der Registrierung das Suchprofil vor. In der Vorschau geht es zur Vorschau-App.
+link = TESTEN
+
+
+def setze_link(vorschau, gewerk=None, land=None, ort=None):
+    global link
+    link = ("/vorschau/?testen=bb-handwerk" if vorschau else TESTEN) + "".join(
+        f"&{k}={v}" for k, v in (("gewerk", gewerk), ("land", land), ("ort", ort)) if v)
 MIN_VERGABEN = 25  # darunter keine Seite, zu wenig Daten
 MAX_ORTE = 100  # Städte und Landkreise: erst die größten, nach und nach mehr (Google mag keine Massen auf einmal)
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
@@ -345,8 +354,8 @@ def tage(frist, stand):
 
 def knopf(text="30 Tage kostenlos testen", klein=False):
     if klein:
-        return f'<a class="btn klein" href="{TESTEN}">Kostenlos testen</a>'
-    return f'<a class="btn" href="{TESTEN}">{text} {PFEIL}</a>'
+        return f'<a class="btn klein" href="{e(link)}">Kostenlos testen</a>'
+    return f'<a class="btn" href="{e(link)}">{text} {PFEIL}</a>'
 
 
 def kopf(titel, beschreibung, pfad, vorschau, breadcrumb):
@@ -397,7 +406,7 @@ def fuss(stand, leiste=""):
 
 
 def leiste(text):
-    return f'<div class="leiste" aria-hidden="true"><span>{e(text)}</span><a class="btn" href="{TESTEN}" tabindex="-1">Kostenlos testen</a></div>'
+    return f'<div class="leiste" aria-hidden="true"><span>{e(text)}</span><a class="btn" href="{e(link)}" tabindex="-1">Kostenlos testen</a></div>'
 
 
 def zeitraum(stand):
@@ -438,6 +447,7 @@ def vergleich_liste(slug, laender, codes, hier=None):
 
 def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
     g = GEWERKE[slug]
+    setze_link(vorschau, gewerk=slug, land=r["code"])
     pfad = f"auftraege/{slug}-{r['kurz']}.html"
     titel = f"Öffentliche Aufträge für {g['name']} in {r['name']}: Preise, Konkurrenz, offene Ausschreibungen"
     beschr = (f"Was zahlen Städte und Gemeinden in {r['name']} für {g['wer']}? Typischer Auftrag {euro(z['median'])}, "
@@ -547,7 +557,7 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
             t.append(f'  <li><b>{e(a)}</b><small>{e(b)}</small><span class="frist"><em{knapp}>{rest}</em><span>Frist {datum(c)}</span></span></li>\n')
         t.append("</ul>\n")
         mehr = offen_n - len(of)
-        t.append(f'<p class="offen-mehr">{"Eine Auswahl, " + zahl(mehr) + " weitere stehen in Bieterblick. " if mehr > 0 else ""}Alle mit Unterlagen und Link zur Vergabeplattform findest du in der App. <a href="{TESTEN}">Jetzt ansehen</a></p>\n')
+        t.append(f'<p class="offen-mehr">{"Eine Auswahl, " + zahl(mehr) + " weitere stehen in Bieterblick. " if mehr > 0 else ""}Alle mit Unterlagen und Link zur Vergabeplattform findest du in der App. <a href="{e(link)}">Jetzt ansehen</a></p>\n')
     else:
         t.append('<p class="unter">Gerade ist keine passende Ausschreibung mit laufender Frist offen. Neue kommen fast jeden Tag dazu, Bieterblick meldet sie dir am nächsten Morgen.</p>\n')
     t.append("</section>\n")
@@ -617,6 +627,7 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
 
 
 def land_seite(r, gw, stand, vorschau, im_land, seiten_land, orte_hier=()):
+    setze_link(vorschau, land=r["code"])
     pfad = f"auftraege/{r['kurz']}.html"
     titel = f"Öffentliche Aufträge in {r['name']} nach Gewerk: Preise und offene Ausschreibungen"
     beschr = f"Was Städte, Gemeinden und Behörden in {r['name']} für Handwerk und Dienstleistungen zahlen, wie viel Konkurrenz es gibt und welche Ausschreibungen gerade offen sind. Aus echten Zuschlägen."
@@ -661,6 +672,7 @@ def land_seite(r, gw, stand, vorschau, im_land, seiten_land, orte_hier=()):
 
 def gewerk_seite(slug, laender, stand, vorschau, in_laendern):
     g = GEWERKE[slug]
+    setze_link(vorschau, gewerk=slug)
     pfad = f"auftraege/{slug}.html"
     titel = f"Öffentliche Aufträge für {g['name']}: Preise und Konkurrenz in allen Bundesländern"
     beschr = f"Was zahlen öffentliche Auftraggeber für {g['wer']}? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen im Vergleich der Bundesländer."
@@ -698,6 +710,7 @@ def gewerk_seite(slug, laender, stand, vorschau, in_laendern):
 
 
 def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern, orte=()):
+    setze_link(vorschau)
     pfad = "auftraege/"
     titel = "Öffentliche Aufträge für Handwerk und Dienstleister: Preise, Konkurrenz, offene Ausschreibungen"
     beschr = "Was zahlen Städte, Gemeinden und Behörden für Handwerk und Dienstleistungen? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen nach Bundesland und Gewerk."
@@ -740,6 +753,7 @@ def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, i
 
 
 def ort_seite(code, z, stand, vorschau, land, im_land_gewerke, nachbarn, land_da=True):
+    setze_link(vorschau, ort=code)
     r = region(land)
     land_link = f"{r['kurz']}.html" if land_da else "./"
     name = z["name"]
@@ -784,7 +798,7 @@ def ort_seite(code, z, stand, vorschau, land, im_land_gewerke, nachbarn, land_da
             t.append(f'  <li><b>{e(a)}</b><small>{e(b)}</small><span class="frist"><em{knapp}>{rest}</em><span>Frist {datum(c)}</span></span></li>\n')
         t.append("</ul>\n")
         mehr = offen_n - len(of)
-        t.append(f'<p class="offen-mehr">{"Die nächsten nach Frist, " + zahl(mehr) + " weitere stehen in Bieterblick. " if mehr > 0 else ""}Alle mit Unterlagen und Link zur Vergabeplattform findest du in der App. <a href="{TESTEN}">Jetzt ansehen</a></p>\n')
+        t.append(f'<p class="offen-mehr">{"Die nächsten nach Frist, " + zahl(mehr) + " weitere stehen in Bieterblick. " if mehr > 0 else ""}Alle mit Unterlagen und Link zur Vergabeplattform findest du in der App. <a href="{e(link)}">Jetzt ansehen</a></p>\n')
     t.append("</section>\n")
 
     # Was wird ausgeschrieben (unsere Gewerke)
