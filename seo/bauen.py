@@ -15,6 +15,7 @@ from pathlib import Path
 BASIS = "https://bieterblick.studioldk.de"
 TESTEN = BASIS + "/?testen=bb-handwerk"
 MIN_VERGABEN = 25  # darunter keine Seite, zu wenig Daten
+MAX_ORTE = 100  # Städte und Landkreise: erst die größten, nach und nach mehr (Google mag keine Massen auf einmal)
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
 
 BERATER = "die Auftragsberatungsstelle in deinem Bundesland oder deine Handwerkskammer"
@@ -127,7 +128,7 @@ def gewinner(liste, k=5):
     return out[:k]
 
 
-def offene(liste):
+def offene(liste, k=6):
     seen, out = set(), []
     for titel, stelle_, frist in liste:
         titel = re.sub(r"\s+", " ", titel).strip()
@@ -139,7 +140,7 @@ def offene(liste):
             continue
         seen.add(key)
         out.append((titel, stelle(stelle_), frist))
-    return out[:6]
+    return out[:k]
 
 
 CSS = """@font-face{font-family:'Archivo';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:62% 125%;src:url(/app/fonts/archivo-latin-wdth-normal.woff2) format('woff2-variations');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -250,10 +251,11 @@ h2{font-weight:850;font-stretch:115%;font-size:clamp(27px,4.6vw,44px);line-heigh
 .vergleich .bal{height:14px;border-radius:99px;background:var(--plan);overflow:hidden}
 .vergleich .bal i{display:block;height:100%;border-radius:99px;background:var(--linie2);transform-origin:left center}
 .vergleich .wert{font-size:14px;color:var(--graphit);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.vergleich div.gewerk-zeile{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 10px}
 .vergleich .hier{background:#FFF1F0}
 .vergleich .hier .land{color:var(--rot)}
 .vergleich .hier .bal i{background:var(--rot)}
-@media (max-width:520px){.vergleich a{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.vergleich .bal{grid-column:1 / span 2;grid-row:2}}
+@media (max-width:520px){.vergleich a,.vergleich div.gewerk-zeile{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.vergleich .bal{grid-column:1 / span 2;grid-row:2}}
 /* CTA */
 .nacht{background:var(--nacht);color:#fff}
 .cta{position:relative;overflow:hidden;border-radius:28px;margin:72px 0 0;padding:40px 24px;background:var(--nacht);color:#fff;isolation:isolate}
@@ -614,7 +616,7 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
     return pfad, "".join(t)
 
 
-def land_seite(r, gw, stand, vorschau, im_land, seiten_land):
+def land_seite(r, gw, stand, vorschau, im_land, seiten_land, orte_hier=()):
     pfad = f"auftraege/{r['kurz']}.html"
     titel = f"Öffentliche Aufträge in {r['name']} nach Gewerk: Preise und offene Ausschreibungen"
     beschr = f"Was Städte, Gemeinden und Behörden in {r['name']} für Handwerk und Dienstleistungen zahlen, wie viel Konkurrenz es gibt und welche Ausschreibungen gerade offen sind. Aus echten Zuschlägen."
@@ -646,6 +648,10 @@ def land_seite(r, gw, stand, vorschau, im_land, seiten_land):
     t.append("</div>\n</section>\n")
     t.append(cta(f"Alle Ausschreibungen in {r['name']} im Blick",
                  "Bieterblick durchsucht jeden Tag alle öffentlichen Ausschreibungen in Deutschland und schickt dir morgens die passenden für deinen Betrieb und deinen Umkreis."))
+    if orte_hier:
+        t.append(f'<section class="w abschnitt" aria-labelledby="orte"><p class="marke-zeile">Vor Ort</p><h2 id="orte">Städte und Landkreise in {r["name"]}</h2>\n<ul class="chips">\n')
+        t.append("".join(f'  <li><a href="ausschreibungen-{z["slug"]}.html">{e(z["name"])}</a></li>\n' for z in orte_hier))
+        t.append("</ul>\n</section>\n")
     t.append('<section class="w abschnitt" aria-labelledby="laender"><p class="marke-zeile">Weiter</p><h2 id="laender">Andere Bundesländer</h2>\n<ul class="chips">\n')
     t.append("".join(f'  <li><a href="{k}.html">{n}</a></li>\n' for c, (n, k) in LAENDER.items() if c != r["code"] and c in seiten_land))
     t.append('  <li class="alle"><a href="./">Alle Bundesländer und Gewerke</a></li>\n</ul>\n</section>\n')
@@ -691,7 +697,7 @@ def gewerk_seite(slug, laender, stand, vorschau, in_laendern):
     return pfad, "".join(t)
 
 
-def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern):
+def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern, orte=()):
     pfad = "auftraege/"
     titel = "Öffentliche Aufträge für Handwerk und Dienstleister: Preise, Konkurrenz, offene Ausschreibungen"
     beschr = "Was zahlen Städte, Gemeinden und Behörden für Handwerk und Dienstleistungen? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen nach Bundesland und Gewerk."
@@ -723,15 +729,140 @@ def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, i
         t.append(f'  <a class="karte" href="{s}.html"><b>{e(GEWERKE[s]["name"])}</b>'
                  f'<span class="info"><span>{n} {mehrzahl(n, "Bundesland", "Bundesländer")}</span><span{an}>{zahl(o)} offen</span></span></a>\n')
     t.append("</div>\n</section>\n")
+    if orte:
+        t.append('<section class="w abschnitt" aria-labelledby="orte"><p class="marke-zeile">Vor Ort</p><h2 id="orte">Städte und Landkreise</h2>\n<ul class="chips">\n')
+        t.append("".join(f'  <li><a href="ausschreibungen-{z["slug"]}.html">{e(z["name"])}</a></li>\n' for z in orte[:40]))
+        t.append("</ul>\n</section>\n")
     t.append(cta("Keine Ausschreibung mehr verpassen",
                  "Bieterblick durchsucht jeden Tag alle öffentlichen Ausschreibungen in Deutschland und schickt dir morgens die passenden für deinen Betrieb und deinen Umkreis."))
     t.append(fuss(stand, leiste("Passende Aufträge jeden Morgen")))
     return pfad + "index.html", "".join(t)
 
 
+def ort_seite(code, z, stand, vorschau, land, im_land_gewerke, nachbarn, land_da=True):
+    r = region(land)
+    land_link = f"{r['kurz']}.html" if land_da else "./"
+    name = z["name"]
+    pfad = f"auftraege/ausschreibungen-{z['slug']}.html"
+    offen_n = z.get("offen_n") or 0
+    bm = z.get("bieter_median")
+    preise = bool(z.get("median")) and (z.get("wert_n") or 0) >= 20
+    titel = f"Öffentliche Ausschreibungen in {name}: offene Aufträge, Preise, Gewinner"
+    beschr = (f"{zahl(offen_n)} offene Ausschreibungen in {name}"
+              + (f", typischer Auftrag {euro(z['median'])}" if preise else "")
+              + (f", im Mittel {zahl(bm)} Angebote" if bm else "")
+              + ". Wer ausschreibt und wer gewinnt, täglich aktualisiert.")
+    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"),
+                                              (r["name"], "auftraege/" + (land_link if land_da else "")), (name, pfad)])]
+    t.append(f"""<section class="hero"><div class="w">
+<nav class="pfad" aria-label="Brotkrumen"><a href="./">Öffentliche Aufträge</a><span aria-hidden="true">›</span><a href="{land_link}">{r['name']}</a><span aria-hidden="true">›</span><span>{e(name)}</span></nav>
+<h1>Öffentliche Ausschreibungen in <em>{e(name)}</em></h1>
+<p class="lead">Was Stadt, Landkreis, Ämter und andere öffentliche Auftraggeber in {e(name)} gerade ausschreiben, was sie zahlen und wer die Aufträge bekommt. Alles aus echten Bekanntmachungen.</p>
+<div class="kern">
+  <div class="kern-zahl"><small>Gerade offen</small>{gross(zahl(offen_n), offen_n, "zahl")}<p>Ausschreibungen mit laufender Frist in {e(name)}, Stand {datum(stand)}.</p></div>
+  <div class="hero-zahlen">
+    <div><b>{zahl(z['vergaben_1j'])}</b><span>{mehrzahl(z['vergaben_1j'], "Vergabe", "Vergaben")} in 12 Monaten</span></div>
+    <div><b>{euro(z['median']) if preise else "?"}</b><span>typischer Auftrag</span></div>
+    <div><b>{zahl(bm) if bm else "?"}</b><span>{mehrzahl(bm or 0, "Angebot", "Angebote")} pro Vergabe im Mittel</span></div>
+  </div>
+</div>
+<div class="hero-cta">{knopf()}<p class="btn-info">30 Tage gratis, ohne Zahlungsdaten.</p></div>
+</div></section>
+""")
+    # Offene Ausschreibungen
+    of = offene(z.get("offen", []), 10)
+    t.append(f"""<section class="w abschnitt" aria-labelledby="offen">
+<p class="marke-zeile">Gerade offen</p>
+<h2 id="offen">{zahl(offen_n)} offene {mehrzahl(offen_n, "Ausschreibung", "Ausschreibungen")} in {e(name)}</h2>
+""")
+    if of:
+        t.append('<ul class="offen" data-reveal>\n')
+        for a, b, c in of:
+            n = tage(c, stand)
+            rest = "heute" if n <= 0 else f"noch {n} {mehrzahl(n, 'Tag', 'Tage')}"
+            knapp = ' class="knapp"' if n <= 7 else ""
+            t.append(f'  <li><b>{e(a)}</b><small>{e(b)}</small><span class="frist"><em{knapp}>{rest}</em><span>Frist {datum(c)}</span></span></li>\n')
+        t.append("</ul>\n")
+        mehr = offen_n - len(of)
+        t.append(f'<p class="offen-mehr">{"Die nächsten nach Frist, " + zahl(mehr) + " weitere stehen in Bieterblick. " if mehr > 0 else ""}Alle mit Unterlagen und Link zur Vergabeplattform findest du in der App. <a href="{TESTEN}">Jetzt ansehen</a></p>\n')
+    t.append("</section>\n")
+
+    # Was wird ausgeschrieben (unsere Gewerke)
+    gw_n = sorted(((s, n) for s, n in (z.get("gewerke") or {}).items() if s in GEWERKE and n > 0), key=lambda x: -x[1])
+    if gw_n:
+        hoch = gw_n[0][1]
+        t.append(f"""<section class="w abschnitt" aria-labelledby="gewerke">
+<p class="marke-zeile">Gewerke</p>
+<h2 id="gewerke">Was in {e(name)} vergeben wird</h2>
+<p class="unter">Vergebene Aufträge in den letzten zwei Jahren nach Gewerk. Mit einem Klick siehst du Preise und Konkurrenz für ganz {r['name']}.</p>
+<div data-reveal><ul class="vergleich">
+""")
+        for s_, n in gw_n:
+            ziel = f' href="{s_}-{r["kurz"]}.html"' if s_ in im_land_gewerke else ""
+            tag = "a" if ziel else "div"
+            t.append(f'  <li><{tag}{ziel} class="gewerk-zeile"><span class="land">{e(GEWERKE[s_]["name"])}</span><span class="bal"><i style="width:{max(3, round(100 * n / hoch))}%"></i></span>'
+                     f'<span class="wert">{zahl(n)} {mehrzahl(n, "Vergabe", "Vergaben")}</span></{tag}></li>\n')
+        t.append("</ul></div>\n</section>\n")
+
+    # Preise
+    if preise:
+        hochp = float(z["p75"]) * 1.3
+        pos = lambda v: max(0.0, min(100.0, 100 * float(v) / hochp))
+        links, rechts, mitte = pos(z["p25"]), pos(z["p75"]), pos(z["median"])
+        t.append(f"""<section class="w abschnitt" aria-labelledby="preise">
+<p class="marke-zeile">Preise</p>
+<h2 id="preise">So groß sind die Aufträge in {e(name)}</h2>
+<p class="unter">Über alle Arten von Aufträgen liegt der typische Wert bei {euro(z['median'])}. Ein Viertel ist kleiner als {euro(z['p25'])}, ein Viertel größer als {euro(z['p75'])}.</p>
+<div class="band-karte" data-reveal>
+  <div class="band" role="img" aria-label="Preisband: unteres Viertel {euro(z['p25'])}, Median {euro(z['median'])}, oberes Viertel {euro(z['p75'])}">
+    <div class="spur"></div>
+    <div class="spanne" style="left:{links:.1f}%;width:{rechts - links:.1f}%"></div>
+    <div class="mitte" style="left:{mitte:.1f}%"><span>Median {euro(z['median'])}</span></div>
+  </div>
+  <div class="skala" aria-hidden="true"><span>0 €</span><span>{euro(hochp)}</span></div>
+  <div class="drei">
+    <div><b>{euro(z['p25'])}</b><span>kleinere Aufträge (unteres Viertel)</span></div>
+    <div class="rot"><b>{euro(z['median'])}</b><span>typischer Auftrag (Median)</span></div>
+    <div><b>{euro(z['p75'])}</b><span>größere Aufträge (oberes Viertel)</span></div>
+  </div>
+</div>
+<p class="hinweis">Aus {zahl(z['wert_n'])} Zuschlägen mit veröffentlichtem Auftragswert bei Auftraggebern in {e(name)}, {zeitraum(stand)}. Für die Preise in deinem Gewerk schau auf die Gewerk-Seiten oben.</p>
+</section>
+""")
+
+    t.append(cta(f"Keine Ausschreibung in {e(name)} mehr verpassen",
+                 f"Bieterblick durchsucht jeden Tag alle öffentlichen Ausschreibungen in Deutschland und schickt dir morgens, was in {e(name)} und deinem Umkreis zu deinem Betrieb passt."))
+
+    # Auftraggeber und Gewinner
+    ag = auftraggeber(z.get("auftraggeber", []))
+    gw = gewinner(z.get("gewinner", []))
+    if ag or gw:
+        t.append('<section class="w abschnitt"><div class="zwei">\n')
+        if ag:
+            hoch = ag[0][1] or 1
+            t.append(f'<div data-reveal><p class="marke-zeile">Auftraggeber</p><h2>Wer in {e(name)} ausschreibt</h2><ol class="rang">\n' + "".join(
+                f'  <li><b>{e(a)}</b><span class="n">{zahl(n)} {mehrzahl(n, "Vergabe", "Vergaben")}</span><span class="strich"><i style="width:{max(4, round(100 * n / hoch))}%"></i></span></li>\n'
+                for a, n in ag) + "</ol></div>\n")
+        if gw:
+            hoch = gw[0][2] or 1
+            t.append('<div data-reveal style="--d:1"><p class="marke-zeile">Gewinner</p><h2>Wer die Aufträge gewinnt</h2><ol class="rang">\n' + "".join(
+                f'  <li><b>{e(a)}</b><span class="n">{zahl(n)} {mehrzahl(n, "Zuschlag", "Zuschläge")}</span><small>{e(o or "")}</small><span class="strich"><i style="width:{max(4, round(100 * n / hoch))}%"></i></span></li>\n'
+                for a, o, n in gw) + "</ol>\n")
+            t.append(f'<p class="hinweis">Zuschläge bei Auftraggebern in {e(name)} in den letzten 2 Jahren, laut den veröffentlichten Bekanntmachungen. Gezeigt werden nur Unternehmen mit Rechtsform wie GmbH oder AG.</p></div>\n')
+        t.append("</div></section>\n")
+
+    # Weiter
+    t.append(f'<section class="w abschnitt" aria-labelledby="weiter"><p class="marke-zeile">Weiter</p><h2 id="weiter">In der Nähe</h2>\n<ul class="chips">\n')
+    t.append("".join(f'  <li><a href="ausschreibungen-{n["slug"]}.html">{e(n["name"])}</a></li>\n' for n in nachbarn))
+    t.append(f'  <li class="alle"><a href="{land_link}">{"Alles in " + r["name"] if land_da else "Alle Bundesländer und Gewerke"}</a></li>\n</ul>\n</section>\n')
+    t.append(fuss(stand, leiste(f"Ausschreibungen in {name}: jeden Morgen per Mail")))
+    return pfad, "".join(t)
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     vorschau = "--vorschau" in sys.argv
+    mit_orten = vorschau or "--orte" in sys.argv  # Städte und Landkreise: live erst nach Luis' Freigabe
     daten = json.loads(Path(args[0]).read_text(encoding="utf-8"))
     ziel = Path(args[1]) / "auftraege"
     stand, laender = daten["stand"], daten["laender"]
@@ -740,6 +871,13 @@ def main():
     in_laendern = {s: [c for c in LAENDER if s in im_land[c]] for s in GEWERKE}
     seiten_land = [c for c in LAENDER if im_land[c]]
     seiten_gewerk = [s for s in GEWERKE if len(in_laendern[s]) >= 2]
+    kreise = daten.get("kreise") or {}
+    orte = []
+    if mit_orten:
+        orte = sorted((dict(z, code=c) for c, z in kreise.items()
+                       if c[:3] in LAENDER and (z.get("vergaben_2j") or 0) >= 60 and (z.get("offen_n") or 0) >= 5),
+                      key=lambda z: (-z["vergaben_1j"], z["name"]))[:MAX_ORTE]
+    orte_land = {c: sorted((z for z in orte if z["code"][:3] == c), key=lambda z: z["name"]) for c in LAENDER}
     ziel.mkdir(parents=True, exist_ok=True)
     for alt in ziel.glob("*.html"):
         alt.unlink()
@@ -753,10 +891,14 @@ def main():
         r = region(c)
         for s in im_land[c]:
             schreib(*seite(s, laender[c][s], stand, vorschau, r, im_land[c], in_laendern[s], laender))
-        schreib(*land_seite(r, laender[c], stand, vorschau, im_land[c], seiten_land))
+        schreib(*land_seite(r, laender[c], stand, vorschau, im_land[c], seiten_land, orte_land[c]))
+    for z in orte:
+        land = z["code"][:3]
+        nachbarn = [n for n in orte_land[land] if n["code"] != z["code"]][:12]
+        schreib(*ort_seite(z["code"], z, stand, vorschau, land, im_land[land], nachbarn, land in seiten_land))
     for s in seiten_gewerk:
         schreib(*gewerk_seite(s, laender, stand, vorschau, in_laendern[s]))
-    schreib(*haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern))
+    schreib(*haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern, orte))
     print(f"{len(pfade)} Seiten in {ziel}")
     (ziel / "seiten.txt").write_text("\n".join(pfade) + "\n", encoding="utf-8")
     if not vorschau:
