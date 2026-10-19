@@ -44,6 +44,12 @@ a{color:inherit}
 .gate-card{width:100%;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:36px 32px;display:flex;flex-direction:column;gap:18px}
 .gate-card h1{margin:0;font-size:30px;line-height:1.1;font-weight:800;font-stretch:115%;letter-spacing:-.02em}
 .gate-card p{margin:0;color:var(--muted)}
+.reg-tag{align-self:flex-start;background:var(--red-bg);color:var(--red);font-weight:700;font-size:13px;padding:5px 11px;border-radius:99px;margin-bottom:-8px}
+.reg-vorteile{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:15px}
+.reg-vorteile li{display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+.reg-vorteile li:before{content:"";flex:none;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--red) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
+.gate-card .btn.reg{background:var(--red);border-color:var(--red)}
+.reg-danach{font-size:13px;color:var(--muted);margin:-8px 0 0;text-align:center}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-weight:600;font-size:14px}
 .field input{height:46px;border:1px solid var(--line2);border-radius:8px;padding:0 14px;background:#fff}
@@ -388,13 +394,20 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
 <div id="login" class="gate hidden">
   <form class="gate-card" id="loginForm" novalidate>
     <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg>Studio LDK</div>
-    <h1 class="appname">Bieterblick</h1>
+    <span class="reg-tag hidden" id="regTag">Neues Konto · kostenlos testen</span>
+    <h1 id="loginTitel">Bieterblick</h1>
     <p id="loginIntro">Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
-    <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
+    <ul class="reg-vorteile hidden" id="regVorteile">
+      <li>Jeden Morgen die passenden Ausschreibungen für deinen Betrieb</li>
+      <li>Bei jedem Auftrag sehen, wer ähnliche gewonnen hat und zu welchem Preis</li>
+      <li>Ohne Zahlungsdaten, die Testphase endet automatisch</li>
+    </ul>
+    <div class="field"><label for="em" id="emLabel">E-Mail</label><input id="em" type="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
     <div class="field"><label for="pw" id="pwLabel">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
     <button class="vergessen" type="button" id="pwVergessen">Passwort vergessen?</button>
     <label class="b2b hidden" id="b2bRow"><input type="checkbox" id="b2b"><span>Ich nutze Bieterblick für mein Unternehmen und akzeptiere die <a href="agb.html" target="_blank" rel="noopener">AGB</a>.</span></label>
     <button class="btn" type="submit" id="loginBtn">Anmelden</button>
+    <p class="reg-danach hidden" id="regDanach">Danach kommt eine Mail zum Bestätigen, dann geht es direkt los.</p>
     <div class="msg" id="loginMsg" role="alert"></div>
     <div class="switch" id="modeSwitch"></div>
     <div class="legal-link"><a href="impressum.html">Impressum und Kontakt</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="datenschutz.html">Datenschutz</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="agb.html">AGB</a></div>
@@ -459,8 +472,9 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
       <div id="errBox" class="hidden"></div>
       <div id="lockedBox" class="locked hidden">
         <h2>Deine Testphase ist vorbei.</h2>
-        <p id="lockedTxt">Die 7 kostenlosen Tage sind abgelaufen. Schalte deinen Zugang frei, um weiter jeden Morgen die neuen Ausschreibungen zu sehen.</p>
+        <p id="lockedTxt">Schalte deinen Zugang frei, um weiter jeden Morgen die neuen Ausschreibungen zu sehen.</p>
         <a class="btn" id="lockedBtn" style="display:inline-flex;align-items:center;text-decoration:none" href="mailto:info@studioldk.de?subject=Zugang%20freischalten">Zugang freischalten</a>
+        <p class="hint" style="margin-top:18px">Du brauchst Bieterblick nicht mehr? In den <a href="#einstellungen">Einstellungen</a> kannst du dein Konto jederzeit löschen.</p>
       </div>
 
       <div id="content" class="hidden">
@@ -650,7 +664,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-17g';
+const APP_VERSION = '2026-10-19a';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -853,6 +867,9 @@ function getKey(){ if (SUPABASE_KEY) return SUPABASE_KEY; try { return localStor
 
 // Link aus der Mail "Passwort zurücksetzen": Supabase meldet PASSWORD_RECOVERY, dann neues Passwort abfragen
 let pwNeu = /type=recovery/.test(location.hash);
+// Neue Mail-Links (?token_hash=…&type=…) werden erst eingelöst, wenn man auf den Knopf tippt.
+// So verbrauchen Mail-Programme und Firmen-Filter, die Links vorab öffnen, den Link nicht.
+const MAIL_LINK = (() => { try { const q = new URLSearchParams(location.search); const t = q.get('type'); return q.get('token_hash') && /^(recovery|signup|email|invite|magiclink|email_change)$/.test(t || '') ? { hash:q.get('token_hash'), typ:t } : null; } catch(e){ return null; } })();
 const linkFehler = (() => { try { const q = new URLSearchParams(location.hash.slice(1)); return q.get('error_code') || q.get('error') || ''; } catch(e){ return ''; } })();
 async function init(){
   if (!window.supabase){ show('login'); $('loginMsg').textContent = 'Die Verbindungsbibliothek konnte nicht geladen werden. Bist du online?'; return; }
@@ -861,6 +878,7 @@ async function init(){
   S.db = window.supabase.createClient(SUPABASE_URL, key, { db:{ schema:'tender' } });
   fehlerAufzeichnen();
   S.db.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { show('login'); } if (ev === 'PASSWORD_RECOVERY') pwNeu = true; });
+  if (MAIL_LINK){ show('login'); setMode('link'); return; }
   const { data } = await S.db.auth.getSession();
   if (data && data.session && pwNeu){ show('login'); setMode('neu'); $('pw').focus(); return; }
   if (data && data.session) start(data.session.user);
@@ -916,11 +934,24 @@ let mode = 'login';
 function setMode(m){
   if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()) m = 'login';
   mode = m;
-  const reg = m === 'register', neu = m === 'neu';
-  $('em').closest('.field').classList.toggle('hidden', neu); $('em').required = !neu;
-  $('pwLabel').textContent = neu ? 'Neues Passwort' : 'Passwort';
+  const reg = m === 'register', neu = m === 'neu', link = m === 'link';
+  // Registrierung soll auf den ersten Blick nach "neues Konto" aussehen, nicht nach Anmeldung
+  $('regTag').classList.toggle('hidden', !reg); $('regVorteile').classList.toggle('hidden', !reg); $('regDanach').classList.toggle('hidden', !reg);
+  $('loginTitel').textContent = reg ? 'Konto erstellen' : 'Bieterblick';
+  $('emLabel').textContent = reg ? 'Deine E-Mail-Adresse' : 'E-Mail';
+  $('loginBtn').classList.toggle('reg', reg);
+  $('em').closest('.field').classList.toggle('hidden', neu || link); $('em').required = !neu && !link;
+  $('pw').closest('.field').classList.toggle('hidden', link);
+  $('pwLabel').textContent = neu ? 'Neues Passwort' : reg ? 'Passwort festlegen' : 'Passwort';
   $('pwVergessen').classList.toggle('hidden', m !== 'login');
-  $('modeSwitch').classList.toggle('hidden', neu);
+  $('modeSwitch').classList.toggle('hidden', neu || link);
+  if (link){
+    $('loginIntro').textContent = MAIL_LINK.typ === 'recovery' ? 'Tipp auf den Knopf, dann kannst du ein neues Passwort festlegen.' : 'Tipp auf den Knopf, um deine E-Mail-Adresse zu bestätigen.';
+    $('loginBtn').textContent = MAIL_LINK.typ === 'recovery' ? 'Neues Passwort festlegen' : 'E-Mail bestätigen';
+    $('b2bRow').classList.add('hidden'); $('modeSwitch').replaceChildren();
+    $('loginMsg').textContent = ''; $('loginMsg').className = 'msg';
+    return;
+  }
   if (neu){
     $('loginIntro').textContent = 'Leg ein neues Passwort fest. Danach bist du direkt angemeldet.';
     $('loginBtn').textContent = 'Passwort speichern';
@@ -930,9 +961,9 @@ function setMode(m){
     return;
   }
   $('loginIntro').textContent = reg
-    ? (testerCode() ? 'Du bist als Tester eingeladen: 30 Tage kostenlos, ohne Zahlungsdaten. Die Testphase endet automatisch.' : 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.')
+    ? (testerCode() ? 'Leg in einer Minute dein Konto an und teste Bieterblick 30 Tage kostenlos.' : 'Leg in einer Minute dein Konto an und teste Bieterblick 7 Tage kostenlos.')
     : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
-  $('loginBtn').textContent = reg ? 'Kostenlos testen' : 'Anmelden';
+  $('loginBtn').textContent = reg ? 'Konto erstellen' : 'Anmelden';
   $('pw').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
   $('pw').placeholder = reg ? 'mindestens ' + PW_MIN + ' Zeichen' : '';
   $('b2bRow').classList.toggle('hidden', !reg);
@@ -943,7 +974,7 @@ function setMode(m){
     return;
   }
   $('modeSwitch').replaceChildren(
-    reg ? 'Schon ein Konto? ' : 'Noch kein Konto? ',
+    reg ? 'Du hast schon ein Konto? ' : 'Noch kein Konto? ',
     h('button',{type:'button', onclick:()=>setMode(reg ? 'login' : 'register')}, reg ? 'Anmelden' : '7 Tage kostenlos testen'));
 }
 (() => {
@@ -973,6 +1004,15 @@ function authError(m){
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = $('loginMsg'); msg.textContent = ''; msg.className = 'msg';
+  if (mode === 'link'){
+    $('loginBtn').disabled = true;
+    const { data, error } = await S.db.auth.verifyOtp({ token_hash:MAIL_LINK.hash, type:MAIL_LINK.typ });
+    $('loginBtn').disabled = false;
+    history.replaceState(null, '', location.pathname);
+    if (error || !data || !data.user){ setMode('login'); msg.textContent = 'Der Link ist abgelaufen oder wurde schon benutzt. Fordere einfach einen neuen an.'; return; }
+    if (MAIL_LINK.typ === 'recovery'){ pwNeu = true; setMode('neu'); $('pw').focus(); return; }
+    start(data.user); return;
+  }
   // Leerzeichen gehören nie in eine Mail-Adresse (kommen am Handy oft durch Autokorrektur oder Spracheingabe)
   const email = $('em').value.replace(/\s+/g, '').toLowerCase(), password = $('pw').value;
   $('em').value = email;
@@ -997,6 +1037,8 @@ $('loginForm').addEventListener('submit', async e => {
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
+  // Neue Registrierung an uns melden (die Funktion prüft selbst, ob das Konto wirklich neu ist)
+  if (mode === 'register' && res.data && res.data.user) fetch(SUPABASE_URL + '/functions/v1/kontakt', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ neues_konto:res.data.user.id }) }).catch(() => {});
   if (mode === 'register' && !res.data.session){
     setMode('login');
     msg.className = 'msg ok';
@@ -1013,7 +1055,9 @@ $('pwVergessen').addEventListener('click', async () => {
   const email = $('em').value.replace(/\s+/g, '').toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent = 'Gib oben deine E-Mail-Adresse ein, dann schicken wir dir einen Link.'; $('em').focus(); return; }
   $('pwVergessen').disabled = true;
-  const { error } = await S.db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  // Bieterblick schickt die Mail selbst (Link wird erst per Knopf eingelöst). Klappt das nicht, schickt Supabase sie.
+  const f = await S.db.functions.invoke('passwort', { body:{ email, basis:location.origin + location.pathname } }).catch(e => ({ error:e }));
+  const { error } = f && !f.error ? {} : await S.db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
   $('pwVergessen').disabled = false;
   if (error && /rate limit/i.test(error.message)){ msg.textContent = authError(error.message); return; }
   // Immer dieselbe Antwort, damit niemand herausfinden kann, welche Adressen ein Konto haben
@@ -2081,7 +2125,7 @@ const zeit = t => t ? fmtZeit.format(new Date(t)) : '';
 async function openAdmin(){
   const body = $('admBody');
   body.replaceChildren(h('div',{class:'loading'},'Lade Kennzahlen …'));
-  const { data:a, error } = await S.db.rpc('admin_uebersicht');
+  const [{ data:a, error }, { data:bes }] = await Promise.all([S.db.rpc('admin_uebersicht'), S.db.rpc('admin_besuche')]);
   if (error){ body.replaceChildren(h('div',{class:'err'}, 'Kennzahlen nicht abrufbar: ' + error.message)); return; }
   const kpi = (v, l, warn) => h('div',{class:'fact' + (warn ? ' urgent' : '')}, h('span',{class:'v'}, String(v ?? 0)), h('span',{class:'l'}, l));
   const reg = a.registrierungen || [], maxR = Math.max(1, ...reg.map(x => x.n));
@@ -2093,6 +2137,7 @@ async function openAdmin(){
     h('section',{class:'card'}, h('h2',{}, 'Registrierungen, letzte 30 Tage'),
       h('div',{class:'adm-bars', role:'img', 'aria-label':'Registrierungen pro Tag'}, ...reg.map(x => h('span',{title:`${zDate(x.tag)}: ${x.n}`, style:`height:${Math.max(2, Math.round(x.n / maxR * 100))}%`, class: x.n ? '' : 'z'}))),
       h('span',{class:'hint'}, `${a.bestaetigt} von ${a.nutzer} Konten haben ihre E-Mail bestätigt. Treffer-Mail an: ${a.mail_an}.`)),
+    adminBesuche(bes),
     adminKonten(a.konten || []),
     adminVormerkungen(a.vormerkungen || []),
     adminTester(a.tester || []),
@@ -2119,6 +2164,22 @@ function kopieren(text, knopf){
   const fertig = () => { const alt = knopf.textContent; knopf.textContent = 'Kopiert'; setTimeout(() => { knopf.textContent = alt; }, 1500); };
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(fertig).catch(() => prompt('Zum Kopieren markieren:', text));
   else prompt('Zum Kopieren markieren:', text);
+}
+// Besuche auf Startseite und Gewerk-Seiten (eigener Zähler, ohne Cookies)
+function adminBesuche(b){
+  if (!b) return document.createDocumentFragment();
+  const tage = b.pro_tag || [], maxT = Math.max(1, ...tage.map(x => x.n));
+  const namen = { direkt:'direkt oder Link', intern:'innerhalb der Seite', google:'Google', suche:'andere Suchmaschinen', facebook:'Facebook', instagram:'Instagram', tiktok:'TikTok', linkedin:'LinkedIn', ki:'KI-Suche (ChatGPT usw.)', andere:'andere Seiten' };
+  const zeile = (l, n) => h('div',{}, h('span',{class:'d'}, String(n)), h('span',{class:'t'}, l), h('span',{class:'w'}, ''), h('span',{class:'s'}, ''));
+  const quellen = (b.quellen || []).filter(x => x.n > 0), seiten = (b.seiten || []).filter(x => x.n > 0);
+  return h('section',{class:'card'}, h('h2',{}, 'Besuche auf der Website, letzte 30 Tage'),
+    h('div',{class:'facts adm-facts'}, h('div',{class:'fact'}, h('span',{class:'v'}, String(b.heute)), h('span',{class:'l'}, 'heute')),
+      h('div',{class:'fact'}, h('span',{class:'v'}, String(b.tage_7)), h('span',{class:'l'}, 'in 7 Tagen')), h('div',{class:'fact'}, h('span',{class:'v'}, String(b.tage_30)), h('span',{class:'l'}, 'in 30 Tagen'))),
+    h('div',{class:'adm-bars', role:'img', 'aria-label':'Seitenaufrufe pro Tag'}, ...tage.map(x => h('span',{title:`${zDate(x.tag)}: ${x.n}`, style:`height:${Math.max(2, Math.round(x.n / maxT * 100))}%`, class: x.n ? '' : 'z'}))),
+    h('h3',{style:'margin:16px 0 4px;font-size:15px'}, 'Woher die Besucher kommen'),
+    quellen.length ? h('div',{class:'zl'}, ...quellen.map(x => zeile(namen[x.quelle] || x.quelle, x.n))) : h('p',{style:'margin:0;color:var(--muted)'}, 'Noch keine Besuche gezählt.'),
+    seiten.length ? [h('h3',{style:'margin:16px 0 4px;font-size:15px'}, 'Meistbesuchte Seiten'), h('div',{class:'zl'}, ...seiten.map(x => zeile(x.pfad === '/' || x.pfad === '/index.html' ? 'Startseite' : x.pfad.replace('/auftraege/', 'Aufträge: ').replace('.html', ''), x.n)))] : null,
+    h('span',{class:'hint'}, 'Gezählt werden Seitenaufrufe ohne Cookies, Roboter von Suchmaschinen nicht. „innerhalb der Seite“ ist bei den Zahlen oben nicht dabei.'));
 }
 // Alle Konten: wer testet, wer zahlt, wer ist abgelaufen
 function adminKonten(k){
