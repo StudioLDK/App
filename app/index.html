@@ -44,6 +44,12 @@ a{color:inherit}
 .gate-card{width:100%;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:36px 32px;display:flex;flex-direction:column;gap:18px}
 .gate-card h1{margin:0;font-size:30px;line-height:1.1;font-weight:800;font-stretch:115%;letter-spacing:-.02em}
 .gate-card p{margin:0;color:var(--muted)}
+.reg-tag{align-self:flex-start;background:var(--red-bg);color:var(--red);font-weight:700;font-size:13px;padding:5px 11px;border-radius:99px;margin-bottom:-8px}
+.reg-vorteile{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:15px}
+.reg-vorteile li{display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+.reg-vorteile li:before{content:"";flex:none;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--red) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
+.gate-card .btn.reg{background:var(--red);border-color:var(--red)}
+.reg-danach{font-size:13px;color:var(--muted);margin:-8px 0 0;text-align:center}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-weight:600;font-size:14px}
 .field input{height:46px;border:1px solid var(--line2);border-radius:8px;padding:0 14px;background:#fff}
@@ -388,13 +394,20 @@ details.bl[open] summary::after{transform:rotate(-135deg)}
 <div id="login" class="gate hidden">
   <form class="gate-card" id="loginForm" novalidate>
     <div class="mark"><svg width="46" height="18" viewBox="0 0 256 100" aria-hidden="true"><path d="M6 6V94H62" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/><path d="M92 6V94H118A44 44 0 0 0 118 6Z" fill="none" stroke="currentColor" stroke-width="14"/><path d="M196 6V94M196 58L250 6M214 41L250 94" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square"/></svg>Studio LDK</div>
-    <h1 class="appname">Bieterblick</h1>
+    <span class="reg-tag hidden" id="regTag">Neues Konto · kostenlos testen</span>
+    <h1 id="loginTitel">Bieterblick</h1>
     <p id="loginIntro">Melde dich an, um die neuen Ausschreibungen zu sehen.</p>
-    <div class="field"><label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
+    <ul class="reg-vorteile hidden" id="regVorteile">
+      <li>Jeden Morgen die passenden Ausschreibungen für deinen Betrieb</li>
+      <li>Bei jedem Auftrag sehen, wer ähnliche gewonnen hat und zu welchem Preis</li>
+      <li>Ohne Zahlungsdaten, die Testphase endet automatisch</li>
+    </ul>
+    <div class="field"><label for="em" id="emLabel">E-Mail</label><input id="em" type="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
     <div class="field"><label for="pw" id="pwLabel">Passwort</label><input id="pw" type="password" autocomplete="current-password" required></div>
     <button class="vergessen" type="button" id="pwVergessen">Passwort vergessen?</button>
     <label class="b2b hidden" id="b2bRow"><input type="checkbox" id="b2b"><span>Ich nutze Bieterblick für mein Unternehmen und akzeptiere die <a href="agb.html" target="_blank" rel="noopener">AGB</a>.</span></label>
     <button class="btn" type="submit" id="loginBtn">Anmelden</button>
+    <p class="reg-danach hidden" id="regDanach">Danach kommt eine Mail zum Bestätigen, dann geht es direkt los.</p>
     <div class="msg" id="loginMsg" role="alert"></div>
     <div class="switch" id="modeSwitch"></div>
     <div class="legal-link"><a href="impressum.html">Impressum und Kontakt</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="datenschutz.html">Datenschutz</a> <span aria-hidden="true">&nbsp;&nbsp;</span> <a href="agb.html">AGB</a></div>
@@ -651,7 +664,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-19a';
+const APP_VERSION = '2026-10-19b';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -922,9 +935,14 @@ function setMode(m){
   if (m === 'register' && !OFFENE_REGISTRIERUNG && !hatEinladung() && !testerCode()) m = 'login';
   mode = m;
   const reg = m === 'register', neu = m === 'neu', link = m === 'link';
+  // Registrierung soll auf den ersten Blick nach "neues Konto" aussehen, nicht nach Anmeldung
+  $('regTag').classList.toggle('hidden', !reg); $('regVorteile').classList.toggle('hidden', !reg); $('regDanach').classList.toggle('hidden', !reg);
+  $('loginTitel').textContent = reg ? 'Konto erstellen' : 'Bieterblick';
+  $('emLabel').textContent = reg ? 'Deine E-Mail-Adresse' : 'E-Mail';
+  $('loginBtn').classList.toggle('reg', reg);
   $('em').closest('.field').classList.toggle('hidden', neu || link); $('em').required = !neu && !link;
   $('pw').closest('.field').classList.toggle('hidden', link);
-  $('pwLabel').textContent = neu ? 'Neues Passwort' : 'Passwort';
+  $('pwLabel').textContent = neu ? 'Neues Passwort' : reg ? 'Passwort festlegen' : 'Passwort';
   $('pwVergessen').classList.toggle('hidden', m !== 'login');
   $('modeSwitch').classList.toggle('hidden', neu || link);
   if (link){
@@ -943,9 +961,9 @@ function setMode(m){
     return;
   }
   $('loginIntro').textContent = reg
-    ? (testerCode() ? 'Du bist als Tester eingeladen: 30 Tage kostenlos, ohne Zahlungsdaten. Die Testphase endet automatisch.' : 'Teste 7 Tage kostenlos. Ohne Zahlungsdaten, die Testphase endet automatisch.')
+    ? (testerCode() ? 'Leg in einer Minute dein Konto an und teste Bieterblick 30 Tage kostenlos.' : 'Leg in einer Minute dein Konto an und teste Bieterblick 7 Tage kostenlos.')
     : 'Melde dich an, um die neuen Ausschreibungen zu sehen.';
-  $('loginBtn').textContent = reg ? 'Kostenlos testen' : 'Anmelden';
+  $('loginBtn').textContent = reg ? 'Konto erstellen' : 'Anmelden';
   $('pw').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
   $('pw').placeholder = reg ? 'mindestens ' + PW_MIN + ' Zeichen' : '';
   $('b2bRow').classList.toggle('hidden', !reg);
@@ -956,7 +974,7 @@ function setMode(m){
     return;
   }
   $('modeSwitch').replaceChildren(
-    reg ? 'Schon ein Konto? ' : 'Noch kein Konto? ',
+    reg ? 'Du hast schon ein Konto? ' : 'Noch kein Konto? ',
     h('button',{type:'button', onclick:()=>setMode(reg ? 'login' : 'register')}, reg ? 'Anmelden' : '7 Tage kostenlos testen'));
 }
 (() => {
