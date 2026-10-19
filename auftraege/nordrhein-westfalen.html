@@ -126,10 +126,11 @@ h2{font-weight:850;font-stretch:115%;font-size:clamp(27px,4.6vw,44px);line-heigh
 .vergleich .bal{height:14px;border-radius:99px;background:var(--plan);overflow:hidden}
 .vergleich .bal i{display:block;height:100%;border-radius:99px;background:var(--linie2);transform-origin:left center}
 .vergleich .wert{font-size:14px;color:var(--graphit);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.vergleich div.gewerk-zeile{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 10px}
 .vergleich .hier{background:#FFF1F0}
 .vergleich .hier .land{color:var(--rot)}
 .vergleich .hier .bal i{background:var(--rot)}
-@media (max-width:520px){.vergleich a{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.vergleich .bal{grid-column:1 / span 2;grid-row:2}}
+@media (max-width:520px){.vergleich a,.vergleich div.gewerk-zeile{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.vergleich .bal{grid-column:1 / span 2;grid-row:2}}
 /* CTA */
 .nacht{background:var(--nacht);color:#fff}
 .cta{position:relative;overflow:hidden;border-radius:28px;margin:72px 0 0;padding:40px 24px;background:var(--nacht);color:#fff;isolation:isolate}
@@ -189,7 +190,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:6px 18px}
 </head>
 <body>
 
-<header class="k"><div class="w"><a class="marke" href="/"><i></i>Bieterblick</a><a class="btn klein" href="https://bieterblick.studioldk.de/?testen=bb-handwerk">Kostenlos testen</a></div></header>
+<header class="k"><div class="w"><a class="marke" href="/"><i></i>Bieterblick</a><a class="btn klein" href="https://bieterblick.studioldk.de/?testen=bb-handwerk&amp;land=DEA">Kostenlos testen</a></div></header>
 <main>
 <section class="hero"><div class="w">
 <nav class="pfad" aria-label="Brotkrumen"><a href="./">Öffentliche Aufträge</a><span aria-hidden="true">›</span><span>Nordrhein-Westfalen</span></nav>
@@ -198,7 +199,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:6px 18px}
 <div class="kern">
   <div class="kern-zahl"><small>Gerade offen</small><b data-ziel="174" data-art="zahl" style="--n:3">174</b><p>Ausschreibungen mit laufender Frist in den 16 Gewerken auf dieser Seite, Stand 19.10.2026.</p></div>
 </div>
-<div class="hero-cta"><a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk">30 Tage kostenlos testen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><p class="btn-info">30 Tage gratis, ohne Zahlungsdaten.</p></div>
+<div class="hero-cta"><a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk&amp;land=DEA">30 Tage kostenlos testen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><p class="btn-info">30 Tage gratis, ohne Zahlungsdaten.</p></div>
 </div></section>
 <section class="w abschnitt" aria-labelledby="gewerke"><p class="marke-zeile">Gewerke</p><h2 id="gewerke">Dein Gewerk in Nordrhein-Westfalen</h2>
 <p class="unter">Typischer Auftragswert aus Zuschlägen der letzten zwei Jahre, Vergaben in den letzten 12 Monaten und was gerade offen ist.</p>
@@ -229,7 +230,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:6px 18px}
   <li>Bei jedem Auftrag sehen, wer ähnliche gewonnen hat und zu welchem Preis</li>
   <li>Erinnerung vor jeder Abgabefrist, damit dir nichts durchrutscht</li>
 </ul>
-<a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk">30 Tage kostenlos testen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+<a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk&amp;land=DEA">30 Tage kostenlos testen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
 <p class="btn-info">Ohne Zahlungsdaten, endet automatisch.</p>
 </div></section>
 <section class="w abschnitt" aria-labelledby="laender"><p class="marke-zeile">Weiter</p><h2 id="laender">Andere Bundesländer</h2>
@@ -256,7 +257,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:6px 18px}
 <p style="margin:0">Stand 19.10.2026. Daten: TED (Amtsblatt der EU) und Datenservice Öffentlicher Einkauf, aufbereitet von Bieterblick. Alle Angaben ohne Gewähr, maßgeblich sind die Originalbekanntmachungen.</p>
 <nav><a href="/">Bieterblick</a><a href="./">Öffentliche Aufträge</a><a href="/impressum.html">Impressum</a><a href="/datenschutz.html">Datenschutz</a></nav>
 </div></footer>
-<div class="leiste" aria-hidden="true"><span>Passende Aufträge in Nordrhein-Westfalen jeden Morgen</span><a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk" tabindex="-1">Kostenlos testen</a></div>
+<div class="leiste" aria-hidden="true"><span>Passende Aufträge in Nordrhein-Westfalen jeden Morgen</span><a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk&amp;land=DEA" tabindex="-1">Kostenlos testen</a></div>
 <script>(function(){try{var u=navigator.userAgent||'';if(navigator.webdriver||/bot|crawl|spider|slurp|lighthouse|headless|preview/i.test(u))return;
 var q='direkt',h='';try{h=document.referrer?new URL(document.referrer).hostname:''}catch(e){}
 if(/studioldk\.de$/.test(h))q='intern';else if(/(^|\.)google\./.test(h))q='google';else if(/bing\.|duckduckgo|ecosia|yahoo|qwant/.test(h))q='suche';else if(/facebook|fb\.|messenger/.test(h))q='facebook';else if(/instagram/.test(h))q='instagram';else if(/tiktok/.test(h))q='tiktok';else if(/linkedin|lnkd/.test(h))q='linkedin';else if(/chatgpt|openai|perplexity|claude|copilot|gemini/.test(h))q='ki';else if(h)q='andere';

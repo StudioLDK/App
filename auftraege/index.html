@@ -126,10 +126,11 @@ h2{font-weight:850;font-stretch:115%;font-size:clamp(27px,4.6vw,44px);line-heigh
 .vergleich .bal{height:14px;border-radius:99px;background:var(--plan);overflow:hidden}
 .vergleich .bal i{display:block;height:100%;border-radius:99px;background:var(--linie2);transform-origin:left center}
 .vergleich .wert{font-size:14px;color:var(--graphit);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.vergleich div.gewerk-zeile{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 10px}
 .vergleich .hier{background:#FFF1F0}
 .vergleich .hier .land{color:var(--rot)}
 .vergleich .hier .bal i{background:var(--rot)}
-@media (max-width:520px){.vergleich a{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.vergleich .bal{grid-column:1 / span 2;grid-row:2}}
+@media (max-width:520px){.vergleich a,.vergleich div.gewerk-zeile{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.vergleich .bal{grid-column:1 / span 2;grid-row:2}}
 /* CTA */
 .nacht{background:var(--nacht);color:#fff}
 .cta{position:relative;overflow:hidden;border-radius:28px;margin:72px 0 0;padding:40px 24px;background:var(--nacht);color:#fff;isolation:isolate}
