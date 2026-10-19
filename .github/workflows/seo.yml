@@ -22,7 +22,8 @@ jobs:
           rm -f vorschau/auftraege/seiten.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A vorschau/auftraege
+          cp /tmp/seo.json seo/daten.json
+          git add -A vorschau/auftraege seo/daten.json
           if git diff --cached --quiet; then echo "Keine Änderungen"; exit 0; fi
           git commit -q -m "Gewerk-Seiten: Zahlen vom $(date +%d.%m.%Y)"
           git push
