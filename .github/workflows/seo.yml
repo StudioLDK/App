@@ -1,6 +1,6 @@
 name: Gewerk-Seiten bauen
 # Holt jeden Morgen die Zahlen (seo_daten.py im Repo Ausschreibungsfinder, läuft im täglichen Abruf um 5 Uhr UTC)
-# und baut daraus die Seiten unter auftraege/. Bis zur Freigabe durch Luis nur in die Vorschau.
+# und baut daraus die Seiten unter auftraege/ und die sitemap.xml. Live seit Luis' Freigabe am 19.10.2026.
 on:
   schedule:
     - cron: "40 6 * * *"
@@ -16,14 +16,14 @@ jobs:
       - name: Zahlen holen
         run: curl -fsS -o /tmp/seo.json "https://spsmxuvywjdympvzcqbv.supabase.co/storage/v1/object/public/oeffentlich/seo.json"
       - name: Seiten bauen
-        run: python3 seo/bauen.py /tmp/seo.json vorschau --vorschau
+        run: python3 seo/bauen.py /tmp/seo.json .
       - name: Einspielen
         run: |
-          rm -f vorschau/auftraege/seiten.txt
+          rm -f auftraege/seiten.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           cp /tmp/seo.json seo/daten.json
-          git add -A vorschau/auftraege seo/daten.json
+          git add -A auftraege sitemap.xml seo/daten.json
           if git diff --cached --quiet; then echo "Keine Änderungen"; exit 0; fi
           git commit -q -m "Gewerk-Seiten: Zahlen vom $(date +%d.%m.%Y)"
           git push

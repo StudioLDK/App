@@ -755,6 +755,11 @@ def main():
     schreib(*haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern))
     print(f"{len(pfade)} Seiten in {ziel}")
     (ziel / "seiten.txt").write_text("\n".join(pfade) + "\n", encoding="utf-8")
+    if not vorschau:
+        # Sitemap für Google: Startseite plus alle Gewerk-Seiten
+        urls = [f"  <url><loc>{BASIS}/</loc></url>"] + [f"  <url><loc>{BASIS}/{p}</loc><lastmod>{stand}</lastmod></url>" for p in pfade]
+        (ziel.parent / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                                                  + "\n".join(urls) + "\n</urlset>\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
