@@ -317,7 +317,11 @@ footer nav{display:flex;flex-wrap:wrap;gap:6px 18px}
 <nav><a href="/">Bieterblick</a><a href="./">Öffentliche Aufträge</a><a href="/impressum.html">Impressum</a><a href="/datenschutz.html">Datenschutz</a></nav>
 </div></footer>
 <div class="leiste" aria-hidden="true"><span>Straßenbau in Rheinland-Pfalz: passende Aufträge jeden Morgen</span><a class="btn" href="https://bieterblick.studioldk.de/?testen=bb-handwerk" tabindex="-1">Kostenlos testen</a></div>
-<script>(function(){var d=document,h=d.documentElement;
+<script>(function(){try{var u=navigator.userAgent||'';if(navigator.webdriver||/bot|crawl|spider|slurp|lighthouse|headless|preview/i.test(u))return;
+var q='direkt',h='';try{h=document.referrer?new URL(document.referrer).hostname:''}catch(e){}
+if(/studioldk\.de$/.test(h))q='intern';else if(/(^|\.)google\./.test(h))q='google';else if(/bing\.|duckduckgo|ecosia|yahoo|qwant/.test(h))q='suche';else if(/facebook|fb\.|messenger/.test(h))q='facebook';else if(/instagram/.test(h))q='instagram';else if(/tiktok/.test(h))q='tiktok';else if(/linkedin|lnkd/.test(h))q='linkedin';else if(/chatgpt|openai|perplexity|claude|copilot|gemini/.test(h))q='ki';else if(h)q='andere';
+fetch('https://spsmxuvywjdympvzcqbv.supabase.co/rest/v1/rpc/besuch',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk','Content-Profile':'tender'},body:JSON.stringify({p_pfad:location.pathname.toLowerCase().slice(0,120),p_quelle:q})}).catch(function(){})}catch(e){}})();
+(function(){var d=document,h=d.documentElement;
 function fmt(v,art){if(art==='euro'){if(v>=1e6)return (Math.round(v/1e5)/10).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+'\u00a0Mio.\u00a0\u20ac';var s=v<1e4?100:1000;return (Math.round(v/s)*s).toLocaleString('de-DE')+'\u00a0\u20ac'}return Math.round(v).toLocaleString('de-DE')}
 function zaehl(el){var ziel=+el.getAttribute('data-ziel'),art=el.getAttribute('data-art'),ende=el.textContent,t0=null,dauer=1300;
 function schritt(t){if(!t0)t0=t;var p=Math.min(1,(t-t0)/dauer),e=1-Math.pow(1-p,4);el.textContent=fmt(ziel*e,art);if(p<1)requestAnimationFrame(schritt);else el.textContent=ende}

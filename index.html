@@ -970,5 +970,12 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
 // Alten Hintergrunddienst der früheren Startseite entfernen, falls noch registriert
 if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ if (!/\/app\/$/.test(r.scope)) r.unregister(); }); }).catch(function(){});
 </script>
+<script>
+// Besucherzähler: nur Seite, Tag und Herkunft, keine Cookies, keine IP (siehe Datenschutz, Abschnitt 3)
+(function(){try{var u=navigator.userAgent||'';if(navigator.webdriver||/bot|crawl|spider|slurp|lighthouse|headless|preview/i.test(u))return;
+var q='direkt',h='';try{h=document.referrer?new URL(document.referrer).hostname:''}catch(e){}
+if(/studioldk\.de$/.test(h))q='intern';else if(/(^|\.)google\./.test(h))q='google';else if(/bing\.|duckduckgo|ecosia|yahoo|qwant/.test(h))q='suche';else if(/facebook|fb\.|messenger/.test(h))q='facebook';else if(/instagram/.test(h))q='instagram';else if(/tiktok/.test(h))q='tiktok';else if(/linkedin|lnkd/.test(h))q='linkedin';else if(/chatgpt|openai|perplexity|claude|copilot|gemini/.test(h))q='ki';else if(h)q='andere';
+fetch('https://spsmxuvywjdympvzcqbv.supabase.co/rest/v1/rpc/besuch',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk','Content-Profile':'tender'},body:JSON.stringify({p_pfad:location.pathname.toLowerCase().slice(0,120),p_quelle:q})}).catch(function(){})}catch(e){}})();
+</script>
 </body>
 </html>
