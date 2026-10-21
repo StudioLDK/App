@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bieterblick: Öffentliche Ausschreibungen finden und sehen, wer gewinnt</title>
-<meta name="description" content="Bieterblick findet jeden Morgen die öffentlichen Ausschreibungen, die zu deinem Betrieb passen, und zeigt dir, welche Mitbewerber bei deinen Auftraggebern den Zuschlag bekommen.">
+<meta name="description" content="Bieterblick findet jeden Morgen die öffentlichen Ausschreibungen, die zu deinem Betrieb passen, und zeigt dir, welche Mitbewerber bei deinen Auftraggebern den Zuschlag bekommen. 30 Tage kostenlos testen.">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="canonical" href="https://bieterblick.studioldk.de/">
 <meta name="google-site-verification" content="AZ8Fy4daphK2wYB4QbI8rvFAzTD0xKO07OwhwucXQII">
@@ -84,6 +84,10 @@ h1,h2,h3{text-wrap:balance}
 .vm .fine{margin:12px 0 0 18px}
 .vm-ok{margin:0;padding:18px 22px;border-radius:18px;background:#EAF3EE;color:#1B6B3A;font-size:17px;outline:none}
 .vm-ok b{color:#14522C}
+.start .btn{height:56px;padding:0 30px;font-size:18px}
+.start .fine{margin-left:0}
+.schluss .start .btn{background:var(--tusche)}
+.schluss .start .btn:hover{background:#000}
 .vm.fertig .vm-titel,.vm.fertig .vm-feld,.vm.fertig .vm-msg,.vm.fertig .fine{display:none}
 .falle{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .fine{margin:14px 0 0;font-size:14px;color:var(--graphit)}
@@ -410,7 +414,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
       <a class="nav-l" href="#mitbieter">Mitbieter</a>
       <a class="nav-l" href="#preis">Preis</a>
       <a href="app/">Anmelden</a>
-      <a class="btn sm" href="#vormerken">Vormerken</a>
+      <a class="btn sm" href="app/?testen=bb-start">Testen</a>
     </nav>
   </div>
 </header>
@@ -421,18 +425,11 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
       <div class="hero-kopf">
         <h1><span class="zeile"><span>Sieh, wer deine</span></span><span class="zeile"><span>Aufträge gewinnt.</span></span></h1>
         <p class="lead">Bieterblick sucht jeden Morgen die öffentlichen Ausschreibungen heraus, die zu deinem Betrieb passen. Und es zeigt dir, wer bei deinen Auftraggebern zuletzt den Zuschlag bekommen hat, zu welchem Preis.</p>
-        <form class="vm" id="vormerken" data-quelle="Startseite oben" novalidate>
-          <p class="vm-titel">Start in Kürze. Trag dich ein, wir sagen dir Bescheid.</p>
-          <div class="vm-feld">
-            <label class="sr" for="vm-mail-1">Geschäftliche E-Mail-Adresse</label>
-            <input id="vm-mail-1" type="email" name="email" placeholder="name@firma.de" autocomplete="email" maxlength="320" required>
-            <button class="btn" type="submit">Vormerken</button>
-          </div>
-          <div class="falle" aria-hidden="true"><label for="vm-web-1">Webseite</label><input id="vm-web-1" name="website" tabindex="-1" autocomplete="off"></div>
-          <p class="vm-msg" role="alert"></p>
-          <p class="fine">Nur für Unternehmen. Wir schreiben dir einmal, wenn es losgeht. <a href="app/datenschutz.html#kontakt">Datenschutz</a></p>
-          <p class="vm-ok" tabindex="-1" hidden><b>Danke, du stehst auf der Liste.</b> Wir melden uns, sobald Bieterblick startet.</p>
-        </form>
+        <div class="vm start" id="testen">
+          <p class="vm-titel">30 Tage kostenlos testen, ohne Zahlungsdaten.</p>
+          <a class="btn" href="app/?testen=bb-start">Jetzt kostenlos testen</a>
+          <p class="fine">Nur für Unternehmen. Endet automatisch, kein Abo, nichts zu kündigen.</p>
+        </div>
       </div>
 
       <div class="schau">
@@ -478,7 +475,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
         <div class="probe-zahl"><b id="probe-n">0</b><p id="probe-text"></p><p id="probe-jahr"></p></div>
         <div>
           <ul class="probe-liste" id="probe-liste"></ul>
-          <div class="probe-cta"><a class="btn" href="#vormerken">Jeden Morgen bekommen</a><p>Trag dich ein, wir sagen dir Bescheid, wenn es losgeht.</p></div>
+          <div class="probe-cta"><a class="btn" href="app/?testen=bb-start">Jeden Morgen bekommen</a><p>30 Tage kostenlos testen, ohne Zahlungsdaten.</p></div>
         </div>
       </div>
     </div>
@@ -693,7 +690,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
             <li>Monatlich kündbar</li>
             <li>Daten in Frankfurt am Main</li>
           </ul>
-          <a class="btn" href="#vormerken-ende">Jetzt vormerken</a>
+          <a class="btn" href="app/?testen=bb-start">30 Tage kostenlos testen</a>
           <p class="fine">Kleinunternehmer nach § 19 UStG, daher ohne Umsatzsteuer. Angebot nur für Unternehmen.</p>
         </div>
         <div class="p-seite">
@@ -727,7 +724,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
           <p>Die drei neuen Ausschreibungen, die am besten zu deinem Profil passen, Erinnerungen an Fristen in deiner Pipeline, Änderungen an Ausschreibungen, die ihr bearbeitet, und neue Zuschläge beobachteter Mitbewerber. Ob jeden Morgen, nur montags oder gar nicht, stellst du in der App ein.</p>
         </details>
         <details>
-          <summary>Was passiert nach den 7 Tagen?</summary>
+          <summary>Was passiert nach den 30 Tagen?</summary>
           <p>Die Testphase endet automatisch. Es entstehen keine Kosten, und du musst nichts kündigen. Willst du weitermachen, schaltest du deinen Zugang frei.</p>
         </details>
         <details>
@@ -750,19 +747,12 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
     <div class="in">
       <div data-reveal>
         <h2>Schau dir deine Treffer von heute an.</h2>
-        <p class="schluss-sub">Start in Kürze. Trag dich jetzt ein.</p>
+        <p class="schluss-sub">30 Tage kostenlos testen. Ohne Zahlungsdaten, endet automatisch.</p>
       </div>
-      <form class="vm" id="vormerken-ende" data-quelle="Startseite unten" novalidate data-reveal style="--d:1">
-        <div class="vm-feld">
-          <label class="sr" for="vm-mail-2">Geschäftliche E-Mail-Adresse</label>
-          <input id="vm-mail-2" type="email" name="email" placeholder="name@firma.de" autocomplete="email" maxlength="320" required>
-          <button class="btn" type="submit">Vormerken</button>
-        </div>
-        <div class="falle" aria-hidden="true"><label for="vm-web-2">Webseite</label><input id="vm-web-2" name="website" tabindex="-1" autocomplete="off"></div>
-        <p class="vm-msg" role="alert"></p>
-        <p class="fine">Nur für Unternehmen. Wir schreiben dir einmal, wenn es losgeht. <a href="app/datenschutz.html#kontakt">Datenschutz</a></p>
-        <p class="vm-ok" tabindex="-1" hidden><b>Danke, du stehst auf der Liste.</b> Wir melden uns, sobald Bieterblick startet.</p>
-      </form>
+      <div class="vm start" data-reveal style="--d:1">
+        <a class="btn" href="app/?testen=bb-start">Jetzt kostenlos testen</a>
+        <p class="fine">Nur für Unternehmen. Endet automatisch, kein Abo, nichts zu kündigen.</p>
+      </div>
     </div>
   </div>
 </main>
@@ -790,26 +780,6 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
   function kopf(){ top.classList.toggle('scrolled', scrollY > 8); }
   addEventListener('scroll', kopf, { passive:true }); kopf();
 
-  // Vormerken: geht über dieselbe Funktion wie das Kontaktformular
-  var KONTAKT_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co/functions/v1/kontakt';
-  $$('form.vm').forEach(function(f){
-    f.addEventListener('submit', function(e){
-      e.preventDefault();
-      var feld = f.querySelector('input[type=email]'), msg = f.querySelector('.vm-msg'), btn = f.querySelector('button'), mail = feld.value.trim();
-      msg.textContent = '';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)){ msg.textContent = 'Bitte gib eine gültige E-Mail-Adresse an.'; feld.focus(); return; }
-      var label = btn.textContent; btn.disabled = true; btn.textContent = 'Moment …';
-      fetch(KONTAKT_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({
-        name:'Vormerkung', email:mail, website:f.querySelector('.falle input').value,
-        nachricht:'Bitte benachrichtigen, wenn Bieterblick startet. (' + (f.getAttribute('data-quelle') || 'Startseite') + ')' }) })
-        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || !j.ok) throw new Error(j.fehler || ''); }); })
-        .then(function(){ f.classList.add('fertig'); var ok = f.querySelector('.vm-ok'); ok.hidden = false; ok.focus({ preventScroll:true }); })
-        .catch(function(err){
-          msg.textContent = (err && err.message ? err.message : 'Das hat leider nicht geklappt.') + ' Du erreichst uns auch unter info@studioldk.de.';
-          btn.disabled = false; btn.textContent = label;
-        });
-    });
-  });
   // Live-Vorschau: zählt auf dem Server, gibt nur Anzahl und drei Beispiele heraus
   (function(){
     var sek = document.getElementById('probier'), form = document.getElementById('probe');
@@ -876,14 +846,6 @@ footer nav{display:flex;flex-wrap:wrap;gap:22px}
       erg.hidden = false;
     }
   })();
-
-  // Knöpfe "Vormerken": hinscrollen und gleich ins Feld springen
-  $$('a[href^="#vormerken"]').forEach(function(a){
-    a.addEventListener('click', function(){
-      var feld = document.querySelector(a.getAttribute('href') + ' input[type=email]');
-      if (feld) setTimeout(function(){ feld.focus({ preventScroll:true }); }, 450);
-    });
-  });
 
   if (!fx) return;
 
