@@ -664,7 +664,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-21a';
+const APP_VERSION = '2026-10-21b';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -1102,6 +1102,7 @@ async function start(user){
   $('loading').classList.remove('hidden'); $('content').classList.add('hidden'); $('errBox').classList.add('hidden'); $('lockedBox').classList.add('hidden');
   // Ein einziger Aufruf liefert Konto, Einstellungen, Team, Pipeline und Beobachtungen (schont den Server)
   S.boot = null; S.teamMsg = null;
+  S.admin = false; $('adminBtn').classList.add('hidden'); // nicht vom vorher angemeldeten Konto übernehmen
   let tok = null; try { tok = sessionStorage.getItem('ldk-invite'); } catch(e){}
   // Einladungs-Link geöffnet, aber noch mit einem anderen Konto angemeldet: abmelden und zur Registrierung
   if (tok){
