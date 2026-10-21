@@ -16,7 +16,7 @@ jobs:
       - name: Zahlen holen
         run: curl -fsS -o /tmp/seo.json "https://spsmxuvywjdympvzcqbv.supabase.co/storage/v1/object/public/oeffentlich/seo.json"
       - name: Seiten bauen
-        run: python3 seo/bauen.py /tmp/seo.json .
+        run: python3 seo/bauen.py /tmp/seo.json . --orte
       - name: Einspielen
         run: |
           rm -f auftraege/seiten.txt
