@@ -4,293 +4,130 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex"><!-- nur Vorschau, beim Umzug auf studioldk.de entfernen -->
-<title>Studio LDK: Software für Handwerk und Mittelstand</title>
-<meta name="description" content="Studio LDK aus dem Allgäu baut schlanke Software für Handwerk und Mittelstand. Erstes Produkt: Bieterblick, die Suche für öffentliche Ausschreibungen.">
-<meta name="theme-color" content="#111317">
+<title>Studio LDK: Wir nehmen euch den Papierkram ab</title>
+<meta name="description" content="Studio LDK aus dem Allgäu baut einfache Software gegen Papierkram: Bieterblick für Betriebe, Familienpost für Familien.">
 <link rel="canonical" href="https://studioldk.de/">
-<meta property="og:title" content="Studio LDK">
-<meta property="og:description" content="Schlanke Software für Handwerk und Mittelstand. Aus dem Allgäu.">
-<meta property="og:type" content="website">
+<meta name="theme-color" content="#101318">
 <link rel="preload" href="fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111317'/%3E%3Crect x='9' y='9' width='14' height='14' rx='2' fill='%23CC0605'/%3E%3C/svg%3E">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Studio LDK","url":"https://studioldk.de/","email":"info@studioldk.de","address":{"@type":"PostalAddress","addressLocality":"Waltenhofen","postalCode":"87448","addressCountry":"DE"},"brand":{"@type":"Brand","name":"Bieterblick","url":"https://bieterblick.studioldk.de/"}}</script>
-<script>
-  // Effekte nur mit JavaScript und ohne "Bewegung reduzieren"; ohne die Klasse bleibt alles sichtbar
-  if (window.matchMedia && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) document.documentElement.classList.add('fx');
-</script>
+<link rel="stylesheet" href="stil.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101318'/%3E%3Crect x='9' y='9' width='14' height='14' rx='2' fill='%23CC0605'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Studio LDK","url":"https://studioldk.de/","email":"info@studioldk.de","address":{"@type":"PostalAddress","addressLocality":"Waltenhofen","postalCode":"87448","addressCountry":"DE"}}</script>
+<script>if (window.matchMedia && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) document.documentElement.classList.add('fx');</script>
 <style>
-@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;
-  src:url(fonts/archivo-latin-wdth-normal.woff2) format('woff2-variations'),url(fonts/archivo-latin-wdth-normal.woff2) format('woff2');
-  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;
-  src:url(fonts/archivo-latin-ext-wdth-normal.woff2) format('woff2-variations'),url(fonts/archivo-latin-ext-wdth-normal.woff2) format('woff2');
-  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-:root{
-  --nacht:#111317; --nacht2:#1A1D22; --tusche:#1C1F23; --graphit:#5C626B; --nebel:#8A9099;
-  --papier:#F6F4F0; --weiss:#FFFFFF; --linie:#E4E1DA; --linie-dunkel:rgba(255,255,255,.12);
-  --rot:#CC0605; --rot-tief:#A80504; --weich:cubic-bezier(.2,.7,.2,1);
+/* Zwei Türen: links Betriebe (dunkel), rechts Familien (hell). Wer mit der Maus drauf zeigt, dessen Tür wird breiter. */
+.tueren{display:flex;min-height:max(640px,88vh)}
+.tuer{position:relative;flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;padding:120px 56px 64px;text-decoration:none;overflow:hidden;transition:flex-grow .7s var(--weich);isolation:isolate;min-width:0}
+.tuer.betriebe{background:var(--nacht);color:#fff}
+.tuer.betriebe::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(70% 60% at 20% 0%,rgba(204,6,5,.35),transparent 65%);transition:opacity .7s}
+.tuer.betriebe::after{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(180deg,#000,transparent 90%);-webkit-mask-image:linear-gradient(180deg,#000,transparent 90%)}
+.tuer.familien{background:var(--weiss);color:var(--tinte)}
+.tuer.familien::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(70% 60% at 80% 0%,rgba(29,61,115,.14),transparent 65%)}
+@media (hover:hover) and (min-width:901px){
+  .tueren:hover .tuer{flex-grow:.8}
+  .tueren .tuer:hover{flex-grow:1.35}
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--papier);color:var(--tusche);font:400 17px/1.6 'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
-a{color:inherit}
-img{max-width:100%;height:auto;display:block}
-.w{width:100%;max-width:1160px;margin:0 auto;padding:0 32px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-
-/* Kopf */
-.kopf{position:fixed;inset:0 0 auto;z-index:20;transition:background .3s, box-shadow .3s}
-.kopf .w{display:flex;align-items:center;justify-content:space-between;height:72px}
-.kopf.voll{background:rgba(17,19,23,.86);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);box-shadow:0 1px 0 var(--linie-dunkel)}
-.marke{display:flex;align-items:center;gap:11px;text-decoration:none;color:#fff;font-weight:800;font-size:19px;letter-spacing:-.01em;font-stretch:112%}
-.marke i{width:14px;height:14px;border-radius:3px;background:var(--rot);box-shadow:0 0 0 4px rgba(204,6,5,.18)}
-.kopf nav{display:flex;align-items:center;gap:30px}
-.kopf nav a{color:rgba(255,255,255,.72);text-decoration:none;font-size:15px;font-weight:600;transition:color .15s}
-.kopf nav a:hover{color:#fff}
-.kopf nav a.knopf{color:var(--nacht);background:#fff;padding:9px 18px;border-radius:999px}
-.kopf nav a.knopf:hover{background:#ECEAE5}
-
-/* Hero */
-.hero{position:relative;overflow:hidden;background:var(--nacht);color:#fff;padding:180px 0 140px}
-.hero::before{content:"";position:absolute;inset:0;background:
-  radial-gradient(60% 70% at 85% 10%, rgba(204,6,5,.32), transparent 60%),
-  radial-gradient(40% 50% at 10% 100%, rgba(204,6,5,.12), transparent 70%);pointer-events:none}
-.hero::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(180deg,#000,transparent 85%);-webkit-mask-image:linear-gradient(180deg,#000,transparent 85%);pointer-events:none}
-.hero .w{position:relative;z-index:1}
-.vorzeile{display:inline-flex;align-items:center;gap:10px;margin:0 0 28px;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.62)}
-.vorzeile::before{content:"";width:26px;height:2px;background:var(--rot)}
-.hero h1{margin:0;font-weight:800;font-stretch:118%;font-size:clamp(44px,8.4vw,112px);line-height:.94;letter-spacing:-.035em;max-width:11.5em}
-.hero h1 em{font-style:normal;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.85)}
-.hero .lead{margin:36px 0 0;max-width:620px;font-size:clamp(18px,2vw,21px);line-height:1.55;color:rgba(255,255,255,.72)}
-.hero-knoepfe{display:flex;flex-wrap:wrap;gap:14px;margin-top:44px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:54px;padding:0 26px;border-radius:999px;font-weight:700;font-size:16px;text-decoration:none;transition:transform .15s var(--weich), background .15s, border-color .15s}
-.btn:hover{transform:translateY(-1px)}
-.btn.rot{background:var(--rot);color:#fff}
-.btn.rot:hover{background:var(--rot-tief)}
-.btn.rand{border:1.5px solid rgba(255,255,255,.28);color:#fff}
-.btn.rand:hover{border-color:#fff}
-.btn svg{width:18px;height:18px}
-
-/* Laufband */
-.band{border-top:1px solid var(--linie-dunkel);margin-top:110px;padding-top:28px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
-.band div b{display:block;font-size:clamp(28px,3.4vw,40px);font-weight:800;font-stretch:115%;letter-spacing:-.02em}
-.band div span{font-size:15px;color:rgba(255,255,255,.58)}
-
-/* Abschnitte */
-.abschnitt{padding:130px 0}
-.kicker{margin:0 0 18px;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rot)}
-h2{margin:0;font-weight:800;font-stretch:115%;font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.03em;max-width:15em}
-.unter{margin:22px 0 0;max-width:640px;color:var(--graphit);font-size:19px}
-
-/* Produkte */
-.produkte{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:24px;margin-top:64px}
-.produkt{position:relative;overflow:hidden;border-radius:28px;background:var(--nacht);color:#fff;padding:44px 44px 0;display:flex;flex-direction:column;text-decoration:none;min-height:560px;isolation:isolate}
-.produkt::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(70% 60% at 100% 0%, rgba(204,6,5,.38), transparent 60%)}
-.status{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);font-size:13px;font-weight:700;letter-spacing:.02em}
-.status i{width:8px;height:8px;border-radius:50%;background:#3DDC84;box-shadow:0 0 0 4px rgba(61,220,132,.18)}
-.produkt h3{margin:22px 0 0;font-size:clamp(32px,4vw,46px);font-weight:800;font-stretch:115%;letter-spacing:-.025em;line-height:1}
-.produkt p{margin:14px 0 0;max-width:30em;color:rgba(255,255,255,.7)}
-.produkt .weiter{margin-top:22px;display:inline-flex;align-items:center;gap:8px;font-weight:700;color:#fff}
-.produkt .weiter svg{width:18px;height:18px;transition:transform .2s var(--weich)}
-.produkt:hover .weiter svg{transform:translateX(4px)}
-.bild{margin-top:auto;padding-top:36px}
-.bild img{border-radius:14px 14px 0 0;box-shadow:0 -20px 60px -20px rgba(0,0,0,.6);transform-origin:bottom center;transition:transform .5s var(--weich)}
-.produkt:hover .bild img{transform:translateY(-6px)}
-.kommt{border-radius:28px;border:1.5px dashed #CFCBC2;padding:44px;display:flex;flex-direction:column;justify-content:space-between;gap:30px;min-height:560px;background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(28,31,35,.025) 14px 15px)}
-.kommt .status{background:rgba(28,31,35,.06);color:var(--tusche)}
-.kommt .status i{background:#E0A100;box-shadow:0 0 0 4px rgba(224,161,0,.18)}
-.kommt h3{margin:22px 0 0;font-size:30px;font-weight:800;font-stretch:112%;letter-spacing:-.02em;line-height:1.05}
-.kommt p{margin:12px 0 0;color:var(--graphit)}
-.kommt a{font-weight:700}
-
-/* Prinzipien */
-.dunkel{background:var(--nacht);color:#fff}
-.dunkel .unter{color:rgba(255,255,255,.66)}
-.prinzipien{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:64px;background:var(--linie-dunkel);border:1px solid var(--linie-dunkel);border-radius:24px;overflow:hidden}
-.prinzip{background:var(--nacht);padding:38px 34px 42px}
-.prinzip .nr{font-size:14px;font-weight:700;color:var(--rot);letter-spacing:.06em}
-.prinzip h3{margin:18px 0 0;font-size:24px;font-weight:800;font-stretch:110%;letter-spacing:-.015em;line-height:1.15}
-.prinzip p{margin:12px 0 0;color:rgba(255,255,255,.64);font-size:16px}
-
-/* Über */
-.ueber{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:80px;align-items:start}
-.ueber .text p{margin:0 0 18px;font-size:19px;color:var(--graphit)}
-.ueber .text p:first-child{color:var(--tusche);font-size:22px;line-height:1.5}
-.fakten{list-style:none;margin:0;padding:0;border-top:1px solid var(--linie)}
-.fakten li{display:flex;justify-content:space-between;gap:20px;padding:18px 0;border-bottom:1px solid var(--linie)}
-.fakten li span{color:var(--graphit)}
-.fakten li b{text-align:right}
-
-/* Kontakt */
-.kontakt{background:var(--rot);color:#fff;border-radius:32px;padding:80px 64px;position:relative;overflow:hidden;isolation:isolate}
-.kontakt::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;border:70px solid rgba(255,255,255,.08);z-index:-1}
-.kontakt h2{max-width:12em}
-.kontakt p{margin:20px 0 0;max-width:560px;font-size:19px;color:rgba(255,255,255,.85)}
-.kontakt .btn{margin-top:36px;background:#fff;color:var(--rot-tief)}
-.kontakt .btn:hover{background:var(--papier)}
-
-/* Fuß */
-.fuss{padding:56px 0 64px}
-.fuss .w{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;color:var(--graphit);font-size:15px}
-.fuss nav{display:flex;flex-wrap:wrap;gap:22px}
-.fuss a{text-decoration:none}
-.fuss a:hover{text-decoration:underline}
-
-/* Bewegung, nur mit .fx */
-@keyframes rein{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
-.fx .hero .vorzeile,.fx .hero h1,.fx .hero .lead,.fx .hero-knoepfe{animation:rein 1s var(--weich) both}
-.fx .hero h1{animation-delay:.08s}
-.fx .hero .lead{animation-delay:.22s}
-.fx .hero-knoepfe{animation-delay:.34s}
-.fx [data-rein]{opacity:0;transform:translateY(34px);transition:opacity .9s var(--weich) calc(var(--d,0) * 110ms),transform 1s var(--weich) calc(var(--d,0) * 110ms)}
-.fx [data-rein].da{opacity:1;transform:none}
-
-/* Handy und Tablet */
+.etikett{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;padding:7px 14px;border-radius:999px;font-size:14px;font-weight:700;letter-spacing:.02em}
+.betriebe .etikett{background:rgba(255,255,255,.08);color:#fff}
+.betriebe .etikett i{width:9px;height:9px;border-radius:2px;background:var(--rot)}
+.familien .etikett{background:var(--blau-hell);color:var(--blau)}
+.familien .etikett i{width:9px;height:9px;border-radius:50%;background:var(--blau)}
+.tuer h1,.tuer h2{margin:24px 0 0;font-weight:800;font-stretch:116%;font-size:clamp(36px,4.8vw,66px);line-height:1;letter-spacing:-.03em;max-width:9.5em}
+.tuer p{margin:20px 0 0;max-width:30em;font-size:18px}
+.betriebe p{color:var(--grau-hell)}
+.familien p{color:var(--grau)}
+.produkt{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:36px;padding-top:22px;border-top:1px solid var(--linie-dunkel);max-width:30em}
+.familien .produkt{border-top-color:var(--linie)}
+.produkt b{display:block;font-size:20px;font-stretch:110%}
+.produkt small{display:block;font-size:14px;opacity:.7}
+.pfeil{flex:0 0 auto;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;transition:transform .3s var(--weich)}
+.betriebe .pfeil{background:var(--rot);color:#fff}
+.familien .pfeil{background:var(--blau);color:#fff}
+.pfeil svg{width:22px;height:22px}
+.tuer:hover .pfeil{transform:translateX(6px)}
+.bald{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--gruen-hell);color:var(--gruen);font-size:12px;font-weight:700;vertical-align:middle}
+.leitsatz{background:var(--hell)}
+.leitsatz .w{padding-top:110px;padding-bottom:20px}
+.leitsatz h2{margin:0;font-weight:800;font-stretch:114%;font-size:clamp(30px,4.2vw,52px);line-height:1.06;letter-spacing:-.025em;max-width:18em}
+.leitsatz h2 span{color:var(--grau)}
+.fx .tuer .etikett,.fx .tuer h1,.fx .tuer h2,.fx .tuer p,.fx .tuer .produkt{animation:rein .9s var(--weich) both}
+.fx .tuer h1,.fx .tuer h2{animation-delay:.08s}.fx .tuer p{animation-delay:.16s}.fx .tuer .produkt{animation-delay:.26s}
+.fx .familien .etikett{animation-delay:.12s}.fx .familien h2{animation-delay:.2s}.fx .familien p{animation-delay:.28s}.fx .familien .produkt{animation-delay:.38s}
+@media (min-width:901px){ .kopf nav a{color:var(--grau)} .kopf nav a:hover{color:var(--tinte)} }
 @media (max-width:900px){
-  .produkte,.ueber{grid-template-columns:minmax(0,1fr)}
-  .ueber{gap:48px}
-  .produkt,.kommt{min-height:0}
-  .kommt{min-height:280px}
-  .prinzipien{grid-template-columns:minmax(0,1fr)}
+  .tueren{flex-direction:column;min-height:0}
+  .tuer{flex:none;padding:110px 32px 56px}
+  .tuer.familien{padding-top:64px}
 }
-@media (max-width:640px){
-  .w{padding:0 18px}
-  body{font-size:16px}
-  .kopf nav a:not(.knopf){display:none}
-  .hero{padding:132px 0 88px}
-  .hero h1 em{-webkit-text-stroke:1.5px rgba(255,255,255,.85)}
-  .band{grid-template-columns:minmax(0,1fr);gap:18px;margin-top:72px}
-  .abschnitt{padding:88px 0}
-  .produkte{margin-top:44px}
-  .produkt{padding:30px 24px 0;border-radius:22px}
-  .kommt{padding:30px 24px;border-radius:22px}
-  .prinzip{padding:30px 24px 34px}
-  .kontakt{padding:52px 26px;border-radius:24px}
-  .btn{width:100%}
-  .kontakt .btn{width:auto}
-  .fakten li{flex-direction:column;gap:2px}
-  .fakten li b{text-align:left}
+@media (max-width:600px){
+  .tuer{padding:100px 18px 48px}
+  .tuer.familien{padding-top:52px}
+  .tuer p{font-size:17px}
 }
 </style>
 </head>
 <body>
 
-<header class="kopf" id="kopf">
+<header class="kopf">
   <div class="w">
-    <a class="marke" href="#top" aria-label="Studio LDK, nach oben"><i aria-hidden="true"></i>Studio LDK</a>
-    <nav aria-label="Hauptnavigation">
-      <a href="#produkte">Produkte</a>
-      <a href="#ueber">Über uns</a>
-      <a class="knopf" href="#kontakt">Kontakt</a>
-    </nav>
+    <a class="marke" href="./"><i aria-hidden="true"></i>Studio LDK</a>
+    <nav aria-label="Hauptnavigation"><a class="weg-mobil" href="#ueber">Über uns</a><a href="#kontakt">Kontakt</a></nav>
   </div>
 </header>
 
-<main id="top">
-  <section class="hero">
+<main>
+  <section class="tueren" aria-label="Wähle deinen Bereich">
+    <a class="tuer betriebe" href="betriebe.html">
+      <span class="etikett"><i aria-hidden="true"></i>Für Betriebe</span>
+      <h1>Mehr Aufträge. Weniger Suchen.</h1>
+      <p>Für Handwerk, Bau und Dienstleister: die passenden öffentlichen Ausschreibungen jeden Morgen, und wer bei deinen Auftraggebern zuletzt gewonnen hat.</p>
+      <span class="produkt"><span><b>Bieterblick</b><small>30 Tage kostenlos testen</small></span><span class="pfeil" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span>
+    </a>
+    <a class="tuer familien" href="familien.html">
+      <span class="etikett"><i aria-hidden="true"></i>Für Familien</span>
+      <h2>Der Papierkram der Familie. Gemeinsam im Griff.</h2>
+      <p>Brief fotografieren, verstehen, keine Frist mehr verpassen. Damit bei Mama und Papa nichts liegen bleibt, auch wenn ihr weit weg wohnt.</p>
+      <span class="produkt"><span><b>Familienpost <span class="bald">2027</span></b><small>Erfahre, was kommt</small></span><span class="pfeil" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span>
+    </a>
+  </section>
+
+  <section class="leitsatz" id="ueber" aria-labelledby="leitsatz-titel">
     <div class="w">
-      <p class="vorzeile">Software-Studio aus dem Allgäu</p>
-      <h1>Werkzeuge, die <em>Arbeit</em> abnehmen.</h1>
-      <p class="lead">Studio LDK baut schlanke Software für Handwerk und Mittelstand. Ohne lange Einführung, ohne Vertriebsgespräch, zum fairen Monatspreis. Du meldest dich an, und es läuft.</p>
-      <div class="hero-knoepfe">
-        <a class="btn rot" href="#produkte">Unsere Produkte</a>
-        <a class="btn rand" href="#kontakt">Schreib uns</a>
-      </div>
-      <div class="band" aria-label="Bieterblick in Zahlen">
-        <div><b>fast 10.000</b><span>offene Ausschreibungen in Bieterblick</span></div>
-        <div><b>200.000</b><span>ausgewertete Zuschläge</span></div>
-        <div><b>jeden Morgen</b><span>neu, automatisch</span></div>
-      </div>
+      <p class="kicker" style="color:var(--rot)" data-rein>Studio LDK</p>
+      <h2 id="leitsatz-titel" data-rein style="--d:1">Wir nehmen euch den Papierkram ab. <span>Für Betriebe, die lieber arbeiten als suchen, und für Familien, die lieber Zeit miteinander haben als mit Briefen.</span></h2>
     </div>
   </section>
 
-  <section class="abschnitt" id="produkte" aria-labelledby="produkte-titel">
+  <section class="abschnitt" style="padding-top:70px" aria-labelledby="versprechen-titel">
     <div class="w">
-      <p class="kicker" data-rein>Produkte</p>
-      <h2 id="produkte-titel" data-rein style="--d:1">Ein Problem, ein Werkzeug. Und das richtig.</h2>
-      <p class="unter" data-rein style="--d:2">Wir bauen lieber wenige Dinge gut als viele halb. Jedes Produkt löst eine Aufgabe, die Betriebe heute noch Stunden kostet.</p>
-
-      <div class="produkte">
-        <a class="produkt" href="https://bieterblick.studioldk.de/" data-rein>
-          <span class="status"><i aria-hidden="true"></i>Live</span>
-          <h3>Bieterblick</h3>
-          <p>Findet jeden Morgen die öffentlichen Ausschreibungen, die zu deinem Betrieb passen. Und zeigt dir, wer bei deinen Auftraggebern zuletzt gewonnen hat und zu welchem Preis.</p>
-          <span class="weiter">30 Tage kostenlos testen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-          <div class="bild"><img src="bieterblick.webp" width="2400" height="1500" alt="Die Übersicht in Bieterblick mit passenden Ausschreibungen und Kennzahlen" loading="lazy"></div>
-        </a>
-        <div class="kommt" data-rein style="--d:1">
-          <div>
-            <span class="status"><i aria-hidden="true"></i>In Arbeit</span>
-            <h3>Das nächste Werkzeug</h3>
-            <p>Wir arbeiten schon am nächsten Produkt für Betriebe, die weniger Zeit im Büro und mehr Zeit bei ihren Kunden verbringen wollen.</p>
-          </div>
-          <p>Du hast eine Aufgabe, die dich jede Woche nervt? <a href="#kontakt">Erzähl uns davon.</a></p>
-        </div>
+      <h2 id="versprechen-titel" class="sr" style="position:absolute;left:-9999px">Unsere Versprechen</h2>
+      <div class="versprechen">
+        <div data-rein><h3>Einfach statt überladen</h3><p>Anmelden und loslegen. Keine Schulung, kein Handbuch, keine hundert Einstellungen.</p></div>
+        <div data-rein style="--d:1"><h3>Fair und kündbar</h3><p>Erst kostenlos ausprobieren, ohne Zahlungsdaten. Danach ein klarer Monatspreis, jederzeit kündbar.</p></div>
+        <div data-rein style="--d:2"><h3>Daten in Deutschland</h3><p>Rechenzentrum in Frankfurt am Main. Keine Werbung, kein Weiterverkauf eurer Daten.</p></div>
       </div>
+      <p class="unter" data-rein>Studio LDK ist ein junges Software-Studio aus Waltenhofen im Allgäu. Wir sind klein, deshalb antworten bei uns die Leute, die die Software bauen.</p>
     </div>
   </section>
 
-  <section class="abschnitt dunkel" aria-labelledby="prinzip-titel">
-    <div class="w">
-      <p class="kicker" data-rein>So arbeiten wir</p>
-      <h2 id="prinzip-titel" data-rein style="--d:1">Software, die man nicht erklären muss.</h2>
-      <p class="unter" data-rein style="--d:2">Drei Regeln gelten für alles, was wir bauen.</p>
-      <div class="prinzipien">
-        <div class="prinzip" data-rein><span class="nr">01</span><h3>Einfach statt überladen</h3><p>Anmelden, kurz einrichten, fertig. Keine Schulung, kein Handbuch, keine hundert Einstellungen.</p></div>
-        <div class="prinzip" data-rein style="--d:1"><span class="nr">02</span><h3>Fair und kündbar</h3><p>Erst kostenlos testen, ohne Zahlungsdaten. Danach ein klarer Monatspreis, monatlich kündbar. Ohne Vertragslaufzeit.</p></div>
-        <div class="prinzip" data-rein style="--d:2"><span class="nr">03</span><h3>Daten in Deutschland</h3><p>Deine Daten liegen in einem Rechenzentrum in Frankfurt am Main. Wir verkaufen nichts weiter und zeigen keine Werbung.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="abschnitt" id="ueber" aria-labelledby="ueber-titel">
-    <div class="w ueber">
-      <div>
-        <p class="kicker" data-rein>Über uns</p>
-        <h2 id="ueber-titel" data-rein style="--d:1">Klein, schnell und nah dran.</h2>
-      </div>
-      <div class="text" data-rein style="--d:2">
-        <p>Studio LDK ist ein junges Software-Studio aus Waltenhofen im Allgäu. Wir kennen den Alltag im Einkauf und in der Beschaffung aus eigener Erfahrung, und genau da setzen wir an.</p>
-        <p>Weil wir klein sind, sind die Wege kurz: Wer uns schreibt, bekommt eine Antwort von den Leuten, die die Software bauen. Wünsche und Ideen unserer Kunden landen oft schon in der nächsten Woche im Produkt.</p>
-        <ul class="fakten">
-          <li><span>Sitz</span><b>Waltenhofen, Allgäu</b></li>
-          <li><span>Für wen</span><b>Handwerk, Bau, Dienstleister, Mittelstand</b></li>
-          <li><span>Erstes Produkt</span><b>Bieterblick, seit 2026</b></li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section class="w" id="kontakt" aria-labelledby="kontakt-titel">
+  <section class="w" id="kontakt" aria-labelledby="kontakt-titel" style="padding-bottom:20px">
     <div class="kontakt" data-rein>
-      <h2 id="kontakt-titel">Lass uns reden.</h2>
-      <p>Fragen zu Bieterblick, eine Idee für ein neues Werkzeug oder eine Zusammenarbeit? Schreib uns, wir melden uns schnell.</p>
-      <a class="btn" href="mailto:info@studioldk.de"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>info@studioldk.de</a>
+      <div><h2 id="kontakt-titel">Lass uns reden.</h2><p>Fragen, Ideen oder eine Zusammenarbeit, zum Beispiel als Verband, Innung oder Pflegedienst? Schreib uns, wir melden uns schnell.</p></div>
+      <div class="wege"><span class="mailzeile">info@studioldk.de</span><a class="btn rand-hell" href="mailto:info@studioldk.de">E-Mail schreiben</a></div>
     </div>
   </section>
 </main>
 
 <footer class="fuss">
   <div class="w">
-    <span>© 2026 Studio LDK</span>
-    <nav aria-label="Rechtliches">
-      <a href="https://bieterblick.studioldk.de/">Bieterblick</a>
-      <a href="impressum.html">Impressum</a>
-      <a href="datenschutz.html">Datenschutz</a>
-    </nav>
+    <span>© 2026 Studio LDK · Waltenhofen</span>
+    <nav aria-label="Rechtliches"><a href="betriebe.html">Für Betriebe</a><a href="familien.html">Für Familien</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav>
   </div>
 </footer>
 
 <script>
 (function(){
-  var kopf = document.getElementById('kopf');
-  function k(){ kopf.classList.toggle('voll', scrollY > 24); }
-  addEventListener('scroll', k, { passive:true }); k();
   if (!document.documentElement.classList.contains('fx')) return;
-  var io = new IntersectionObserver(function(es){
-    es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('da'); io.unobserve(e.target); } });
-  }, { rootMargin:'0px 0px -8% 0px' });
+  var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('da'); io.unobserve(e.target); } }); }, { rootMargin:'0px 0px -8% 0px' });
   document.querySelectorAll('[data-rein]').forEach(function(el){ io.observe(el); });
 })();
 </script>
