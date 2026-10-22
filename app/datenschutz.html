@@ -77,8 +77,8 @@ body{hyphens:auto;overflow-wrap:break-word}
     </ol>
 
     <h2 id="verantwortlich">1. Verantwortlicher</h2>
-    <address id="anbieter"></address>
-    <p>E-Mail: <a id="mail" href="#"></a></p>
+    <address id="anbieter">Luis Dempf<br>Studio LDK<br>Martin-Schweiger-Straße 20<br>87448 Waltenhofen<br>Deutschland</address>
+    <p>E-Mail: <a id="mail" href="mailto:info@studioldk.de">info@studioldk.de</a></p>
     <p>Einen Datenschutzbeauftragten haben wir nicht benannt, weil die gesetzlichen Voraussetzungen dafür nicht vorliegen. Für alle Fragen zum Datenschutz erreichst du uns unter der E-Mail-Adresse oben oder über das <a href="impressum.html#kt">Kontaktformular</a>.</p>
 
     <h2 id="rollen">2. Wer wofür verantwortlich ist</h2>
@@ -176,12 +176,8 @@ body{hyphens:auto;overflow-wrap:break-word}
 <script>
 (() => {
   const A = window.ANBIETER || {};
-  const zeile = (w, platz) => { const s = document.createElement('span'); if (w) s.textContent = w; else { s.className = 'fehlt'; s.textContent = platz; } return s; };
-  const el = document.getElementById('anbieter');
-  [zeile(A.name, '[Name]'), zeile(A.firma, '[Firma]'), zeile(A.strasse, '[Straße und Hausnummer]'), zeile(A.ort, '[PLZ und Ort]'), zeile(A.land, '')]
-    .forEach((t, i) => { if (i) el.append(document.createElement('br')); el.append(t); });
+  // Anschrift und E-Mail stehen fest im HTML (auch ohne JavaScript lesbar)
   if (A.entwurf) document.getElementById('entwurf').hidden = false;
-  const m = document.getElementById('mail'); m.textContent = A.email; m.href = 'mailto:' + A.email;
 })();
 </script>
 </body>
