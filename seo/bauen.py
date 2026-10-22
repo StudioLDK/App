@@ -13,7 +13,7 @@ from datetime import date
 from pathlib import Path
 
 BASIS = "https://bieterblick.studioldk.de"
-TESTEN = BASIS + "/?testen=bb-handwerk"
+TESTEN = BASIS + "/app/?testen=bb-handwerk"
 # Ziel der Testen-Knöpfe auf der Seite, die gerade gebaut wird. Gewerk und Ort hängen mit dran,
 # die App füllt damit nach der Registrierung das Suchprofil vor. In der Vorschau geht es zur Vorschau-App.
 link = TESTEN
@@ -21,7 +21,7 @@ link = TESTEN
 
 def setze_link(vorschau, gewerk=None, land=None, ort=None):
     global link
-    link = ("/vorschau/?testen=bb-handwerk" if vorschau else TESTEN) + "".join(
+    link = ("/vorschau/app/?testen=bb-handwerk" if vorschau else TESTEN) + "".join(
         f"&{k}={v}" for k, v in (("gewerk", gewerk), ("land", land), ("ort", ort)) if v)
 MIN_VERGABEN = 25  # darunter keine Seite, zu wenig Daten
 MAX_ORTE = 100  # Städte und Landkreise: erst die größten, nach und nach mehr (Google mag keine Massen auf einmal)
@@ -396,7 +396,7 @@ def fuss(stand, leiste=""):
     return f"""</main>
 <footer><div class="w">
 <p style="margin:0">Stand {datum(stand)}. Daten: TED (Amtsblatt der EU) und Datenservice Öffentlicher Einkauf, aufbereitet von Bieterblick. Alle Angaben ohne Gewähr, maßgeblich sind die Originalbekanntmachungen.</p>
-<nav><a href="/">Bieterblick</a><a href="./">Öffentliche Aufträge</a><a href="/impressum.html">Impressum</a><a href="/datenschutz.html">Datenschutz</a></nav>
+<nav><a href="/">Bieterblick</a><a href="./">Öffentliche Aufträge</a><a href="/app/impressum.html">Impressum</a><a href="/app/datenschutz.html">Datenschutz</a></nav>
 </div></footer>
 {leiste}
 <script>{JS}</script>
@@ -449,9 +449,9 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
     g = GEWERKE[slug]
     setze_link(vorschau, gewerk=slug, land=r["code"])
     pfad = f"auftraege/{slug}-{r['kurz']}.html"
-    titel = f"Öffentliche Aufträge für {g['name']} in {r['name']}: Preise, Konkurrenz, offene Ausschreibungen"
-    beschr = (f"Was zahlen Städte und Gemeinden in {r['name']} für {g['wer']}? Typischer Auftrag {euro(z['median'])}, "
-              f"im Mittel {zahl(z['bieter_median'])} Angebote. Aktuelle Ausschreibungen und wer die Aufträge gewinnt, täglich aktualisiert.")
+    titel = f"{g['name']} in {r['name']}: öffentliche Aufträge und Preise"
+    beschr = (f"{g['name']} in {r['name']}: typischer Auftrag {euro(z['median'])}, im Mittel {zahl(z['bieter_median'])} Angebote. "
+              f"Offene Ausschreibungen und wer gewinnt, täglich aktuell.")
     t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"),
                                               (r["name"], f"auftraege/{r['kurz']}.html"), (g["name"], pfad)])]
     of = offene(z.get("offen", []))
@@ -516,7 +516,7 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
     elif eins <= 5:
         satz = f"Nur bei etwa {zahl(eins)} % der Vergaben gab es ein einziges Angebot. Wer regelmäßig mitbietet, hat echte Chancen, muss aber mit Wettbewerb rechnen."
     else:
-        satz = f"Bei etwa {zahl(eins)} % der Vergaben gab es sogar nur ein einziges Angebot. Wer dort mitgeboten hätte, wäre ohne Konkurrenz gewesen."
+        satz = f"Bei etwa {zahl(eins)} % der Vergaben gab es nur ein einziges Angebot. Dort hatte der Gewinner keine Konkurrenz."
     figuren = ""
     if bm:
         anzahl = max(1, min(16, round(float(bm))))
@@ -589,10 +589,16 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
         platz = reihen.index(r["code"]) + 1
         teurer = sum(1 for c in in_laendern if c != r["code"] and float(laender[c][slug]["median"]) < float(z["median"]))
         andere = len(in_laendern) - 1
+        if teurer == 0:
+            vergleich = f"Der typische Auftrag ist hier kleiner als in {'allen' if andere > 1 else 'dem'} anderen {mehrzahl(andere, 'Bundesland', 'Bundesländern')}."
+        elif teurer == andere:
+            vergleich = f"Der typische Auftrag ist hier größer als in {'allen' if andere > 1 else 'dem'} anderen {mehrzahl(andere, 'Bundesland', 'Bundesländern')}."
+        else:
+            vergleich = f"Der typische Auftrag ist hier größer als in {teurer} von {andere} anderen {mehrzahl(andere, 'Bundesland', 'Bundesländern')}."
         t.append(f"""<section class="w abschnitt" aria-labelledby="vergleich">
 <p class="marke-zeile">Vergleich</p>
 <h2 id="vergleich">{r['name']} im Vergleich der Bundesländer</h2>
-<p class="unter">Bei der Zahl der Vergaben für {e(g['name'])} liegt {r['name']} auf Platz {platz} von {len(in_laendern)}. Der typische Auftrag ist hier größer als in {teurer} von {andere} anderen {mehrzahl(andere, "Bundesland", "Bundesländern")}.</p>
+<p class="unter">Bei der Zahl der Vergaben für {e(g['name'])} liegt {r['name']} auf Platz {platz} von {len(in_laendern)}. {vergleich}</p>
 <div data-reveal>{vergleich_liste(slug, laender, in_laendern, r['code'])}</div>
 <p class="hinweis">Balken: vergebene Aufträge in den letzten 12 Monaten. Dahinter der typische Auftragswert. Bundesländer mit zu wenigen Zuschlägen fehlen.</p>
 </section>
@@ -629,8 +635,8 @@ def seite(slug, z, stand, vorschau, r, im_land, in_laendern, laender):
 def land_seite(r, gw, stand, vorschau, im_land, seiten_land, orte_hier=()):
     setze_link(vorschau, land=r["code"])
     pfad = f"auftraege/{r['kurz']}.html"
-    titel = f"Öffentliche Aufträge in {r['name']} nach Gewerk: Preise und offene Ausschreibungen"
-    beschr = f"Was Städte, Gemeinden und Behörden in {r['name']} für Handwerk und Dienstleistungen zahlen, wie viel Konkurrenz es gibt und welche Ausschreibungen gerade offen sind. Aus echten Zuschlägen."
+    titel = f"Öffentliche Aufträge in {r['name']} nach Gewerk"
+    beschr = f"Was Behörden in {r['name']} für Handwerk und Dienstleistungen zahlen, wie viel Konkurrenz es gibt und was gerade offen ist. Aus echten Zuschlägen."
     t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"), (r["name"], pfad)])]
     offen = sum(gw[s].get("offen_n") or 0 for s in im_land)
     t.append(f"""<section class="hero"><div class="w">
@@ -674,8 +680,8 @@ def gewerk_seite(slug, laender, stand, vorschau, in_laendern):
     g = GEWERKE[slug]
     setze_link(vorschau, gewerk=slug)
     pfad = f"auftraege/{slug}.html"
-    titel = f"Öffentliche Aufträge für {g['name']}: Preise und Konkurrenz in allen Bundesländern"
-    beschr = f"Was zahlen öffentliche Auftraggeber für {g['wer']}? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen im Vergleich der Bundesländer."
+    titel = f"{g['name']}: öffentliche Aufträge und Preise nach Bundesland"
+    beschr = f"{g['name']}: was öffentliche Auftraggeber zahlen, wie viele Angebote eingehen und was offen ist, im Vergleich der Bundesländer."
     t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"), (g["name"], pfad)])]
     vergaben = sum(laender[c][slug]["vergaben_1j"] for c in in_laendern)
     offen = sum(laender[c][slug].get("offen_n") or 0 for c in in_laendern)
@@ -712,8 +718,8 @@ def gewerk_seite(slug, laender, stand, vorschau, in_laendern):
 def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, in_laendern, orte=()):
     setze_link(vorschau)
     pfad = "auftraege/"
-    titel = "Öffentliche Aufträge für Handwerk und Dienstleister: Preise, Konkurrenz, offene Ausschreibungen"
-    beschr = "Was zahlen Städte, Gemeinden und Behörden für Handwerk und Dienstleistungen? Typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen nach Bundesland und Gewerk."
+    titel = "Öffentliche Aufträge für Handwerk und Dienstleister"
+    beschr = "Was Behörden für Handwerk und Dienstleistungen zahlen: typische Auftragswerte, Zahl der Angebote und offene Ausschreibungen nach Bundesland und Gewerk."
     t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", pfad)])]
     offen = sum(laender[c][s].get("offen_n") or 0 for c in seiten_land for s in im_land[c])
     t.append(f"""<section class="hero"><div class="w">
@@ -749,7 +755,7 @@ def haupt_seite(stand, vorschau, seiten_land, seiten_gewerk, laender, im_land, i
     t.append(cta("Keine Ausschreibung mehr verpassen",
                  "Bieterblick durchsucht jeden Tag alle öffentlichen Ausschreibungen in Deutschland und schickt dir morgens die passenden für deinen Betrieb und deinen Umkreis."))
     t.append(fuss(stand, leiste("Passende Aufträge jeden Morgen")))
-    return pfad + "index.html", "".join(t)
+    return pfad, "".join(t)
 
 
 def ort_seite(code, z, stand, vorschau, land, im_land_gewerke, nachbarn, land_da=True):
@@ -761,15 +767,17 @@ def ort_seite(code, z, stand, vorschau, land, im_land_gewerke, nachbarn, land_da
     offen_n = z.get("offen_n") or 0
     bm = z.get("bieter_median")
     preise = bool(z.get("median")) and (z.get("wert_n") or 0) >= 20
-    titel = f"Öffentliche Ausschreibungen in {name}: offene Aufträge, Preise, Gewinner"
+    titel = f"Ausschreibungen {name}: offene Aufträge und Gewinner"
     beschr = (f"{zahl(offen_n)} offene Ausschreibungen in {name}"
               + (f", typischer Auftrag {euro(z['median'])}" if preise else "")
               + (f", im Mittel {zahl(bm)} Angebote" if bm else "")
-              + ". Wer ausschreibt und wer gewinnt, täglich aktualisiert.")
-    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/"),
-                                              (r["name"], "auftraege/" + (land_link if land_da else "")), (name, pfad)])]
+              + ". Wer ausschreibt und wer gewinnt.")
+    t = [kopf(titel, beschr, pfad, vorschau, [("Bieterblick", ""), ("Öffentliche Aufträge", "auftraege/")]
+              + ([(r["name"], "auftraege/" + land_link)] if land_da else []) + [(name, pfad)])]
+    land_krumen = f'<a href="{land_link}">{r["name"]}</a><span aria-hidden="true">›</span>' if land_da else ""
+
     t.append(f"""<section class="hero"><div class="w">
-<nav class="pfad" aria-label="Brotkrumen"><a href="./">Öffentliche Aufträge</a><span aria-hidden="true">›</span><a href="{land_link}">{r['name']}</a><span aria-hidden="true">›</span><span>{e(name)}</span></nav>
+<nav class="pfad" aria-label="Brotkrumen"><a href="./">Öffentliche Aufträge</a><span aria-hidden="true">›</span>{land_krumen}<span>{e(name)}</span></nav>
 <h1>Öffentliche Ausschreibungen in <em>{e(name)}</em></h1>
 <p class="lead">Was Stadt, Landkreis, Ämter und andere öffentliche Auftraggeber in {e(name)} gerade ausschreiben, was sie zahlen und wer die Aufträge bekommt. Alles aus echten Bekanntmachungen.</p>
 <div class="kern">
@@ -908,7 +916,9 @@ def main():
         schreib(*land_seite(r, laender[c], stand, vorschau, im_land[c], seiten_land, orte_land[c]))
     for z in orte:
         land = z["code"][:3]
-        nachbarn = [n for n in orte_land[land] if n["code"] != z["code"]][:12]
+        alle = orte_land[land]
+        i = next(k for k, n in enumerate(alle) if n["code"] == z["code"])
+        nachbarn = [alle[(i + d) % len(alle)] for d in range(1, min(13, len(alle)))]
         schreib(*ort_seite(z["code"], z, stand, vorschau, land, im_land[land], nachbarn, land in seiten_land))
     for s in seiten_gewerk:
         schreib(*gewerk_seite(s, laender, stand, vorschau, in_laendern[s]))
