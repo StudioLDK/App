@@ -6,8 +6,11 @@
 #         Nach Freigabe die Änderung selbst einspielen.
 set -e
 cd "$(dirname "$0")"
+# Die Studio-LDK-Seite liegt bis zum Umzug auf studioldk.de nur hier, deshalb nicht mitlöschen
+[ -d vorschau/studio ] && mv vorschau/studio /tmp/vorschau-studio.$$
 rm -rf vorschau
 mkdir vorschau
+[ -d /tmp/vorschau-studio.$$ ] && mv /tmp/vorschau-studio.$$ vorschau/studio
 cp -r index.html impressum.html datenschutz.html img app vorschau/
 BALKEN='<div style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#CC0605;color:#fff;font:700 14px/1 Arial,sans-serif;text-align:center;padding:9px 12px;pointer-events:none">VORSCHAU, nicht live. Kunden sehen diese Version nicht.</div>'
 for f in vorschau/index.html vorschau/app/*.html; do
