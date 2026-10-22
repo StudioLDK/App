@@ -664,7 +664,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-22a';
+const APP_VERSION = '2026-10-22b';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -794,6 +794,13 @@ const STATI = [['pruefen','Prüfen'],['angebot','Angebot in Arbeit'],['abgegeben
 const STATUS_LABEL = Object.fromEntries(STATI);
 const stOf = id => (S.status[id] && S.status[id].status) || null;
 function saveLocalStatus(){ try { localStorage.setItem('ldk-status-'+S.user.id, JSON.stringify(S.status)); } catch(e){} }
+// Die Liste lädt nur Fristen bis vor 14 Tagen. Abgegebene Angebote warten aber oft Monate auf den Zuschlag:
+// Pipeline-Einträge, die nicht in der Liste sind, einzeln nachladen, damit man sie noch auf Gewonnen/Verloren setzen kann.
+async function pipelineNachladen(){
+  const da = new Set(S.rows.map(r => r.id));
+  const fehlt = Object.keys(S.status).filter(id => !da.has(id) && /^[0-9a-f-]{36}$/i.test(id)).slice(0, 500);
+  if (fehlt.length) S.rows.push(...await fetchAll(fehlt).catch(() => []));
+}
 async function loadStatus(){
   S.status = {};
   if (S.team){
@@ -810,16 +817,23 @@ async function loadStatus(){
   if (alt.length) saveReact();
 }
 async function setStatus(id, patch, quiet){
-  const next = { ...(S.status[id] || {}), ...patch };
+  const vorher = S.status[id];
+  const next = { ...(vorher || {}), ...patch };
   const leer = !next.status && !(next.notiz && next.notiz.trim()) && !next.zustaendig;
   if (leer) delete S.status[id]; else S.status[id] = next;
+  let fehler = null;
   if (S.team){
     const res = leer
       ? await S.db.from('tender_status').delete().eq('team_id', S.team).eq('tender_id', id)
       : await S.db.from('tender_status').upsert({ team_id:S.team, tender_id:id, status:next.status || null, notiz:next.notiz || null, ...(S.feat.zust ? { zustaendig:next.zustaendig || null } : {}), updated_at:new Date().toISOString() }, { onConflict:'team_id,tender_id' });
-    if (res.error && !quiet) alert('Speichern hat nicht geklappt: ' + res.error.message);
+    if (res.error){
+      fehler = res.error;
+      if (vorher) S.status[id] = vorher; else delete S.status[id];
+      if (!quiet) alert('Speichern hat nicht geklappt: ' + res.error.message);
+    }
   } else saveLocalStatus();
   if (!quiet){ render(false); }
+  return fehler;
 }
 function toggleMerken(r){
   const st = stOf(r.id);
@@ -1069,6 +1083,11 @@ $('loginForm').addEventListener('submit', async e => {
   if (res.error){ msg.textContent = authError(res.error.message); return; }
   // Neue Registrierung an uns melden (die Funktion prüft selbst, ob das Konto wirklich neu ist)
   if (mode === 'register' && res.data && res.data.user) fetch(SUPABASE_URL + '/functions/v1/kontakt', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ neues_konto:res.data.user.id }) }).catch(() => {});
+  if (mode === 'register' && res.data.user && Array.isArray(res.data.user.identities) && !res.data.user.identities.length){
+    setMode('login');
+    msg.textContent = 'Mit dieser E-Mail gibt es schon ein Konto. Melde dich an oder nutze „Passwort vergessen“.';
+    return;
+  }
   if (mode === 'register' && !res.data.session){
     setMode('login');
     msg.className = 'msg ok';
@@ -1078,7 +1097,11 @@ $('loginForm').addEventListener('submit', async e => {
   start(res.data.user);
 });
 
-$('logout').addEventListener('click', async () => { await S.db.auth.signOut(); show('login'); });
+$('logout').addEventListener('click', async () => {
+  const { error } = await S.db.auth.signOut();
+  if (error) await S.db.auth.signOut({ scope:'local' }); // offline: wenigstens auf diesem Gerät abmelden
+  location.replace(location.pathname); // frisch laden, damit nichts vom bisherigen Konto übrig bleibt
+});
 
 $('pwVergessen').addEventListener('click', async () => {
   const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = '';
@@ -1124,6 +1147,7 @@ async function start(user){
     await loadPrefs();
     await loadTeam();
     await loadStatus();
+    await pipelineNachladen();
     await loadWatch().catch(() => {});
   } catch(err){
     showError(err); return;
@@ -1211,6 +1235,7 @@ function route(first){
   const adm = location.hash === '#admin' && !!S.admin;
   const wb = location.hash === '#wettbewerb' || adm;
   S.page = set ? 'settings' : adm ? 'admin' : wb ? 'wettbewerb' : 'list';
+  $('helpBtn').classList.toggle('hidden', set); // würde sonst auf Tablets „Speichern“ verdecken
   $('adm').classList.toggle('hidden', !adm);
   $('adminBtn').toggleAttribute('aria-current', adm);
   if (S.drawerRow) closeDrawer();
@@ -1263,7 +1288,7 @@ async function checkAccess(){
   const days = Math.ceil(left / DAY);
   S.zugang = `Testphase bis ${fmtLong.format(end)}`;
   $('trialTxt').textContent = days <= 1
-    ? 'Deine Testphase endet heute um ' + end.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) + ' Uhr.'
+    ? 'Deine Testphase endet ' + (isoDay(end) === isoDay(new Date()) ? 'heute' : 'morgen') + ' um ' + end.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) + ' Uhr.'
     : `Testphase: noch ${days} Tage, bis ${fmtLong.format(end)}.`;
   bar.classList.toggle('last', days <= 2);
   bar.classList.remove('hidden');
@@ -1287,11 +1312,19 @@ async function ausDatei(){
     return j.rows;
   } catch(e){ return null; }
 }
-async function fetchAll(){
+async function fetchAll(ids){
   let cols = COLS_NEU;
   const all = []; const step = 1000;
-  const datei = await ausDatei();
-  if (datei) all.push(...datei);
+  // ids: nur diese Ausschreibungen laden (Pipeline-Einträge, deren Frist schon länger vorbei ist)
+  if (ids) for (let i = 0; i < ids.length; i += 100){
+    const { data, error } = await S.db.from('tenders').select(cols).in('id', ids.slice(i, i + 100));
+    if (error && cols === COLS_NEU && /column|does not exist|function|kurz/i.test(error.message)){ cols = COLS_MORE; i -= 100; continue; }
+    if (error && cols === COLS_MORE && /column|does not exist/i.test(error.message)){ cols = COLS_BASE; i -= 100; continue; }
+    if (error) throw error;
+    all.push(...data);
+  }
+  const datei = ids ? null : await ausDatei();
+  if (ids || datei) all.push(...(datei || []));
   else
   for (let from = 0; ; from += step){
     const { data, error } = await S.db.from('tenders')
@@ -1305,7 +1338,7 @@ async function fetchAll(){
     all.push(...data);
     if (data.length < step || all.length >= 30000) break;
   }
-  S.feat.neu = cols === COLS_NEU;
+  if (!ids) S.feat.neu = cols === COLS_NEU;
   // EU-weite Ausschreibungen stehen oft bei TED und beim Datenservice: doppelte zusammenfassen
   const seen = new Map();
   for (const r of all){
@@ -1559,7 +1592,8 @@ function icsDownload(list, name){
 /* ---------- Export für Excel (CSV mit Semikolon, Umlaute korrekt) ---------- */
 function csvExport(list, name){
   if (!list.length){ alert('Die Liste ist leer.'); return; }
-  const zelle = v => { const t = v == null ? '' : String(v).replace(/\r?\n/g, ' '); return /[;"]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
+  const zelle = v => { let t = v == null ? '' : String(v).replace(/\r?\n/g, ' '); if (/^[=+\-@]/.test(t)) t = "'" + t; // Excel soll nichts als Formel ausführen
+  return /[;"]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
   const kopf = ['Titel','Auftraggeber','Frist','Fragen bis','Geschätzter Wert','Ort','CPV','Verfahren','Status','Zuständig','Notiz','Eingegangen','Quelle','Link'];
   const zeilen = list.map(r => {
     const st = S.status[r.id] || {};
@@ -1725,6 +1759,7 @@ $('settings').addEventListener('submit', async e => {
   if ($('tagNeg').value.trim()) addTag('Neg');
   const msg = $('setMsg'); msg.className = 'msg'; msg.textContent = '';
   if ($('tagCpv').value.trim()) addTag('Cpv');
+  if (S.feat.prefs2 && $('sSitz').value.trim() && !S.draft.sitz_nuts){ msg.className = 'msg'; msg.textContent = 'Beim Firmensitz bitte einen Eintrag aus der Liste wählen.'; $('sSitz').focus(); return; }
   const row = { user_id:S.user.id, firma:$('sFirma').value.trim() || null, beschreibung:$('sBesch').value.trim() || null,
     suchbegriffe:S.draft.suchbegriffe, ausschluss:S.draft.ausschluss, bundeslaender:S.draft.bundeslaender, updated_at:new Date().toISOString() };
   if (S.feat.prefs2) Object.assign(row, { cpv:S.draft.cpv, branchen:S.draft.branchen, sitz_nuts:S.draft.sitz_nuts || null, umkreis_km:S.draft.sitz_nuts ? S.draft.umkreis_km : null,
@@ -1798,20 +1833,22 @@ async function renderTeam(){
     ...members.map(m => h('div',{},
       h('span',{}, m.email || 'ohne E-Mail', m.user_id === S.user.id ? ' (du)' : ''),
       h('span',{class:'r'}, m.rolle === 'owner' ? 'Inhaber' : 'Mitglied', ' ',
-        owner && m.user_id !== S.user.id ? h('button',{class:'linkbtn', type:'button', onclick: async () => { if (!confirm((m.email || 'Mitglied') + ' aus dem Team entfernen?')) return; await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', m.user_id); renderTeam(); }}, 'Entfernen') : null))),
+        owner && m.user_id !== S.user.id ? h('button',{class:'linkbtn', type:'button', onclick: async () => { if (!confirm((m.email || 'Mitglied') + ' aus dem Team entfernen?')) return; const { error } = await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', m.user_id); if (error) alert('Entfernen hat nicht geklappt: ' + error.message); renderTeam(); }}, 'Entfernen') : null))),
     ...(inv.data || []).map(i => h('div',{},
       h('span',{}, i.email),
       h('span',{class:'r'}, 'eingeladen ',
         h('button',{class:'linkbtn', type:'button', onclick: () => $('invOut').replaceChildren(inviteBox(i.token, i.email)) }, 'Link'), ' ',
-        h('button',{class:'linkbtn', type:'button', onclick: async () => { await S.db.from('team_invites').delete().eq('token', i.token); renderTeam(); }}, 'Zurückziehen')))));
+        h('button',{class:'linkbtn', type:'button', onclick: async () => { const { error } = await S.db.from('team_invites').delete().eq('token', i.token); if (error) alert('Zurückziehen hat nicht geklappt: ' + error.message); renderTeam(); }}, 'Zurückziehen')))));
   const plaetze = (tm.data && tm.data.max_mitglieder) || 5, belegt = members.length + (inv.data || []).length;
   $('inviteRow').classList.toggle('hidden', belegt >= plaetze);
   const kids = [h('div',{style:'display:flex;justify-content:space-between;gap:12px;margin-bottom:8px'}, h('b',{}, (tm.data && tm.data.name) || 'Dein Team'), h('span',{class:'hint', style:'margin:0'}, belegt + ' von ' + plaetze + ' Plätzen belegt')), list];
   if (belegt >= plaetze) kids.push(h('p',{class:'hint', style:'margin-top:10px'}, 'Alle Plätze sind belegt. Für ein größeres Team schreib uns über ', h('a',{href:'impressum.html#kt'}, 'das Kontaktformular'), '.'));
   if (ich && !owner) kids.push(h('button',{class:'linkbtn', type:'button', style:'margin-top:10px', onclick: async () => {
     if (!confirm('Team wirklich verlassen? Du siehst dann den Bearbeitungsstand des Teams nicht mehr.')) return;
-    await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', S.user.id);
-    await loadTeam(); await loadStatus(); renderTeam(); }}, 'Team verlassen'));
+    const { error } = await S.db.from('team_members').delete().eq('team_id', S.team).eq('user_id', S.user.id);
+    if (error){ alert('Verlassen hat nicht geklappt: ' + error.message); return; }
+    S.boot = null; // sonst kämen Team und Bearbeitungsstand wieder aus den Startdaten
+    await loadTeam(); await loadStatus(); await pipelineNachladen(); renderTeam(); }}, 'Team verlassen'));
   box.replaceChildren(...kids);
 }
 $('invBtn').addEventListener('click', async () => {
@@ -1888,6 +1925,7 @@ async function toggleWatch(x){
 }
 
 function openWb(){
+  WB.watchAb = null;
   if (!WB.ready){
     WB.ready = true;
     let t;
@@ -1911,9 +1949,12 @@ async function renderWatch(){
   box.replaceChildren(chips);
   // Neue Zuschläge der beobachteten Firmen seit dem letzten Besuch dieser Seite
   const key = 'ldk-wb-seen-' + S.user.id;
-  let seit = null; try { seit = localStorage.getItem(key); } catch(e){}
-  const ab = seit || new Date(Date.now() - 14 * DAY).toISOString();
-  try { localStorage.setItem(key, new Date().toISOString()); } catch(e){}
+  if (!WB.watchAb){ // einmal pro Besuch der Seite, sonst verschwinden die Neuigkeiten beim ersten Tippen
+    let seit = null; try { seit = localStorage.getItem(key); } catch(e){}
+    WB.watchAb = seit || new Date(Date.now() - 14 * DAY).toISOString();
+    try { localStorage.setItem(key, new Date().toISOString()); } catch(e){}
+  }
+  const ab = WB.watchAb;
   const { data } = await S.db.from('zuschlaege').select('title,auftraggeber,gewinner,gewinner_key,gewinner_ort,wert,zuschlag_am,created_at')
     .in('gewinner_key', l.map(w => w.key).slice(0, 100)).gte('created_at', ab).gte('zuschlag_am', isoDay(new Date(Date.now() - 45 * DAY)))
     .order('zuschlag_am', { ascending:false }).limit(30);
@@ -2509,7 +2550,7 @@ function noteField(r){
   ta.value = (S.status[r.id] && S.status[r.id].notiz) || '';
   const info = h('span',{}, S.team ? 'fürs ganze Team sichtbar' : 'nur auf diesem Gerät');
   let t;
-  const save = async () => { clearTimeout(t); if ((S.status[r.id]?.notiz || '') === ta.value) return; info.textContent = 'speichere …'; await setStatus(r.id, { notiz: ta.value }, true); info.textContent = 'gespeichert'; render(false); };
+  const save = async () => { clearTimeout(t); if ((S.status[r.id]?.notiz || '') === ta.value) return; info.textContent = 'speichere …'; const f = await setStatus(r.id, { notiz: ta.value }, true); info.textContent = f ? 'nicht gespeichert, bitte erneut versuchen' : 'gespeichert'; render(false); };
   ta.addEventListener('input', () => { clearTimeout(t); t = setTimeout(save, 900); });
   ta.addEventListener('blur', save);
   return h('div',{class:'field'}, h('label',{class:'note-lab', for:'noteTa'}, 'Notiz', info), ta);
@@ -2544,6 +2585,8 @@ document.addEventListener('keydown', e => {
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
   const list = S.list;
   if (e.key === '/'){ e.preventDefault(); $('q').focus(); return; }
+  if (S.drawerRow && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) return; // im offenen Detail scrollen die Pfeiltasten
+  if (!list.length && /^(j|k|ArrowDown|ArrowUp)$/.test(e.key)) return;
   if (e.key === 'j' || e.key === 'ArrowDown'){ e.preventDefault(); S.sel = Math.min(list.length - 1, S.sel + 1); if (S.sel >= S.shown){ S.shown += PAGE; renderList(); } markSel(); if (S.drawerRow) openDrawer(list[S.sel]); return; }
   if (e.key === 'k' || e.key === 'ArrowUp'){ e.preventDefault(); S.sel = Math.max(0, S.sel - 1); markSel(); if (S.drawerRow) openDrawer(list[S.sel]); return; }
   const r = list[S.sel] || S.drawerRow; if (!r) return;
