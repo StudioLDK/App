@@ -664,7 +664,7 @@ const APP_NAME     = 'Bieterblick';
 const SUPABASE_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_m0MvrAV44ilns10dsOmxwA_tQ9ZIyVk'; // publishable key, darf öffentlich sein (Schutz läuft über RLS)
 const PAGE = 60;                                       // so viele Zeilen auf einmal anzeigen
-const APP_VERSION = '2026-10-22b';
+const APP_VERSION = '2026-10-25';
 
 /* Branchen-Vorlagen fürs Onboarding: Suchbegriffe und CPV-Gruppen */
 const BRANCHEN = [
@@ -937,6 +937,7 @@ const OFFENE_REGISTRIERUNG = true;
 // Bezahlen über Stripe. Erst auf true setzen, wenn Stripe eingerichtet ist
 // (Anleitung: STRIPE_ANLEITUNG.md im Repo Ausschreibungsfinder). Bis dahin öffnen die Knöpfe eine Mail an uns.
 const ZAHLUNG_AKTIV = false;
+const AGB_STAND = '2026-10-22'; // bei jeder AGB-Änderung mitändern (Stand in agb.html)
 async function abo(aktion, knopf){
   const text = knopf ? knopf.textContent : '';
   if (knopf){ knopf.textContent = 'Einen Moment …'; knopf.style.pointerEvents = 'none'; }
@@ -1077,7 +1078,7 @@ $('loginForm').addEventListener('submit', async e => {
   const label = $('loginBtn').textContent;
   $('loginBtn').disabled = true; $('loginBtn').textContent = mode === 'register' ? 'Lege Konto an …' : 'Melde an …';
   const res = mode === 'register'
-    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname + (einladungsToken() ? '?einladung=' + encodeURIComponent(einladungsToken()) : ''), data:{ agb_akzeptiert: new Date().toISOString(), ...(testerCode() ? { tester: testerCode() } : {}), ...(vorauswahl() ? { vorauswahl: { gewerk:vorauswahl().gewerk, region:vorauswahl().region } } : {}) } } })
+    ? await S.db.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname + (einladungsToken() ? '?einladung=' + encodeURIComponent(einladungsToken()) : ''), data:{ agb_akzeptiert: new Date().toISOString(), agb_stand: AGB_STAND, ...(testerCode() ? { tester: testerCode() } : {}), ...(vorauswahl() ? { vorauswahl: { gewerk:vorauswahl().gewerk, region:vorauswahl().region } } : {}) } } })
     : await S.db.auth.signInWithPassword({ email, password });
   $('loginBtn').disabled = false; $('loginBtn').textContent = label;
   if (res.error){ msg.textContent = authError(res.error.message); return; }
