@@ -50,10 +50,9 @@ button:disabled{opacity:.5;cursor:default}
   <section class="card" aria-labelledby="imp">
     <h1 id="imp">Impressum</h1>
     <h3>Angaben gemäß § 5 DDG</h3>
-    <address id="anbieter"></address>
+    <address id="anbieter">Luis Dempf<br>Studio LDK<br>Martin-Schweiger-Straße 20<br>87448 Waltenhofen<br>Deutschland</address>
     <h3>Kontakt</h3>
-    <p id="kontaktwege"></p>
-    <div id="ustid"></div>
+    <p id="kontaktwege">E-Mail: <a href="mailto:info@studioldk.de">info@studioldk.de</a><br><a href="#kt">Kontaktformular auf dieser Seite</a></p>
   </section>
 
   <section class="card" aria-labelledby="kt">
@@ -79,20 +78,8 @@ const KONTAKT_URL = 'https://spsmxuvywjdympvzcqbv.supabase.co/functions/v1/konta
 /* ------------------------------------------------ */
 
 const $ = id => document.getElementById(id);
-function zeile(wert, platzhalter){
-  const s = document.createElement('span');
-  if (wert) s.textContent = wert; else { s.className = 'fehlt'; s.textContent = platzhalter; }
-  return s;
-}
-function zeilen(el, teile){ teile.forEach((t, i) => { if (i) el.append(document.createElement('br')); el.append(t); }); }
 
-zeilen($('anbieter'), [zeile(IMPRESSUM.name), zeile(IMPRESSUM.firma), zeile(IMPRESSUM.strasse, '[Straße und Hausnummer]'), zeile(IMPRESSUM.ort, '[PLZ und Ort]'), zeile(IMPRESSUM.land)]);
-const mail = document.createElement('a'); mail.href = 'mailto:' + IMPRESSUM.email; mail.textContent = IMPRESSUM.email;
-const wege = [document.createTextNode('E-Mail: '), mail];
-if (IMPRESSUM.telefon){ const tel = document.createElement('a'); tel.href = 'tel:' + IMPRESSUM.telefon.replace(/[^+\d]/g, ''); tel.textContent = IMPRESSUM.telefon; wege.push(document.createElement('br'), document.createTextNode('Telefon: '), tel); }
-else { const k = document.createElement('a'); k.href = '#kt'; k.textContent = 'Kontaktformular auf dieser Seite'; wege.push(document.createElement('br'), k); }
-$('kontaktwege').append(...wege);
-if (IMPRESSUM.ustid){ const h = document.createElement('h3'); h.textContent = 'Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG'; const p = document.createElement('p'); p.textContent = IMPRESSUM.ustid; $('ustid').append(h, p); }
+// Name, Anschrift und Kontakt stehen fest im HTML oben (auch ohne JavaScript lesbar). Bei Änderungen dort und in anbieter.js anpassen.
 
 $('f').addEventListener('submit', async e => {
   e.preventDefault();
